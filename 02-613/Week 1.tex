@@ -1,0 +1,96 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 1}}
+
+\title{02-613 Week 1 \\ \large{Algorithms and Advanced Data Structures}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Logistics}
+\subsection*{Dates}
+\begin{itemize}
+    \item Midterms (7pm - 9pm):
+    \begin{itemize}
+	    \item Wed. Oct. 1
+	    \item Wed. Nov. 12
+    \end{itemize}
+    \item Recitations:
+    \begin{itemize}
+	    \item Wed. 5pm (Grad)
+	    \item Thurs. 3pm (UG)
+	    \item Fri. 1pm (UG)
+    \end{itemize}
+\end{itemize}
+\subsection*{Grading}
+There are two grading schemes:
+\begin{itemize}
+	\item Scheme 1:
+	\begin{itemize}
+	    \item 20\% Homework
+	    \item 5\% Recitation Participation
+	    \item 75\% Exams
+    \end{itemize}
+    \item Scheme 2:
+    \begin{itemize}
+        \item 100\% Exams
+    \end{itemize}
+\end{itemize}
+Grading is done by module, so you can pick which scheme for each module.
+\subsection*{Homework}
+\begin{itemize}
+	\item 1 Homework assignment per week
+	\item 4-5 Oral homework in semester
+	\item Collaboration is allowed, but no sharing answers.
+	\item No generative AI.
+\end{itemize}
+
+\section*{Minimum Spanning Trees (MST)}
+\begin{itemize}
+	\item Given a graph, find a set of edges that connects all of the nodes which minimizes the total cost.
+	\item For example, low-cost wiring of a computer network.  Minimize the distance of wires between all the computers.
+\end{itemize}
+\subsection*{Graphs}
+\begin{itemize}
+	\item An undirected graph is defined as $G=(V, E)$, with $V$ being the vertices (a.k.a. Nodes), and $E$ being the edges.  Vertices are a set of objects and Edges are a set of connections between objects.
+	\begin{itemize}
+        \item $V = \{v_1, v_2, \dots, v_n\}$
+        \item $E = \{e_1, e_2, \dots, e_n\}$.  $e \in E \::\: e = \{u, v\}, u, v \in V$ 
+    \end{itemize}
+    \item In an undirected graph, all edges are bidirectional.  Suppose, $e_1 = \{u, v\}$, $e_2 = \{v, u\}$.  In an undirected graph, $e_1 = e_2$.
+    \item In a directed graph, edges are one-way.  In this case, $e_1 \neq e_2$.
+\end{itemize}
+\subsection*{Subgraphs}
+Let $H = (V_H, E_H)$, a subgraph of $G$.  This implies that $V_H \subseteq V$ and $E_H \subseteq E$.  Additionally, it is required that $\forall e \in E, e = \{u, v\}$, and $u, v \in V_H$.
+
+
+
+
+
+
+\end{document}
