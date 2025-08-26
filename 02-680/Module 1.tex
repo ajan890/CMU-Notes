@@ -1,0 +1,195 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Module 1}}
+
+\title{02-680 Module 1 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Logistics}
+\subsection*{Grading}
+\begin{itemize}
+	\item 40\% Homework
+	\item 10\% Attendance, participation, quiz
+	\item 50\% Exams (25\% each)
+\end{itemize}
+\subsection*{Quizzes and Exams}
+\begin{itemize}
+	\item Quizzes are distributed and taken via Canvas before class starts.  Extended quizzes may be present during class.
+	\item There are two exams, and they are not cumulative.
+\end{itemize}
+\subsection*{Homework}
+\begin{itemize}
+	\item Collaboration is encouraged, but answers must be your own.
+	\item Generative AI is allowed.
+\end{itemize}
+
+\section*{Modules}
+\begin{enumerate}
+	\item Fundamentals (Logic, Sets, Tuples, Graphs and Trees)
+	\item Linear Algebra (Vectors, Matrices and Operations, Solving Linear Equations, Vector Spaces, Linear Independence, Eigenvalues and Eigenvectors)
+	\item Calculus (Calculus, Matrix Calculus)
+	\item Probability (Independence, Conditional Probability, Bayes' Theorem)
+	\item Statistics (Random Variables, PDF, CDF)
+	\item Applications of Statistics (T-test, Categorical Data, Multiple Testing, Confidence Intervals, Sampling, Linear Regression)
+\end{enumerate}
+
+\section*{Fundamentals - Logic}
+Logic forms the \textbf{essential building block of mathematical reasoning}, allowing us to formalize statements, analyze arguments, and lay the groundwork for more advanced topics in linear algebra, probability, and statistics.
+\begin{itemize}
+	\item \textit{Propositional logic} often includes variables \textbf{without assigned values}, so we can't know if the whole statement is true or false until the variables are defined.
+	\item \textit{Predicate logic} specifies \textbf{what the variables represent}, allowing the full statement to be evaluated; it extends propositional logic by adding more detail.
+\end{itemize}
+
+\subsection*{Propositional Logic}
+There are three types of propositions:
+\begin{itemize}
+	\item An \textit{atomic proposition} is one that is conceptually indivisible; it cannot be broken down into simpler statements.  Atomic propositions are also sometimes called Boolean variables.
+	\begin{itemize}
+	    \item Usually represented using lower-case letters.
+	    \item e.g., $p \leftarrow "2 + 2 = 4"$, $q \leftarrow \text{"Bear is CMU mascot"}$
+	    \item $p$ is true, $q$ is false.
+    \end{itemize}
+    \item A \textit{negate proposition} negates a statement.
+    \[\neg q\]
+    \begin{itemize}
+	    \item This is read as "not $q$", or "Bear is not CMU mascot." 
+    \end{itemize}
+	\item A \textit{compound proposition} is one formed by combining simpler propositions using logical connectives.  A compound proposition that contains boolean variables $p_1, p_2, \dots, p_k$ is sometijmes called a boolean expression or boolean formula over $p_1, p_2, \dots, p_k$.
+	\begin{itemize}
+	    \item A compound proposition can take into account multiple atomic propositions to create a single statement:
+	    \[p \land q\]
+        \item The statement does not necessarily be true.  We read the above as "$p$ and $q$, and for the whole statement to be true, both $p$ and $q$ must be true.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Logical Connectives}
+There are multiple types of logical connectives, or links that combine simple propositions into more complex compound propositions.
+\begin{itemize}
+	\item Negation [not, $\neg$]: mentioned before, negates the following statement
+	\item Conjunction [and, $\land$]: returns true if the two statements on both sides are true
+	\item Disjunction [or, $\lor$]: returns true if at least one of the two statements are true
+	\item Implication [if/then, $\Rightarrow$]: $p \Rightarrow q$ means if $p$ is true, then $q$ is also true.  It is false only when $p$ is true and $q$ is false.
+	\begin{itemize}
+    	\item In the $p \Rightarrow q$ structure, $p$ is called the \textit{antecedent} or \textit{hypothesis}.  $q$ is called the \textit{consequent} or \textit{conclusion}.
+    	\item $p$ does not necessarily cause $q$!  $p$ being true implies $q$ is true.  However, $p$ being false does not necessarily mean $q$ is false.
+    	\item If $p$ is true, then $q$ must be true.  If $q$ turns out to be false, then the entire implication is false since the promise of the implication was violated.
+    \end{itemize}
+    \item If and only If [$\Leftrightarrow$]: returns true when $p$ and $q$ are both true, or both false.  returns false otherwise
+    \begin{itemize}
+	    \item Sometimes called a \textit{biconditional} or \textit{mutual implication}.
+    \end{itemize}
+    \item Exclusive Or [xor, $\oplus$]: returns true when either $p$ or $q$ is true, but not both.
+\end{itemize}
+The logical connectives have a precedence in the order they are applied, or an \textbf{order of operations.}  The highest precedence "binds the tightest", and the lowest precedence "binds the loosest".  These rules tell us when to include parentheses on an expression to make it mean what we want it to mean, and when parentheses are optional.
+\begin{enumerate}
+	\item Highest Precedence: Negation $\neg$
+	\item Medium Precedence (Equal importance): Conjunction $\land$, Disjunction $\lor$, Exclusive Or $\oplus$
+	\item Lower Precedence: Implication $\Rightarrow$
+	\item Lowest Precedence: Biconditional $\Leftrightarrow$
+\end{enumerate}
+For example, the following two statements are identical:
+\begin{align*}
+    p \lor q &\Rightarrow \neg r \land l\\
+    (p \lor q) &\Rightarrow (\neg r \land l)
+\end{align*}
+
+\subsection*{De Morgan's Laws}
+\begin{align*}
+    \neg(p \lor q) &\equiv \neg p \land \neg q\\
+    \neg(p \land q) &\equiv \neg p \lor \neg q
+\end{align*}
+(here, $\equiv$ means logical equivalence.)  These laws can be proven using a truth table.
+
+\subsection*{Associativity and Commutativity}
+Just like in addition and multiplication, most logical operators (specifically conjunction[$\land$], disjunction[$\lor$], exclusive or[$\oplus$], and mutual implication[$\Leftrightarrow$]) are associative and commutative.  For example,
+\begin{align*}
+    (p \lor q) \lor r &\equiv v \lor (q \lor r) \hspace{1cm} \text{ (associativity)}\\
+    p \land q &\equiv q \land p \hspace{1.8cm} \text{(commutativity)}
+\end{align*}
+Negation and implication are not associative or commutative.
+
+\subsection*{Additional Logically Equivalent Propositions}
+Distribution of $\land$ over $\lor$:
+\[p \land (q \lor r) \equiv (p \land q) \lor (p \land r)\]
+Distribution of $\lor$ over $\land$:
+\[p \lor (q \land r) \equiv (p \lor q) \land (p \lor r)\]
+Mutual Implication:
+\[(p \Rightarrow q) \land (q \Rightarrow p) \equiv p \Leftrightarrow q\]
+
+\subsection*{Bound and Free Variables}
+While all the stuff above we know if $p$ and $q$ are always true or false, often a proposition looks more like
+\[r \leftarrow "2 + x = 4"\]
+Without a definition of $x$ we can't say if the statement is true or not.
+
+\subsection*{Truth tables}
+A truth table shows all possible truth assignments for a proposition.  Each row corresponds to one trutth assignment.  The last column gives the truth value of the whole proposition under that assignment.
+Example: Defining $\land$
+\begin{center}
+\begin{tabular}{cc|c}
+$p$ & $q$ & $p \land q$ \\ \hline
+T & T & T \\
+T & F & F \\
+F & T & F \\
+F & F & F
+\end{tabular}
+\end{center}
+\begin{itemize}
+	\item The first two columns list every possible combination of $p$ and $q$.  Since there are two variables, we need four rows.  (TT, TF, FT, FF).
+	\item The third column shows the result of the compound proposition.
+\end{itemize}
+
+\subsubsection*{Truth tables for the basic logical connectives}
+\begin{center}
+\begin{tabular}{c|c||c|c|c|c|c}
+$p$ & $q$ & $p \land q$ & $p \lor q$ & $p \Rightarrow q$ & $p \oplus q$ & $p \Leftrightarrow q$ \\ \hline
+T & T & T & T & T & T & T \\
+T & F & F & T & F & T & F \\
+F & T & F & T & T & T & F \\
+F & F & F & F & T & F & T
+\end{tabular}
+\end{center}
+
+\subsection*{Predicate Logic}
+Simple propositional logic has a significant limitation: it can't deal with \textit{properties of individual objects within a collection}.  For handling such properties, we need predicate logic.
+
+\subsubsection*{Universal Qualifier}
+If we want to say something like: "\textit{for any} integer $x$, the value of $x \cdot 0$ is $0$."  We would write that using the \textbf{universal qualifier}.
+\[\forall x \in \mathbb{Z}\::\: x \cdot 0 = 0\]
+We say $\forall$ as "for all".  Notice that "$x \cdot 0 = 0$" is a proposition!
+
+\subsubsection*{Existential Qualifier}
+But sometimes we want to not talk about all items, but one (or more) in particular, in which case we can use the \textbf{existential qualifier}.
+\[\exists y \in \mathbb{Z} \::\: y^2 = \vert y + y \vert\]
+We say $\exists$ as "there exists".  In this case there exists more than one $y$ that satisfies the proposition, so the statement is true.
+
+
+
+
+\end{document}
