@@ -70,12 +70,7 @@ Grading is done by module, so you can pick which scheme for each module.
 	\item No generative AI.
 \end{itemize}
 
-\section*{Minimum Spanning Trees (MST)}
-\begin{itemize}
-	\item Given a graph, find a set of edges that connects all of the nodes which minimizes the total cost.
-	\item For example, low-cost wiring of a computer network.  Minimize the distance of wires between all the computers.
-\end{itemize}
-\subsection*{Graphs}
+\section*{Graphs}
 \begin{itemize}
 	\item An undirected graph is defined as $G=(V, E)$, with $V$ being the vertices (a.k.a. Nodes), and $E$ being the edges.  Vertices are a set of objects and Edges are a set of connections between objects.
 	\begin{itemize}
@@ -85,9 +80,51 @@ Grading is done by module, so you can pick which scheme for each module.
     \item In an undirected graph, all edges are bidirectional.  Suppose, $e_1 = \{u, v\}$, $e_2 = \{v, u\}$.  In an undirected graph, $e_1 = e_2$.
     \item In a directed graph, edges are one-way.  In this case, $e_1 \neq e_2$.
 \end{itemize}
+
 \subsection*{Subgraphs}
 Let $H = (V_H, E_H)$, a subgraph of $G$.  This implies that $V_H \subseteq V$ and $E_H \subseteq E$.  Additionally, it is required that $\forall e \in E, e = \{u, v\}$, and $u, v \in V_H$.
 
+\subsection*{Connected Graphs}
+A \textit{connected graph} is a graph where every vertex can take a path consisting of one or more edges to every other vertex.
+\begin{itemize}
+	\item A \textit{maximal connected subgraph} is the largest connected subgraph with the most vertices.
+\end{itemize}
+
+\subsection*{Cycles}
+A \textit{cycle} in graph $G = (V, E)$ is a sequence or distinct vertecies $v_1, \dots, v_k \in V$ such that $\{v_i, v_{i + 1}\} \in E$ and $\{v_k, v_1\} \in E$.
+\begin{itemize}
+	\item A \textit{tree} is a graph that is connected and has no cycles.
+\end{itemize}
+
+\section*{Minimum Spanning Trees (MST)}
+\begin{itemize}
+	\item Given a graph, find a set of edges that connects all of the nodes which minimizes the total cost.
+	\item For example, low-cost wiring of a computer network.  Minimize the distance of wires between all the computers.
+	\item Formally, given an undirected graph $G$ with edge costs $d(e) = d(u, v) > 0$, find a subgraph $T$ that connects all nodes of $G$ that minimizes $\text{Cost}(T) \sum_{e \in T} d(e)$
+\end{itemize}
+\subsection*{Prim's Algorithm}
+One solution is Prim's algorithm.
+\begin{itemize}
+	\item Given $G = (V, E)$, $|V| = n$, and $|E| = m$, select an arbitrary node.  Make that the start of $T$.
+	\item While there exists at least one node not in $T$, add the lowest edge from something in $T$ to something not in $T$.
+	\begin{itemize}
+	    \item Since there are $n$ nodes in the graph, this loop will execute exactly $n - 1$ times.
+    \end{itemize}
+\end{itemize}
+\subsubsection*{Theorem: MST Cut Property}
+Let $S \subset V$, $|S| \geq 1$, $|S| < |V|$.  Every MST contains the edge $e = \{u, v\}$ with $v \in S$, $u \in V \backslash S$ or in a weight.  A pair $(S, V \backslash S)$ is a cut of the graph.
+\begin{itemize}
+	\item Suppose $T$ is the MST, and $e \notin T$ for cut $S$, but $e' \in T$.  In essence, $e$ has a lower cost than $e'$, but the tree contains $e'$ over $e$.  If $d(e) \neq d(e')$, and $d(e) \leq d(e')$, then $T$ is not a minimum spanning tree, and the weight can be lowered by replacing $e'$ with $e$.  Therefore, by contradiction, the assumption that $e \in T$ in every MST must be true.
+\end{itemize}
+
+\subsubsection*{Proof}
+First we want to check correctness.
+\begin{itemize}
+	\item The subgraph should contain all nodes
+	\item There should be no cycles
+	\item The subgraph is connected
+\end{itemize}
+Let $T$ be a subgraph over all the nodes.  Since every step adds 1 node for $n - 1$ steps, plus the initial node, the subtree will contain all the nodes.  Since there are exactly $n - 1$ edges, this implies that there are no cycles.  Using the MST Cut Property, this must be the minimum spanning tree, since each edge added must be in the MST.
 
 
 
