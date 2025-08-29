@@ -102,6 +102,14 @@ A \textit{cycle} in graph $G = (V, E)$ is a sequence or distinct vertecies $v_1,
 	\item For example, low-cost wiring of a computer network.  Minimize the distance of wires between all the computers.
 	\item Formally, given an undirected graph $G$ with edge costs $d(e) = d(u, v) > 0$, find a subgraph $T$ that connects all nodes of $G$ that minimizes $\text{Cost}(T) \sum_{e \in T} d(e)$
 \end{itemize}
+\subsection*{Greedy MST Algorithms}
+There are three main algorithms used to find the MST:
+\begin{itemize}
+	\item \textbf{Prim's}: Choose lowest edge on the cut and add it to the graph, repeat until all the nodes are connected.
+	\item \textbf{Reverse-Delete}: Start with full graph, and remove edges in decreasing order of weights unless it splits the graph.
+	\item \textbf{Kruskal's}: Start with all the nodes, and add edges in increasing order, unless it creates a cycle.
+\end{itemize}
+
 \subsection*{Prim's Algorithm}
 One solution is Prim's algorithm.
 \begin{itemize}
@@ -117,15 +125,78 @@ Let $S \subset V$, $|S| \geq 1$, $|S| < |V|$.  Every MST contains the edge $e = 
 	\item Suppose $T$ is the MST, and $e \notin T$ for cut $S$, but $e' \in T$.  In essence, $e$ has a lower cost than $e'$, but the tree contains $e'$ over $e$.  If $d(e) \neq d(e')$, and $d(e) \leq d(e')$, then $T$ is not a minimum spanning tree, and the weight can be lowered by replacing $e'$ with $e$.  Therefore, by contradiction, the assumption that $e \in T$ in every MST must be true.
 \end{itemize}
 
-\subsubsection*{Proof}
+\subsubsection*{Proof of Prim's Algorithm}
 First we want to check correctness.
 \begin{itemize}
 	\item The subgraph should contain all nodes
 	\item There should be no cycles
 	\item The subgraph is connected
 \end{itemize}
-Let $T$ be a subgraph over all the nodes.  Since every step adds 1 node for $n - 1$ steps, plus the initial node, the subtree will contain all the nodes.  Since there are exactly $n - 1$ edges, this implies that there are no cycles.  Using the MST Cut Property, this must be the minimum spanning tree, since each edge added must be in the MST.
+Let $T$ be a subgraph over all the nodes.  Since every step adds 1 node for $n - 1$ steps, plus the initial node, the subtree will contain all the nodes.  Since there are exactly $n - 1$ edges, this implies that there are no cycles.  Using the MST Cut Property, this must be the minimum spanning tree, since each edge added per step is on a cut of the graph, and therefore must be in the MST.
 
+\subsection*{Reverse Delete Algorithm}
+The Reverse Delete Algorithm also produces an MST.  It goes as follows:
+\begin{itemize}
+    \item Start with the full graph
+    \item Remove edges in decreasing order of weights unless it splits the graph
+\end{itemize}
+
+\subsubsection*{MST Cycle Property}
+A different property of MSTs allow us to develop the Reverse Delete Algorithm, and that is the Cycle property.  It states:
+\begin{itemize}
+	\item Let $C$ be a cycle in $G$.
+	\item Let $e = (u, v) \in C$ be the edge of the cycle with the maximum weight.
+	\item $e$ can not be in the MST.
+\end{itemize}
+
+\subsubsection*{Proof of the Reverse Delete Algorithm}
+\begin{itemize}
+	\item First, we want to show the product is a tree.  This is trivial; a tree is a graph such that there exists only one path between any two nodes, therefore any edge removed from a tree would disconnect it.  If an edge is not removed by the algorithm, it means that the graph would be disconnected. Therefore, the product must be a tree.
+	\item Next, to show the product is the MST, consider a given edge removed from the tree.  If the edge was removed, two things are required: (1) the edge is present in a cycle, therefore removing it will not disconnect the graph, and (2), the edge in question must have the largest weight in said cycle, since edges are removed in reverse order of weights.
+	\begin{itemize}
+	    \item By the MST cycle property, the edge removed is definitely not in the MST.  Since edges are removed until there are no cycles, and all remaining edges are required for the graph to be connected, it must be the MST.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Kruskal's Algorithm}
+This algorithm goes as follows:
+\begin{itemize}
+	\item Start with all the vertices and none of the edges of the graph.
+	\item Add edges in increasing order of weights, unless it creates a cycle.
+\end{itemize}
+
+\subsubsection*{Proof of Kruskal's Algorithm}
+\begin{itemize}
+	\item First, consider the edges added to the algorithm.  If the edge is added, it must not create a cycle.  Therefore, the product must be a tree which connects all nodes.
+	\item When an edge is added, it must not create a cycle.  If it is not added, it must be the maximum in the cycle it forms, and by the cycle property the rejected edge is not in the MST.
+	\item Therefore, if the graph only consists of edges that are not the maximum of the cycles, the product must be a MST.
+\end{itemize}
+
+\section*{Storing a Graph}
+How do we store a graph?  There are generally three ways:
+\begin{itemize}
+	\item Adjacency matrix
+	\item List of edges represented as tuples
+	\item Branched linked list with an abstract data type (a class/struct)
+	\begin{itemize}
+	    \item An abstract data type is simply a description of the data's structure.  It says nothing about how it is stored in a computer.
+	    \item For example, a queue is an abstract data type.  However, the concept can be implemented in a computer using an array, even though an array is not a queue.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Storing a graph for Kruskal's Algorithm}
+Importantly, we want the structure to allow for
+\begin{itemize}
+	\item adding and removing edges quickly
+	\item easily searchable to determine which group (in graph or out of graph) a given edge is in
+	\item easily combine two groups
+\end{itemize}
+Technically, we want a 
+\begin{itemize}
+	\item Find($i$), where $i$ is an object.  Returns the group $i$ is in.
+	\item Union($a, b)$, which puts items from groups $a$ and $b$ together.
+	\item Constructor, which instantiates the object.
+\end{itemize}
 
 
 

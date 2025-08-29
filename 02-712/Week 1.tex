@@ -70,10 +70,122 @@ Questions to consider:
 \begin{enumerate}
 	\item How are we going to answer this?
 	\item What information do we have to work with?  (e.g., phenotypes, genetic information, etc.)
-	\item Which properties matter a lot, and which do not?
-	\item What assumptions can we make?
+	\item Which properties matter a lot, and which do not?  (e.g., in this case, if we want to build a species tree, we don't have to do too deep of an analysis into the genome, for example.  we're doing a species tree, not a gene tree.)
+	\item What assumptions can we make?  (e.g., all the organisms we are mapping are still alive, therefore only leaf nodes are labelled.  we don't want to worry about edge weights since we are not mapping time, etc.)
 \end{enumerate}
+From these questions, we gather some properties of what we want the output to be.  
+For example, from the above, 
+\begin{itemize}
+    \item We want a leaf-labelled tree, with non-weighted edges, that connects all of the input organisms.  More formally, the output should be a tree, $T = (V, E)$.  The leaf set, $L \subseteq V$, such that $t \::\: V \rightarrow \Sigma^n$.  $\Sigma$ is the alphabet (e.g., organisms).
+    \item The input is simply the alphabet $\Sigma$, which is a set of all the organisms we want to map, along with the properties, such as a list of features per organism and genomic data.
+\end{itemize}
+Finally, we want to list our assumptions:
+\begin{itemize}
+    \item Since evolution is very complex, there will be things we want to cut out
+    \item We assume only point mutations occur.  This isn't exactly true, but it is accurate enough.
+    \item We assume mutations are rare.  For example, two mutations won't occur at the same place.
+    \item We also assume all mutations are equally likely.
+    \item Quality of the evolutionary tree would be defined by the number of mutations.  The less the DNA has to mutate to produce the tree, the better.
+    \begin{itemize}
+        \item In this case, we can use $\min_{T, t} \sum_{(u, v)} d(u, v)$, where $d$ is the edit distance between two neighboring nodes $(u, v)$ as the objective function of the tree.
+    \end{itemize}
+\end{itemize}
+We can now write a formal statement:
+\begin{itemize}
+    \item Input: Set $S = \{s_1, \dots, s_n\}$, $s \in \{A, C, G, T\}$
+    \item Output: Tree $T = (V, E)$, leafset $L \subseteq V$, $|L| = n$, $t \::\: V \rightarrow \Sigma^n$, $\forall s \in S, \exists l \in L$, $t(l) = s$.
+    \item Objective: $\min_{T, t} \sum_{(u, v) \in E} d(u, v)$
+\end{itemize}
+The main challenge in the research is making the model realistic enough that it captures the details (e.g., not making too many assumptions), but also solvable.  Too realistic models become very complex and hard to solve.  Additionally, the model should be learnable, or solvable by iteration, and applied to other datasets.  Realism, solvability, and learnability tend to be trade-offs of each other.
 
+\subsection*{Tractable vs. Intractable Problems}
+\begin{itemize}
+    \item \textbf{Tractable} are solvable problems, most often in polynomial time.
+    \item \textbf{Intractable} are hard-to-solve, or impossible-to-solve problems.  Those that are NP-hard or exponential time.
+\end{itemize}
+
+\section*{Graph Algorithms}
+Graphs are denoted as $G = (V, E)$, or that, a graph $G$ consists of a set of vertices $V$ and a set of edges $E$.
+\begin{itemize}
+    \item A weighted graph has weights on the edges.  An unweighted graph does not.
+    \item A directed graph means edges only go one direction.  An undirected graph means edges go both ways.
+\end{itemize}
+Some graphs include:
+\begin{itemize}
+    \item Tree (graph with no cycles)
+    \item Forest (disjoint trees)
+    \item Bipartite (graphs where nodes can be divided into two groups, and every edge between nodes go between the two groups)
+    \item Planar (graph can be drawn on a 2D plane without edges crossing)
+    \item etc.
+\end{itemize}
+We categorize graphs like this because some problems are tractable on certain types of graphs, and intractable on others.
+
+\subsection*{Minimum Spanning Tree Problem}
+Here is an example of a formal statement of a graph problem, specifically the Minimum Spanning Tree (MST) problem:
+\begin{itemize}
+    \item Input: Weighted, undirected, connected $G = (V, E)$, $W \::\: V \times V \rightarrow \mathbb{R}$
+    \item Output: Subgraph $G' = (V, E'), E' \subseteq E$
+    \item Objective: $\min_{(u, v) \in E'} w(u, v)$
+\end{itemize}
+Basically, create a tree that is a subgraph that contains all the nodes, but the minimum number edges, and minimize the total edge weight.\\
+Some known solutions to this problem include Prim's Algorithm, and Kruskal's Algorithm, both of which run in O($n^2$), where $n$ is the number of nodes.\\\\
+This graph problem may be a simplification of the phylogenetic problem.
+
+\subsection*{Minimum Steiner Tree Problem}
+\begin{itemize}
+    \item Input: $G = (V, E)$, $w \::\: E \rightarrow \mathbb{R}$, $S \subseteq V$
+    \item Output: Tree $T = (V', E')$ such that $S \subseteq V' \subseteq V$
+    \item Objective: $\min \sum_{e \in E'} w(e)$
+\end{itemize}
+This problem is similar to the minimum spanning tree problem, but the output tree only needs to include a given list of nodes, instead of all the nodes.\\
+In the phylogenetic tree problem, this may be a better model than the standard MST problem since there may be some organisms that we don't care about the positions of.
+\begin{itemize}
+    \item It turns out that the Minimum Steiner Tree problem is intractible.  It is NP-hard.
+    \item Because of this, it tends to be more like a decision problem (output yes/no for if an efficient answer is possible) rather than an optimization problem.
+\end{itemize}
+
+\subsection*{Shortest Path Problems}
+The simplest shortest path problem is given two nodes $s, t$, on the graph $G = (V, E)$, find the minimum weight path from $s$ to $t$
+\begin{itemize}
+    \item $s$ is known as the source node, and $t$ is known as the sink node
+\end{itemize}
+Formal problem:
+\begin{itemize}
+    \item Input: Graph $G = (V, E)$, $w \::\: E \rightarrow \mathbb{R}$, $s, t \in V$
+    \item Output: Path $s, v_1, \dots, v_k, t$, such that $(s, v_1) \in E, (v_i, v_i + 1) \in E, (v_k, t) \in E$
+    \item Objective: $\min w(s, v_1) + \sum_{i = 1}^{k - 1} w(v_i, v_{i + 1}) + w(v_k, t)$
+\end{itemize}
+This problem is solvable using Dijkstra's algorithm, or Bellman Ford if there are negatively-weighted edges (but no negative cycles).\\\\
+Other derivatives of this problem include:
+\begin{itemize}
+    \item Single-source shortest path (shortest path to every node from a single source)
+    \item Single-destination shortest path (shortest path between every node to one destination)
+    \item All-pairs shortest path (shortest path between every pair of nodes on the graph)
+\end{itemize}
+
+\subsubsection*{Hamiltonian Path Problem}
+\begin{itemize}
+    \item Input: $G = (V, E)$, weighted, directed
+    \item Output: True/False $Q \::\: \exists \prod \pi_1, \pi_n$ such that $(\pi_1, \pi_n) \in V$
+\end{itemize}
+Essentially, is there a path that passes through every vertex exactly once?  This problem is intractible.
+
+\subsubsection*{Longest Path Problem}
+Same as the shortest path problem, but instead you want to find the longest path that doesn't repeat nodes.  This problem is also intractible.
+
+\subsection*{Traveling Salesperson Problem (TSP)}
+\begin{itemize}
+    \item Input: Directed $G = (V, E)$, $|v| = n$, $w \::\: V \times V \rightarrow \mathbb{R}$, $B \in \mathbb{R}$
+    \item Question: $\exists \text{permutation} \Pi = \pi_1, \dots, \pi_n$ such that $w(\pi_n, \pi_1) + \sum_{i = 1}^{n - 1} w(\pi_i, \pi_{i + 1}) \leq B$?
+\end{itemize}
+Basically, does there exist a path passing through all the vertices and loops back to the starting node?  And the optimization version, minimize the edge weights.
+
+\subsection*{Max Flow and Min Cut}
+\begin{itemize}
+    \item Input: weighted, directed $G = (V, E)$, $c \::\: E \rightarrow \mathbb{R}$ such that $s, t \in V$ ($s$ is source, $t$ is sink)
+    \item Output: flow: $f \::\: E \rightarrow \mathbb{R} \forall v \in V = \{s, t\}$.  $\sum_{(u, v) \in e} f(u, v) = \sum_{(u, v) \in E} f(v, u)$, $f(u, s) = 0 \forall u$, $f(t, u) = 0 \forall u$, $f(u, v) = c(u, v) \forall u, v$
+    \item Objective: $\max \sum_{s, u \in E}, f(s, u)$
+\end{itemize}
 
 
 

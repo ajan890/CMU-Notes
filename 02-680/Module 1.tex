@@ -179,17 +179,66 @@ F & F & F & F & T & F & T
 \subsection*{Predicate Logic}
 Simple propositional logic has a significant limitation: it can't deal with \textit{properties of individual objects within a collection}.  For handling such properties, we need predicate logic.
 
-\subsubsection*{Universal Qualifier}
-If we want to say something like: "\textit{for any} integer $x$, the value of $x \cdot 0$ is $0$."  We would write that using the \textbf{universal qualifier}.
+\subsubsection*{Universal Quantifier}
+If we want to say something like: "\textit{for any} integer $x$, the value of $x \cdot 0$ is $0$."  We would write that using the \textbf{universal quantifier}.
 \[\forall x \in \mathbb{Z}\::\: x \cdot 0 = 0\]
 We say $\forall$ as "for all".  Notice that "$x \cdot 0 = 0$" is a proposition!
+\begin{itemize}
+	\item Let $P$ be a predicate over $S$.  The proposition $\forall x \in S \::\: P(x)$ is true if, for every possible $x \in S$, we have that $P(x)$ is true.
+\end{itemize}
 
-\subsubsection*{Existential Qualifier}
-But sometimes we want to not talk about all items, but one (or more) in particular, in which case we can use the \textbf{existential qualifier}.
+\subsubsection*{Existential Quantifier}
+But sometimes we want to not talk about all items, but one (or more) in particular, in which case we can use the \textbf{existential quantifier}.
 \[\exists y \in \mathbb{Z} \::\: y^2 = \vert y + y \vert\]
 We say $\exists$ as "there exists".  In this case there exists more than one $y$ that satisfies the proposition, so the statement is true.
+\begin{itemize}
+	\item Let $P$ be a predicate over $S$.  The proposition $\exists x \in S\::\: P(x)$ is true if, for at least one possible $x \in S$, we have that $P(x)$ is true.
+\end{itemize}
 
+\subsubsection*{Quantifier Negation}
+\begin{itemize}
+	\item We may also need to negate expressions with quantifiers.
+	\item Just like with propositional logic it is not trivial.  Once again De Morgan's Theorem comes to the rescue:
+	\begin{align*}
+        \neg [\forall x \::\: P(x)] &\Leftrightarrow [\exists x \::\: \neg P(x)]\\
+        \neg [\forall x \::\: P(x)] &\Leftrightarrow [\forall x \::\: \neg P(x)]
+    \end{align*}
+    \item Notice that whats left to do $(\neg P(x))$ is just the negation of a proposition, which was described earlier.
+\end{itemize}
 
+\subsubsection*{Nested Quantifiers}
+In predicate logic, we can combine multiple quantifiers (like $\forall$ and $\exists$) in one expression.  This is called \textbf{nesting}.
+\begin{itemize}
+	\item Changing the \textbf{order} can completely change the meaning of the statement.
+\end{itemize}
+For example, consider
+\[\forall x \in \mathbb{Z} \::\: [\exists y \in \mathbb{Z} \::\: x = -y]\]
+"For every integer $x$, there exists an integer $y$ such that $x = -y$."
+\begin{itemize}
+	\item The \textbf{outer quantifier} is $\forall x \in \mathbb{Z}$.
+	\item The \textbf{inner quantifier} is $\exists y \in \mathbb{Z}$.
+	\item The \textbf{predicate} is $x = -y$.
+\end{itemize}
+If we write this statement incorrectly (in reverse order) we find a statement that is unsatisfiable.
+\[\exists x \in \mathbb{Z} \::\: [\forall y \in \mathbb{Z} \::\: x = -y]\]
+"There exists an integer $y$ such that for every integer $x$, $x = -y$."
+\begin{itemize}
+	\item This is \textbf{false} because no single $y$ can produce all possible $x$ values by $x = -y$.
+\end{itemize}
+
+\subsubsection*{Negating Nested Quantifiers}
+When negating nested quantifiers, it is basically a \textit{recursive} procedure.
+\begin{itemize}
+	\item Start with the outermost quantifier.
+	\item Apply negation one layer at a time, moving inward.
+	\item Flip each quantifier according to De Morgan's Laws:
+	\begin{align*}
+        \neg [\forall x \::\: P(x)] &\Leftrightarrow [\exists x \::\: \neg P(x)]\\
+        \neg [\forall x \::\: P(x)] &\Leftrightarrow [\forall x \::\: \neg P(x)]
+    \end{align*}
+\end{itemize}
+For example:
+\[\neg [ \exists x \::\: [\forall x \::\: P(x)]] \Leftrightarrow [\forall x \::\: \neg [\forall x \::\: P(x)]] \Leftrightarrow [\forall x \::\: [\exists x \::\: \neg P(x)]]\]
 
 
 \end{document}

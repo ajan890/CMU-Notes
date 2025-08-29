@@ -1,0 +1,202 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Module 2}}
+
+\title{02-680 Module 2 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Number Sets}
+\subsection*{Booleans}
+A boolean is a data type that takes two values: True and False.
+\begin{itemize}
+	\item Sometimes we use 1 and 0 instead
+	\item Can also be thought of as yes/no, on/off, etc.
+	\item can be represented using 1 bit.
+\end{itemize}
+
+\subsection*{Integers}
+An integer is a number with \textbf{no fractional} part.
+\begin{itemize}
+	\item We use the symbol $\mathbb{Z}$ to represent the set of \textbf{all possible integers}
+	\begin{itemize}
+	    \item There is a lot of them (infinitely many!), so unlike booleans we can't just list all integers.
+	    \item Can be positive or negative or zero. (As opposed to \textbf{natural numbers}, represented by $\mathbb{N}$, and includes only positive integers)
+	    \item The number of bits needed to represent an integer increases with the value.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Rational Numbers}
+A rational number is one that can be represented by a \textbf{ratio} between two integers.  That is, it can be written in form $\frac{m}{n}$, where $m, n \in \mathbb{Z}$.
+\begin{itemize}
+	\item We use the symbol $\mathbb{Q}$ to represent the set of all \textbf{rational numbers}.
+	\item Real numbers that are not rational are called \textbf{irrational numbers}.
+\end{itemize}
+
+\subsection*{Real Numbers}
+A real number is one that can be used to \textbf{measure a continuous one-dimensional quantity} such as a length, duration, or temperature.
+\begin{itemize}
+	\item Includes all integers, rational numbers, and all numbers "between" rational numbers.
+	\item We use the symbol $\mathbb{R}$ to represent the set of \textbf{all real numbers}.
+	\item Typically we need more bits to store real-valued numbers
+	\begin{itemize}
+	    \item proportional to the value and precision
+	    \item many representations
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Complex Numbers}
+Complex numbers were invented in order to allow for taking the square root of negative numbers
+\begin{itemize}
+	\item Each complex number has a \textbf{real} and \textbf{imaginary} part, and is written as $a + bi$, where $a, b \in \mathbb{R}$
+    \item We denote the set of all \textbf{complex numbers} as $\mathbb{C}$.
+    \item Note that $\mathbb{R}$ is a subset of $\mathbb{C}$, where all values of $b$ are 0.
+\end{itemize}
+
+\section*{Set Theory}
+Why does set theory matter?\\\\
+Suppose we define a property like:
+\begin{center}
+    "Genes that are significantly upregulated under condition $A$"
+\end{center}
+Then we collect all the genes that match this property.  This collection is a \textbf{set}.\\\\
+We may also define a set by listing its members.  Single-cell transcriptomics may identify:
+\begin{center}
+    Cell type set = \{T cell, B cell, Macrophage, Fibroblast\}
+\end{center}
+A \textbf{sample space} is the \textbf{collection} of all possible outcomes of an experiment.
+\begin{itemize}
+	\item The sample space of an experiment can be thought of as a set, or collection, of different possible outcomes; and each outcome can be thought of as a point, or an element, in the sample space.
+\end{itemize}
+
+\subsection*{Venn Diagrams}
+Venn diagrams can be used to compare sets.  Each circle represents a set, and members common to multiple sets are included in the overlap of the circles.\\\\
+Below is an example using differentially expressed genes (DEGs):
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{M2_1.png} 
+\end{center}
+
+\subsection*{What is a Set?}
+A \textbf{set} is an \textbf{unordered collection} of objects.  We have already been talking about these in the abstract:
+\begin{itemize}
+	\item Set of all integers $\mathbb{Z}$
+	\item Set of all real numbers $\mathbb{R}$
+\end{itemize}
+We write a set using braces "\{" and "\}"
+\begin{itemize}
+	\item use capital letters as names (when applicable)
+	\item if we wanted to define the set of all algebraic operators we may use $O = \{+, -, \cdot, \div\}$
+	\item or maybe the set of all prime numbers: $P = \{2, 3, 5, 7, \dots\}$
+\end{itemize}
+We have two standard ways of explicitly defining a set.
+\begin{itemize}
+	\item First is simple (exhaustive) enumeration:
+	\[A = \{\text{"Welcome"}, \text{"to"}, \text{"02-680"}\}\]
+    In this case the set contains 3 elements, each of which is a string.
+    \item The second way is to define a set by abstraction:
+    \[B = \{x^2 | x = 2 \lor x = 3\}\]
+    We could say that $4 \in B$, but $16 \notin B$.
+    \begin{itemize}
+	    \item The definition after the $\vert$ is a statement written in \textbf{propositional logic}.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Set Membership}
+For a set $S$ and an object $x$, the expression $x \in S$ is true when $x$ is one of the objects in the set $S$.
+\begin{itemize}
+	\item We read $x \in S$ as "$x$ is an element of $S$", or "$x$ is in $S$".
+	\item There is also the notion of non-membership
+	\begin{itemize}
+	    \item if the set $P$ is the set of all primes, then $4 \notin P$.
+	    \item that is, $4$ is not in $P$, or $4$ is not prime.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Set Cardinality}
+For a set $S$, $|S|$ is the number of distinct elements in $S$.\\\\
+Often we want to know how large a set is so we can compare sets.
+\begin{itemize}
+	\item For the set of all algebraic operators described before $|O| = 4$
+	\item For the set of all possible bit values $B$, $|B| = 2$.
+\end{itemize}
+but sometimes, we can't actually count how many there are.  For example,
+\begin{itemize}
+	\item $|\mathbb{Z}| = \infty$
+	\item but, we still know that $|\mathbb{Z}| < |\mathbb{R}|$, since we know that $\mathbb{Z}$ is a subset of $\mathbb{R}$.
+\end{itemize}
+In the examples mentioned earlier:
+\[A = \{\text{"Welcome"}, \text{"to"}, \text{"02-680"}\}\]
+\[B = \{x^2 | x = 2 \lor x = 3\}\]
+$|A| = 3$ and $|B| = 2$.\\\\
+Note that if we define another set:
+\[C = \{(2 + 2), (2 - 2), (2 \cdot 2), (2 \div 2), (2^2)\}\]
+the cardinality $|C| = 3$.  It is not $5$ since cardinality only includes unique elements.
+
+\subsection*{Set Construction}
+As described earlier, there are two ways to construct a set.  Exhaustive enumeration and set abstraction.
+\begin{itemize}
+	\item Note that not all sets need to be assigned a name.
+	\item Remember that sets are \textbf{unordered}, so the following sets are equivalent.
+	\begin{itemize}
+	    \item $\{2 + 2, 2 \cdot 2, 2 \div 2, 2 - 2\}$
+	    \item $\{0, 1, 4\}$
+	    \item $\{4, 0, 1\}$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Set Abstraction}
+Let $U$ be a set of possible elements called the \textbf{universe}.  Let $P(x)$ be a condition, also called a \textbf{predicate}, that
+\begin{itemize}
+	\item for every element $x \in U$
+	\item $P(x)$ is \textbf{true} or \textbf{false}.
+\end{itemize}
+then we can write $\{x \in U \::\: P(x)\}$
+\begin{itemize}
+	\item which is all of the objects from $x \in U$
+	\item for which $P(x)$ is \textbf{true}.
+\end{itemize}
+For example:
+\begin{itemize}
+	\item set of even prime numbers: $\{x \in \mathbb{Z} \geq 1\::\: \text{$x$ is prime and $x$ is even}\}$
+	\item set of primes between 10 and 20: $\{y \in \mathbb{Z} \::\: \text{$y$ is prime and $10 \leq y \leq 20$}\}$
+	\item set of bits: $\{b \in \mathbb{Z} \::\: b^2 = b\}$
+\end{itemize}
+For convenience, sometimes we don't use the universe if it's obvious
+\begin{itemize}
+	\item this is particularly helpful when the predicate determines the universe
+	\item In that case we could write something like $\{x \::\: P(x)\}$
+\end{itemize}
+There is, of course, multiple ways to write these sets as well.
+\begin{itemize}
+	\item Two digit perfect squares: $\{n \in \mathbb{Z} \::\: \sqrt{n} \in \mathbb{Z} \text{ and } 10 \leq n \leq 99\}$
+	\item $\{n^2 \::\: n \in \mathbb{Z} \text{ and } 10 \leq n^2 \leq 99\}$
+	\item $\{n^2 \::\: n \in \{4, 5, 6, 7, 8, 9\}\}$ are the same set
+\end{itemize}
+
+\end{document}
