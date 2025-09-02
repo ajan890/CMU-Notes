@@ -199,4 +199,124 @@ There is, of course, multiple ways to write these sets as well.
 	\item $\{n^2 \::\: n \in \{4, 5, 6, 7, 8, 9\}\}$ are the same set
 \end{itemize}
 
+\subsection*{Special Sets}
+There are some sets that we use that are so important we define them on their own, they also usually have \textbf{special symbols}.\\\\
+The \textbf{Empty Set}, also called the \textbf{null set}, is a set that contains no elements.
+\[\emptyset = \{\}\]
+Since there are no elements in $\emptyset$, which we can write as $\forall x \::\: x \notin \emptyset$, or $\nexists x \::\: x \in \emptyset$, $|\emptyset| = 0$.
+\begin{itemize}
+	\item Any set with \textbf{no elements} can be reduced to $\emptyset$
+	\item Can also be defined as $\{x \::\: \text{False}\}$ (similar to an if statement with "false" in the condition)
+\end{itemize}
+Additionally, we have common sets for groups of numbers.  
+\begin{itemize}
+	\item $\mathbb{N}$: natural numbers (positive whole numbers)
+	\item $\mathbb{Z}$: integers (all whole numbers)
+	\item $\mathbb{Q}$: rational numbers (numbers representable as fractions)
+	\item $\mathbb{R}$: real numbers (decimal numbers)
+	\item $\{0, 1\}$: booleans (no special symbol, represents two states)
+	\item $\Sigma$: characters (sometimes, "alphabet")
+\end{itemize}
+Sometimes, we want to slightly restrict these sets, so sometimes you may see something like $\mathbb{Z}^+$, which is equivalent to $x \in \mathbb{Z} | x > 0$, or $\mathbb{Z}^{\geq 0}$, which is equivalent to $x \in \mathbb{Z}|x \geq 0$.
+
+\subsection*{Operators}
+We have four standard operators used to compare sets, referred to as \textbf{set operators}.
+\begin{itemize}
+	\item \textbf{Union} ($\cup$): The union of two sets $S$ and $T$, denoted $S \cup T$, is the set of all elements in either $S$ or $T$ (or both).
+	\[S \cup T = \{x \::\: x \in S \text{ or } x \in T\}\]
+    \item \textbf{Intersection} ($\cap$): The intersection of two sets $S$ and $T$, denoted $S \cap T$, is the set of all elements in both $S$ and $T$.
+    \[S \cap T = \{x \::\: x \in S \text{ and } x \in T\}\]
+    \item \textbf{Set Difference} ($\backslash$): Similar to numerical subtraction, given two sets $S$ and $T$, $S \backslash T$ is the set of elements in $S$ but not $T$.
+    \[S \backslash T = \{x | x \in S \land x \notin T\}\]
+    \begin{itemize}
+	    \item For set difference, order matters. $S \backslash T$ and $T \backslash S$ are different sets.
+	    \item Sometimes, set difference is represented using the minus ($-$) symbol instead of backslash ($\backslash$).
+    \end{itemize}
+    \item \textbf{Complement} ($\bar{\:}$): While we can write something like $\tilde{\:} S$, it is normally written as $\bar{S}$.  This represents the set of elements that are not in $S$.
+    \[\bar{S} = \tilde{\:} S := \{x \in U | x \notin S\}\]
+
+\end{itemize}
+
+\subsubsection*{Properties of Union and Intersection}
+Instead of writing long unions and intersections over multiple sets, we can use indexed notation, just like we do with summation and products.
+\begin{align*}
+    \bigcup_{i = 1}^n S_i &= S_1 \cup S_2 \cup \dots \cup S_n\\
+    \bigcap_{i = 1}^n S_i &= S_1 \cap S_2 \cap \dots \cap S_n
+\end{align*}
+Since a union combines two sets, the following is true:
+\[\max\{|S|, |T|\} \leq |S \cup T| \leq |S| + |T|\]
+Since an intersection only contains elements present in both sets, the following is true:
+\[0 \leq |S \cap T| \leq \min\{|S|, |T|\}\]
+
+\subsubsection*{Arithmetics and Sets}
+We previously saw the use of sums and products like
+\[\sum_{i = 3}^5 2^i = 8 + 16 + 32 = 56\]
+but we can do the same using a set.  Define $S = \{3, 4, 5\}$, then we can say:
+\[\sum_{x \in S} 2^x = 8 + 16 + 36 = 56\]
+We can do the same with product, max, and min:
+\[\prod_{x \in S} x \hspace{1cm} \max_{x \in S} x \hspace{1cm} \min_{x \in S} x\]
+
+\subsection*{Comparing Sets}
+We often need to know if one set is contained within another.  (notice while similar this is different from saying one is larger than another.)
+\begin{itemize}
+	\item Subset $A \subseteq B$: $A$ is fully contained within $B$.
+	\item Superset $A \supseteq B$: $B$ is fully contained within $A$.
+	\item Equality $A = B$: $A$ contains all elements of, but no more than, $B$.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{M2_2.png} 
+\end{center}
+
+\subsubsection*{Subset ($\subseteq$)}
+We say one set is a \textbf{subset} of another if all of its elements are in both sets.
+\[S \subseteq T \Leftrightarrow \forall x \in S \::\: x \in T\]
+A set $S$ is a subset of a set $T$, written $S \subseteq T$, if every $x \in S$ is also an element of $T$.
+\begin{itemize}
+	\item In other words, $S \subseteq T$ is equivalent to $S - T = \{\}$.
+\end{itemize}
+
+\subsubsection*{Superset ($\supseteq$)}
+If a set contains another set, we can say the original is a \textbf{superset} of the other.
+\[S \supseteq T \Leftrightarrow \forall x \in T \::\: x \in S\]
+
+\subsubsection*{Equality ($=$)}
+If two sets contain the same elements, they are equal.
+\[S = T \Leftrightarrow (\forall x \in S\::\: x \in T) \land (\forall y \in T \::\: y \in S)\]
+$S$ is equal to $T$ if and only if every element of $S$ is also in $T$, and every element of $T$ is also in $S$.
+\[S = T \Leftrightarrow (S \subseteq T) \land (S \supseteq T)\]
+
+\subsubsection*{Proper Subset and Proper Supersets}
+We also have the proper subset ($\subset$) and proper superset ($\supset$) operators, which represent subset and superset (but not equality).
+\begin{itemize}
+	\item We define a proper subset as
+	\[S \subset T \Leftrightarrow (\forall x \in S \::\: x \in T) \land (\exists y \in T \::\notin S)\]
+    \begin{itemize}
+	    \item A set $S$ is a proper subset of a set $T$, written $S \subset T$, if $S \subseteq T$ and $S \neq T$.  In other words, $S \subset T$ whenever $S \subseteq T$, but $T \nsubseteq S$.
+    \end{itemize}
+    \item We define a proper superset as
+    \[S \supset T \Leftrightarrow (\forall x \in T \::\: x \in S) \land (\exists y \in S \::\notin T)\]
+    \begin{itemize}
+	    \item $S$ is a proper superset of $T$ if and only if every element of $T$ is in $S$, and there exists at least one element in $S$ that is not in $T$.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Power Sets}
+The \textbf{power set} represents the collection of all subsets of a given set.  It is a set of sets.
+\[P(S) := \{T | T \subseteq S\}\]
+The \textbf{power set} of $S$ is denoted by $(S)$.\\\\
+For example, the power set of ${0, 1, 2}$:
+\[(\{0, 1, 2\}) = \{\emptyset, \{0\}, \{1\}, \{2\}, \{0, 1\}, \{0, 2\}, \{1, 2\}, \{0, 1, 2\}\}\]
+Also, a power set of a power set is a set of set of sets\dots
+
+\subsubsection*{Cardinality of a Power Set}
+An interesting fact is that the size of the power set of a set is
+\[|P(S)| = 2^{|S|}\]
+Think of each element of $P(S)$ as a binary number of length $|S|$.  If the $i$-th bit (or position) is 1, then the $i$-ith element from $S$ is in that subset.  Then, each binary number represents a unique subset of $S$.
+
+\subsubsection*{Power Set of the Empty Set}
+The cardinality of the power set of the empty set is $1$.  ($2^0 = 1$).  This is because even though the empty set is empty, it still has one subset, which is itself.
+\[P(\emptyset) = \{\emptyset\}\]
+Note that $\{\emptyset\} \neq \emptyset$.  This is a set containing the empty set, not the empty set itself.
+
+
 \end{document}
