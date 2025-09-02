@@ -181,13 +181,28 @@ Same as the shortest path problem, but instead you want to find the longest path
 Basically, does there exist a path passing through all the vertices and loops back to the starting node?  And the optimization version, minimize the edge weights.
 
 \subsection*{Max Flow and Min Cut}
+Max flow:
 \begin{itemize}
     \item Input: weighted, directed $G = (V, E)$, $c \::\: E \rightarrow \mathbb{R}$ such that $s, t \in V$ ($s$ is source, $t$ is sink)
     \item Output: flow: $f \::\: E \rightarrow \mathbb{R} \forall v \in V = \{s, t\}$.  $\sum_{(u, v) \in e} f(u, v) = \sum_{(u, v) \in E} f(v, u)$, $f(u, s) = 0 \forall u$, $f(t, u) = 0 \forall u$, $f(u, v) = c(u, v) \forall u, v$
     \item Objective: $\max \sum_{s, u \in E}, f(s, u)$
 \end{itemize}
+Min cut:
+\begin{itemize}
+    \item Input: $G = (V, E)$, $c \::\: E \rightarrow \mathbb{R}$, $s, t \in V$
+    \item Output: cut $E' \subseteq E$ such that any path from $s$ to $t$ goes through some $e \in E'$.
+    \item Objective: $\min \sum_{e \in E} c(e)$
+\end{itemize}
+These two problems are actually equivalent, since the min cut problem can represent the bottleneck for the max flow problem.
 
-
+\subsubsection*{Max Cut Problem}
+Not exactly the opposite of the min cut problem, but it goes as follows:
+\begin{itemize}
+    \item Input: Graph $G = (V, E), w \::\: E \rightarrow \mathbb{R}, B \in \mathbb{R}$, 
+    \item Objective: $\exists V_1 \in V$, $V_2 = V / V_1$ such that $\sum_{v_1 \in V_1, v_2 \in V_2} w((v_1, v_2)) \geq B$.
+\end{itemize}
+This problem is intractible.  Basically, if you cut the graph into two subgraphs, what is the maximum weight of the cut?\\\\
+Additionally, Min 3-cut and Max 3-cut are both intractible.  (Same as Max cut and Min cut except instead of there being one cut, there are two cuts, dividing the graph into three subgraphs.)
 
 
 \end{document}

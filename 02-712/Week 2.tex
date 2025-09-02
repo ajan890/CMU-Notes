@@ -1,0 +1,170 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 2}}
+
+\title{02-712 Week 2 \\ \large{Biological Modeling and Simulation}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{More (Intractible) Graph Problems}
+\subsection*{Matching Problems}
+\begin{itemize}
+	\item Input: $G = (V, E)$, $w \::\: E \rightarrow \mathbb{R}$
+	\item Output: $E' \subseteq E$ such that $\nexists u, v, w \in V$ such that $(u, v) \in E'$ and $(u, w) \in E'$
+	\item Objective: $\max \sum_{e \in E} w(e)$
+\end{itemize}
+Basically, a matching is a set of edges that do not share any vertices.  The question is, what is the highest weighted matching on the graph?
+\begin{itemize}
+	\item Interestingly, this problem is intractible for general graphs.  However, it is solvable in polynomial time for bipartite graphs.
+\end{itemize}
+
+\subsection*{Vertex Cover}
+\begin{itemize}
+	\item Input: Undirected $G = (V, E)$, $B \in \mathbb{N}$.
+	\item Objective: Does there exist $V' \subseteq V$ such that $\forall (u, v) \in E$, $u \in V'$, $v \in V'$, $|V'| \leq B$?
+\end{itemize}
+Basically, a vertex cover is a set of vertices such that every edge on the graph is conneccted to at least one of the vertices in the set.  Find the minimum number of vertices required to create a vertex cover.
+
+\subsection*{Independent Set}
+\begin{itemize}
+	\item Input: $G = (V, E)$, $B \in \mathbb{N}$.
+	\item Objective: Does there exist $V' \subseteq V$ such that $\nexists (u, v) \in E$ where $u \in V'$, $v \in V'$ such that $|V'| \geq B$?
+\end{itemize}
+Find the largest set such that no two vertices in the set are connected by an edge.
+
+\subsection*{Max Clique Problem}
+\begin{itemize}
+	\item Input: $G = (V, E)$, $B \in \mathbb{N}$.
+    \item Objective: Does there exist $V' \subseteq V$ such that $\forall v_1, v_2 \in V'$, $(v_1, v_2) \in E$, and $|V'| \leq B$?
+\end{itemize}
+A clique is another name for a complete subgraph.  (e.g., a subgraph where every vertex in it is connected to every other vertex in it via an edge.)  What is the largest clique in graph $G$?
+
+\subsection*{Graph Coloring}
+\begin{itemize}
+	\item Input: $G = (V, E)$, $k \in \mathbb{N}$.
+	\item Objective: Does there exist $e \::\: V \rightarrow \{1, \dots, k\}$ such that $\forall (u, v) \in E$, $c(u) \neq c(v)$?
+\end{itemize}
+Each edge is 'colored' with a number less than $k$.  Is it possible to color the entire graph such that no neighboring vertices are colored the same?
+
+\subsection*{Max Subgraph / Max Induced Subgraph with Property $\Pi$}
+\begin{itemize}
+	\item Input: $G = (V, E)$, $B \in \mathbb{N}$.
+	\item Objective (variant 1): Does there exist $G' = (V, E')$, where $E' \subseteq E$ such that $G$ has property $\Pi$ if $|E'| \geq B$?
+	\item Objective (variant 2): Does there exist $G' = (V', E')$, where $V' \subseteq V$ and $(u, v) \in E'$ and $u \in V' \land v \in V'$ if $|V'| \geq B$?
+\end{itemize}
+Variant 1: Does the graph have property $\Pi$?\\
+Variant 2: Does the graph contain any subgraphs with property $\Pi$?\\
+Property $\Pi$ is a nontrivial, inheritable property of a graph.  (Defined separately.)  Some examples of possibilities of $\Pi$:
+\begin{itemize}
+	\item Bipartiteness 
+	\item Independence
+	\item Planarity
+\end{itemize}
+Nontrivial = are there an infinite number of graphs that do and do not have property $\Pi$?\\
+Inheritable = can adding edges or vertices change the result?  If not, it is inheritable.
+
+\section*{String Problems}
+\subsection*{Longest Common Subsequence}
+This is a problem that is solvable (runnable in O($n^2$)), but not tractible.  Usually genomes are way too big for this to be practical at all.
+\begin{itemize}
+	\item Given a multiple sequences of letters (or nucleotides):
+	\begin{itemize}
+	    \item ABCABCABC
+	    \item CABBCCBB
+	    \item ABCABABC
+	    \item etc.
+    \end{itemize}
+    \item What is the longest sequence of letters that is in each sequence?  The letters don't need to be consecutive.  (O($|S||T|$))
+    \item This is a variation of the longest common substring, where the characters must be consecutive.  (O($|S| + |T|$))
+\end{itemize}
+Formal definition for longest common subsequence:
+\begin{itemize}
+	\item Input: sequences $w_1, w_2, \dots, w_k$, $B \subseteq \mathbb{N}$
+	\item Objective: Does there exist a sequence $s$ of $w_1, \dots, w_k$, where $|s| \geq B$?
+\end{itemize}
+This problem is intractible in $k$.  This means that if $k$ is known (for example, you KNOW you are aligning 3 genomes), or treated as a constant, it is tractible.  If $k$ is treated as a variable, then this problem is intractible.
+
+\subsection*{Shortest Common Superstring}
+Given a sequence of short strings:
+\begin{itemize}
+	\item ACGGA
+	\item GGACT
+	\item ACTCCA
+	\item CAGG
+\end{itemize}
+What is the shortest string that contains all of the short strings?
+\begin{itemize}
+	\item For this example: ACGGACTCCAGG
+\end{itemize}
+This is an intractible problem.
+
+\subsection*{Shortest Common Supersequence}
+Given a sequence of short strings:
+\begin{itemize}
+	\item GCGCA
+	\item CGATA
+	\item ACGAAA
+\end{itemize}
+What is the shortest string that contains all of the sequences?  (The characters don't have to be consecutive.)
+\begin{itemize}
+	\item For this example: GACGCATAA
+\end{itemize}
+
+\section*{Set Problems}
+\subsection*{Minimum Test Set}
+\begin{itemize}
+	\item Input: set $S = \{s_1, \dots, s_n\}$, collection $C = \{c_1, \dots, c_m\}$, where each $c_i \subseteq S$, $B \in \mathbb{N}$
+	\item Objective: Does there exist a $C' \subseteq C$, such that $\forall s_i, s_j \in S \exists c \in C'$ such that $|\{s_i, s_j\} \cap C| = 1$, $|C'| \leq B$?
+\end{itemize}
+For example, consider
+\begin{itemize}
+    \item $s_1 = $ ATACC
+    \item $s_2 = $ CTGTC
+    \item $s_3 = $ CGGTG
+    \item $s_4 = $ ATGTG
+    \item $s_5 = $ AGGCC
+    \item $c_1 = \{s_1, s_3, s_5\}$
+    \item $c_2 = \{s_1, s_2, s_4\}$
+    \item $c_3 = \{s_2, s_3, s_4, s_5\}$
+\end{itemize}
+The question is, what is the minimum of subset of collections you need to be able to narrow down a to a single set that is in all the collections?
+\begin{itemize}
+	\item In this example, $c_1$ is the collection of sets with A as the first letter.  $c_2$ is the set with T as the second letter.  $c_3$ is the set with $G$ as the third letter.
+	\item Pretend we have sets for the forth and fifth letters too.
+	\item Suppose you extract a bacterial genome and it matches one of the sets, but you don't know which.  What is the minimum number of positions in the genome you need to look at to determine the set?
+\end{itemize}
+
+\subsection*{Minimum Set Cover Problem}
+\begin{itemize}
+	\item Input: Set $S$, Collection $C$, Bound $B$.
+	\item Objective: Does there exist $C' \subseteq C$ such that $\forall s \in S \exists c \in C'$ such that $s \in C, |C'| \leq B$?
+\end{itemize}
+Practical explanation: suppose you have a list of antibiotics, and each one is able to kill a set of bacteria $c \in C$.  You have a pool of bacteria ($S$) that you want to kill.  What is the minimum number of antibiotics needed to kill all the bacteria?
+\end{document}
+
