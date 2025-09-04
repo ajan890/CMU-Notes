@@ -48,10 +48,249 @@ One data structure we can use is the Union-Find data structure.  What we basical
         \item To do this quickly, we need a size array.  Without size array would be O($n$).  With size array would be O($1$).
     \end{itemize}
 \end{itemize}
-%[add drawing]
-We can actually optimize this further if we convert the structs to arrays.
-%[add drawing]
+\begin{tikzpicture}[
+    level distance=1.5cm,
+    level 1/.style={sibling distance=2cm},
+    level 2/.style={sibling distance=1cm},
+    every node/.style={circle, draw, minimum size=8mm, inner sep=0pt}
+]
+\node (placeholder) [opacity=0] at (-4, 0) {};
+
+\begin{scope}[shift={(0,0)}]
+\node {1}
+    child {
+        node {3}
+        child {node {10}}
+    }
+    child {
+        node {4}
+    };
+\end{scope}
+
+\begin{scope}[shift={(4,0)}] 
+\node {2}
+    child {node {9}}
+    child {node {6}};
+\end{scope}
+
+\begin{scope}[shift={(7,0)}] 
+    \node {5};
+\end{scope}
+
+\begin{scope}[shift={(9,0)}] 
+    \node {7}
+        child {node {8}};
+    \end{scope}
+
+\draw[dashed] (3.6, 0) -- (0.4, 0);
+
+\end{tikzpicture}
 \begin{itemize}
+    \item In the diagram above, to find the node's group, simply follow the tree up to the root.  The root is the node's group.
+    \item In the image above, we would merge trees 1 and 2 by making the parent of node 2 node 1.  (see dotted line)
+\end{itemize}
+We can actually optimize this further if we convert the structs to arrays.  The below image represents the same structure as above:
+\pagebreak
+
+\begin{tikzpicture}
+    \node (0, 0) (origin) {};
+    % set label array
+    \node[align=left] at (1.25, 0.75) (setLabelArray) {Set Label Array};
+    \node[align=left] at (0.25, -0.25) (label0) {1};
+    \node[align=left] at (0.75, -0.25) (label1) {2};
+    \node[align=left] at (1.25, -0.25) (label2) {3};
+    \node[align=left] at (1.75, -0.25) (label3) {4};
+    \node[align=left] at (2.25, -0.25) (label4) {5};
+    \node[align=left] at (2.75, -0.25) (label5) {6};
+    \node[align=left] at (3.25, -0.25) (label6) {7};
+    \node[align=left] at (3.75, -0.25) (label7) {8};
+    \node[align=left] at (4.25, -0.25) (label8) {9};
+    \node[align=left] at (4.75, -0.25) (label9) {10};
+    \draw (0, 0) rectangle (5, 0.5);
+    \draw (0.5, 0) -- (0.5, 0.5);
+    \draw (1, 0) -- (1, 0.5);
+    \draw (1.5, 0) -- (1.5, 0.5);
+    \draw (2, 0) -- (2, 0.5);
+    \draw (2.5, 0) -- (2.5, 0.5);
+    \draw (3, 0) -- (3, 0.5);
+    \draw (3.5, 0) -- (3.5, 0.5);
+    \draw (4, 0) -- (4, 0.5);
+    \draw (4.5, 0) -- (4.5, 0.5);
+    \node at (0.25, 0.25) (lind1) {1};
+    \node at (0.75, 0.25) (lind2) {2};
+    \node at (1.25, 0.25) (lind3) {1};
+    \node at (1.75, 0.25) (lind4) {1};
+    \node at (2.25, 0.25) (lind5) {5};
+    \node at (2.75, 0.25) (lind6) {2};
+    \node at (3.25, 0.25) (lind7) {7};
+    \node at (3.75, 0.25) (lind8) {7};
+    \node at (4.25, 0.25) (lind9) {2};
+    \node at (4.75, 0.25) (lind10) {1};
+
+    % sizes array
+    \node[align=left, rotate=270] at (6.25, -1.4) (sizesArray) {Sizes Array};
+    \node[align=left] at (5.25, -0.75) (size1) {1};
+    \node[align=left] at (5.25, -1.25) (size2) {2};
+    \node[align=left] at (5.25, -1.75) (size3) {3};
+    \node[align=left] at (5.25, -2.25) (size4) {4};
+    \node[align=left] at (5.25, -2.75) (size5) {5};
+    \node[align=left] at (5.25, -3.25) (size6) {6};
+    \node[align=left] at (5.25, -3.75) (size7) {7};
+    \node[align=left] at (5.25, -4.25) (size8) {8};
+    \node[align=left] at (5.25, -4.75) (size9) {9};
+    \node[align=left] at (5.25, -5.25) (size10) {10};
+    \draw (5.5, -0.5) rectangle (6, -5.5);
+    \draw (5.5, -1) -- (6, -1);
+    \draw (5.5, -1.5) -- (6, -1.5);
+    \draw (5.5, -2) -- (6, -2);
+    \draw (5.5, -2.5) -- (6, -2.5);
+    \draw (5.5, -3) -- (6, -3);
+    \draw (5.5, -3.5) -- (6, -3.5);
+    \draw (5.5, -4) -- (6, -4);
+    \draw (5.5, -4.5) -- (6, -4.5);
+    \draw (5.5, -5) -- (6, -5);
+    \node at (5.75, -0.75) (sind1) {4};
+    \node at (5.75, -1.25) (sind2) {3};
+    \node at (5.75, -1.75) (sind3) {0};
+    \node at (5.75, -2.25) (sind4) {0};
+    \node at (5.75, -2.75) (sind5) {1};
+    \node at (5.75, -3.25) (sind6) {0};
+    \node at (5.75, -3.75) (sind7) {2};
+    \node at (5.75, -4.25) (sind8) {0};
+    \node at (5.75, -4.75) (sind9) {0};
+    \node at (5.75, -5.25) (sind10) {0};
+
+    % items labels
+    \node[draw, rectangle, very thick, minimum width=0.6cm, minimum height=0.6cm] at (0.5, -1.5) (objecth1) {1};
+    \node[draw, rectangle, very thick, minimum width=0.6cm, minimum height=0.6cm] at (0.5, -2.5) (objecth2) {2};
+    \node[draw, rectangle, very thick, minimum width=0.6cm, minimum height=0.6cm] at (0.5, -3.5) (objecth5) {5};
+    \node[draw, rectangle, very thick, minimum width=0.6cm, minimum height=0.6cm] at (0.5, -4.5) (objecth7) {7};
+
+    % items
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (1.5, -1.5) (object1) {1};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (2.25, -1.5) (object3) {3};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (3, -1.5) (object4) {4};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (3.75, -1.5) (object10) {10};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (1.5, -2.5) (object2) {2};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (2.25, -2.5) (object9) {9};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (3, -2.5) (object6) {6};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (1.5, -3.5) (object5) {5};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (1.5, -4.5) (object7) {7};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (2.25, -4.5) (object8) {8};
+
+    \draw[ultra thick, ->] (objecth1) edge (object1);
+    \draw[thick, ->] (object1) edge (object3);
+    \draw[thick, ->] (object3) edge (object4);
+    \draw[thick, ->] (object4) edge (object10);
+
+    \draw[ultra thick, ->] (objecth2) edge (object2);
+    \draw[thick, ->] (object2) edge (object9);
+    \draw[thick, ->] (object9) edge (object6);
+
+    \draw[ultra thick, ->] (objecth5) edge (object5);
+    \draw[ultra thick, ->] (objecth7) edge (object7);
+    \draw[thick, ->] (object7) edge (object8);
+
+    % set label array 2
+    \node[align=left] at (10.75, 0.75) (setLabelArray_) {Set Label Array};
+    \node[align=left] at (9.75, -0.25) (label0_) {1};
+    \node[align=left] at (10.25, -0.25) (label1_) {2};
+    \node[align=left] at (10.75, -0.25) (label2_) {3};
+    \node[align=left] at (11.25, -0.25) (label3_) {4};
+    \node[align=left] at (11.75, -0.25) (label4_) {5};
+    \node[align=left] at (12.25, -0.25) (label5_) {6};
+    \node[align=left] at (12.75, -0.25) (label6_) {7};
+    \node[align=left] at (13.25, -0.25) (label7_) {8};
+    \node[align=left] at (13.75, -0.25) (label8_) {9};
+    \node[align=left] at (14.25, -0.25) (label9_) {10};
+    \draw (9.5, 0) rectangle (14.5, 0.5);
+    \draw (10, 0) -- (10, 0.5);
+    \draw (10.5, 0) -- (10.5, 0.5);
+    \draw (11, 0) -- (11, 0.5);
+    \draw (11.5, 0) -- (11.5, 0.5);
+    \draw (12, 0) -- (12, 0.5);
+    \draw (12.5, 0) -- (12.5, 0.5);
+    \draw (13, 0) -- (13, 0.5);
+    \draw (13.5, 0) -- (13.5, 0.5);
+    \draw (14, 0) -- (14, 0.5);
+    \node at (9.75, 0.25) (lind1_) {1};
+    \node at (10.25, 0.25) (lind2_) {\textbf{\textcolor{red}{1}}};
+    \node at (10.75, 0.25) (lind3_) {1};
+    \node at (11.25, 0.25) (lind4_) {1};
+    \node at (11.75, 0.25) (lind5_) {5};
+    \node at (12.25, 0.25) (lind6_) {\textbf{\textcolor{red}{1}}};
+    \node at (12.75, 0.25) (lind7_) {7};
+    \node at (13.25, 0.25) (lind8_) {7};
+    \node at (13.75, 0.25) (lind9_) {\textbf{\textcolor{red}{1}}};
+    \node at (14.25, 0.25) (lind10_) {1};
+
+    % sizes array 2
+    \node[align=left, rotate=270] at (15.75, -1.4) (sizesArray_) {Sizes Array};
+    \node[align=left] at (14.75, -0.75) (size1_) {1};
+    \node[align=left] at (14.75, -1.25) (size2_) {2};
+    \node[align=left] at (14.75, -1.75) (size3_) {3};
+    \node[align=left] at (14.75, -2.25) (size4_) {4};
+    \node[align=left] at (14.75, -2.75) (size5_) {5};
+    \node[align=left] at (14.75, -3.25) (size6_) {6};
+    \node[align=left] at (14.75, -3.75) (size7_) {7};
+    \node[align=left] at (14.75, -4.25) (size8_) {8};
+    \node[align=left] at (14.75, -4.75) (size9_) {9};
+    \node[align=left] at (14.75, -5.25) (size10_) {10};
+    \draw (15, -0.5) rectangle (15.5, -5.5);
+    \draw (15, -1) -- (15.5, -1);
+    \draw (15, -1.5) -- (15.5, -1.5);
+    \draw (15, -2) -- (15.5, -2);
+    \draw (15, -2.5) -- (15.5, -2.5);
+    \draw (15, -3) -- (15.5, -3);
+    \draw (15, -3.5) -- (15.5, -3.5);
+    \draw (15, -4) -- (15.5, -4);
+    \draw (15, -4.5) -- (15.5, -4.5);
+    \draw (15, -5) -- (15.5, -5);
+    \node at (15.25, -0.75) (sind1_) {\textbf{\textcolor{red}{7}}};
+    \node at (15.25, -1.25) (sind2_) {\textbf{\textcolor{red}{0}}};
+    \node at (15.25, -1.75) (sind3_) {0};
+    \node at (15.25, -2.25) (sind4_) {0};
+    \node at (15.25, -2.75) (sind5_) {1};
+    \node at (15.25, -3.25) (sind6_) {0};
+    \node at (15.25, -3.75) (sind7_) {2};
+    \node at (15.25, -4.25) (sind8_) {0};
+    \node at (15.25, -4.75) (sind9_) {0};
+    \node at (15.25, -5.25) (sind10_) {0};
+
+    % items labels 2
+    \node[draw, rectangle, very thick, minimum width=0.6cm, minimum height=0.6cm] at (10, -2) (objecth1_) {1};
+    \node[draw, rectangle, very thick, minimum width=0.6cm, minimum height=0.6cm] at (10, -3.5) (objecth5_) {5};
+    \node[draw, rectangle, very thick, minimum width=0.6cm, minimum height=0.6cm] at (10, -4.5) (objecth7_) {7};
+
+    % items 2
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (11, -1.5) (object1_) {1};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (11.75, -1.5) (object3_) {3};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (12.5, -1.5) (object4_) {4};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (13.25, -1.5) (object10_) {10};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (11, -2.5) (object2_) {2};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (11.75, -2.5) (object9_) {9};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (12.5, -2.5) (object6_) {6};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (11, -3.5) (object5_) {5};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (11, -4.5) (object7_) {7};
+    \node[draw, rectangle, minimum width=0.5cm, minimum height=0.5cm, inner sep=0mm] at (11.75, -4.5) (object8_) {8};
+
+    \draw[ultra thick, ->, red] (objecth1_) edge (object1_);
+    \draw[thick, ->] (object1_) edge (object3_);
+    \draw[thick, ->] (object3_) edge (object4_);
+    \draw[thick, ->] (object4_) edge (object10_);
+
+    \draw[thick, red] (object10_) edge (13.25, -2);
+    \draw[thick, red] (13.25, -2) edge (11, -2);
+    \draw[thick, <-, red] (object2_) edge (11, -2);
+    \draw[thick, ->] (object2_) edge (object9_);
+    \draw[thick, ->] (object9_) edge (object6_);
+
+    \draw[ultra thick, ->] (objecth5_) edge (object5_);
+    \draw[ultra thick, ->] (objecth7_) edge (object7_);
+    \draw[thick, ->] (object7_) edge (object8_);
+\end{tikzpicture} 
+\begin{itemize}
+    \item The diagram on the right shows the result after merging groups 1 and 2.  Since 2 is a smaller group, it is merged into 1.  Notice the changes in the set label and sizes array.
     \item This increases the speed of the find operation from O($\log n$) to O($1$).
     \item However, this decreases the speed of the union operation from O($1$) to O($k \log k$), where $k$ is the number of unions that has occurred before.
     \item This is an upgrade since we will likely use the find operation much more than the union operation.
