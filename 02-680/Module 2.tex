@@ -316,7 +316,81 @@ Think of each element of $P(S)$ as a binary number of length $|S|$.  If the $i$-
 \subsubsection*{Power Set of the Empty Set}
 The cardinality of the power set of the empty set is $1$.  ($2^0 = 1$).  This is because even though the empty set is empty, it still has one subset, which is itself.
 \[P(\emptyset) = \{\emptyset\}\]
-Note that $\{\emptyset\} \neq \emptyset$.  This is a set containing the empty set, not the empty set itself.
+Note that $\{\emptyset\} \neq \emptyset$.  This is a set containing the empty set, not the empty set itself.  In fact,
+\[P({\emptyset}) = \{\emptyset, \{\emptyset\}\}\]
+
+\subsection*{Disjoint Sets}
+Two sets $S$ and $T$ are disjoint if there is no $x \in S$ where $x \in T$.  In other words, if $S \cap T = {}$.
+\begin{center} 
+	\includegraphics*[width=0.4\textwidth]{M2_3.png} \\
+    Two disjoint sets $S$ and $T$.
+\end{center}
+For example, the sets $\{1, 2, 3\}$ and $\{4, 5, 6\}$ are disjoint, since their intersection is $\{\}$.  However, $\{2, 3, 5, 7\}$ and $\{2, 4, 6, 8\}$ are not disjoint, because $2$ is an element of both.
+
+\subsection*{Partitions}
+The first interesting use of a set of sets is to form a partition of $S$ into a set of disjoint subsets whose union is precisely $S$.
+\begin{itemize}
+	\item A partition of a set $S$ is a set $\{A_1, A_2, \dots, A_k\}$ of nonempty sets $A_1, A_2, \dots, A_k$, for some $k \geq 1$, such that 
+	\begin{itemize}
+	    \item $A_1 \cup A_2 \cup \dots \cup A_k = S$
+	    \item for any $i, j$, where $j \neq i$, the sets $A_i$ and $A_j$ are disjoint.
+    \end{itemize}
+\end{itemize}
+For example, consider the set $S = \{1, 2, 3, 4, 5, 6, 7, 8, 9, 10\}$.  Here are some different ways to partition $S$:
+\begin{itemize}
+	\item $\{\{1, 3, 5, 7, 9\}, \{2, 4, 6, 8, 10\}\}$
+	\item $\{\{1, 2, 3, 4, 5, 6, 7, 8, 9\}, \{10\}\}$
+	\item $\{\{1, 4, 7, 10\}, \{2, 5, 8\}, \{3, 6, 9\}\}$
+	\item $\{\{1\}, \{2\}, \{3\}, \{4\}, \{5\}, \{6\}, \{7\}, \{8\}, \{9\}, \{10\}\}$
+	\item $\{\{1, 2, 3, 4, 5, 6, 7, 8, 9, 10\}\}$
+\end{itemize}
+
+\section*{Use of Sets}
+In machine learning we often label data points.  One way we can do that is using nearest neighbor:
+\begin{itemize}
+	\item Given a set of labelled data and a new unlabeled point
+	\item Use the "closest" point to label the new one.
+\end{itemize}
+This method creates a \textit{partition} of the space into those that are closest to some label.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{M2_4.png} 
+\end{center}
+
+\subsection*{Jaccard Coefficient}
+Jaccard measures the \textbf{correlation} of two sets as a ratio of:
+\begin{itemize}
+	\item how many elements are in both sets, over
+	\item how many elements are in either set.
+\end{itemize}
+\[J(A, B) = \frac{|A \cap B|}{|A \cup B|} = \frac{|A \cap B|}{|A| + |B| - |A \cap B|}\]
+
+\section*{Functions}
+We will say that a function provides a \textbf{mapping} from one set onto another.  Formally we say that a function $f$ that maps from a set $S$ to a set $T$ is written as
+\[f \::\: S \mapsto T\]
+\subsubsection*{Formal Definition}
+Let $S$ and $T$ be sets.  A function $f$ from $S$ to $T$, written $f \::\: S \mapsto T$, assigns to each input value $a \in A$ a \textbf{unique} output value $b \in T$; the unique value $b$ assigned to $a$ is denoted by $f(a)$.\\\\
+We sometimes say that $f$ maps $a$ to $f(a)$.  Note that $S$ and $T$ are allowed to be in the same set.\\\\
+For example, a function might have inputs and outputs that are both elements of $\mathbb{Z}$
+
+\subsection*{Domain, Codomain, and Range}
+When writing $f \::\: S \mapsto T$, we call $S$ the \textbf{domain} set, and $T$ the \textbf{codomain}.  Note that the \textbf{codomain} is slightly different from the range of a function; the \textbf{range} is the subset of $T$ that is reachable from an input in $S$.  Formally the range is
+\[y \in T | \exists x \in S \::\: f(x) = y\]
+The set of all $y$ in $T$ such that there exists an $x$ in $S$ with $f(x) = y$.
+\begin{itemize}
+	\item Note that not all possible outputs in the codomain are actually achieved.  There may be an element $b \in T$ for which there's no $a \in S$ with $f(a) = b$.
+\end{itemize}
+
+\subsection*{Range/Image}
+The range (or image) of a function $f \::\: S \mapsto T$ is the set of all $b \in T$ such that $f(a) = b$ for some $a \in S$.  The range of $f$ is the set
+\[\{y \in T \::\: \text{ there exists at least one $x \in S$ such that $f(x) = y$}\}\]
+
+\subsection*{Domain and Codomain}
+The \textbf{domain} and \textbf{codomain} of a fuction are its sets of possible inputs and outputs:  for a function $f \::\: S \mapsto T$, the set $S$ is called the \textbf{domain}, and the set $T$ is called the \textbf{codomain} of the function $f$.  Some examples:
+\begin{itemize}
+	\item Not has domain \{True, False\}, and codomain \{True, False\}.  In this case, range = codomain.
+	\item The square function maps $\mathbb{R} \rightarrow \mathbb{R}$.  However, in this case, Range $\subset$ Codomain, since the range does not span negative numbers.
+\end{itemize}
+
 
 
 \end{document}

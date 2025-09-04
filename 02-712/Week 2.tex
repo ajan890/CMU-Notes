@@ -166,5 +166,121 @@ The question is, what is the minimum of subset of collections you need to be abl
 	\item Objective: Does there exist $C' \subseteq C$ such that $\forall s \in S \exists c \in C'$ such that $s \in C, |C'| \leq B$?
 \end{itemize}
 Practical explanation: suppose you have a list of antibiotics, and each one is able to kill a set of bacteria $c \in C$.  You have a pool of bacteria ($S$) that you want to kill.  What is the minimum number of antibiotics needed to kill all the bacteria?
+
+\subsection*{Interspecies Phylogenetics}
+Suppose you sampled some DNA from some individuals of the same species.
+\begin{itemize}
+	\item ACGA
+	\item CCGA
+	\item CTGA
+	\item CTGC
+	\item CTAA
+\end{itemize}
+The tree may look something like:
+\begin{verbatim}
+    CTGG - CTGA - CCGA - ACGA
+             |
+           CTAA
+\end{verbatim}
+How do we build this tree?  One way to do it:
+\begin{itemize}
+	\item Make all the sequences nodes on a fully connected graph.
+	\item Weigh all of the edges as the hamming distance (or edit distance) between two nodes.
+	\item Find the MST to build the tree!
+	\begin{itemize}
+        \item Input: $G = (V, E)$, $d \::\: V \times V \rightarrow \mathbb{N}$
+        \item Output: Tree $T = (V, E')$, $E' \leq E$
+        \item Objective: $\min_{(u, v) \in E} \sum d(u, v)$
+    \end{itemize}
+\end{itemize}
+In this case, one way to model this problem would be to reduce it to a minimum spanning tree problem.\\
+Now, what assumptions did we make by using this model?
+\begin{enumerate}
+	\item Data is not noisy.
+	\item Mutations effectively have equal likelihood.
+	\item We can accept any optimal solution.
+	\item There is no missing data.
+\end{enumerate}
+Assumptions tend to lead to inaccuracies, so what can we do about them?
+\begin{enumerate}
+	\item We can live with the assumption.
+	\item Change our preprocessing.  (Maybe we can't assume mutations are equal likelihood, so instead of using a basic hamming distance, we may add more weights on it based on which parts of the DNA the section is from.)
+	\item Multiple optimal solutions.  (Does which solution matter?  For example, if all we want to know which species are linked, but not which is an ancestor of another, any MST would suffice.)
+	\begin{itemize}
+	    \item Another solution to this problem is to return the union of all the MSTs - a minimum spanning network (MSN).  This tells us that an optimal tree can be found in that set of edges.
+    \end{itemize}
+    \item If there is missing data, there may be a better answer.  For example, we may be missing a DNA sample, which may actually lower the total MST cost.  However, filling these in with software is intractible; it is similar to the minimum steiner tree problem.
+\end{enumerate}
+
+\section*{NP-Completeness Proofs}
+Usually, researchers will try to solve a problem given to them in polynomial time, but after some time of trying and not finding a solution, it is common to switch to methods to solve NP-hard problems, and assume the problem is intractible.  The first step tends to be to prove that the problem is hard in the first place.  We would do this using a \textbf{reduction}.
+\begin{itemize}
+	\item If we have problem A, and don't know if A is hard, we find a similar problem B that is known to be hard.
+	\item We come up with a polynomial time algorithm to convert some given input for problem B into an input for problem A.
+	\item Additionally, we need a process to convert a solution to problem A to a solution for problem B.
+	\item If we can come up with the reduction from input B to A and output A to B, we can then infer that if a solution for problem A exists (an oracle), then it makes problem B solvable, which is a contradiction.  Therefore, problem A is also hard.
+\end{itemize}
+For example, consider the max clique and max independent set problems.
+\begin{itemize}
+	\item We know independent set is hard.
+	\item For a max clique problem, flip all the edges.  As in, if there is an edge between two nodes, remove it, and if there is not an edge between two nodes, add it.  This turns it into an independent set problem.
+	\begin{itemize}
+	    \item (This is a polynomial time reduction, obviously)
+    \end{itemize}
+    \item From the independent set problem, copy the solution, and that will also be the solution to the max clique problem.
+    \begin{itemize}
+	    \item (This is a O(1) reduction, obviously.)
+    \end{itemize}
+    \item Therefore, we can infer that if a solution to max clique exists, then independent set also becomes tractible.  This is a contradiction.  Therefore, max clique must also intractible.
+\end{itemize}
+\subsection*{What do we do After Proving Hard?}
+We have a few options.  An optimal, fast algorithm is proven to be impossible.
+\begin{itemize}
+	\item Brute force solution.  Guess every possibility, and hopefully you will find a good one in a finite amount of time.
+	\item Approximation algorithms.  This may not be applicable to all problems, but for some may work
+	\begin{itemize}
+	    \item For example, the vertex cover problem.  We know that finding an optimal solution is intractible.  However, we can approximate.
+	    \item First, pick an edge and check if it is a matching.  Repeat with random edges until you cannot add more matchings.  
+	    \item This isn't a \textit{maximum} matching, but it is a \textit{maximal} matching.  In fact, this solution is a 2-approximation, or in other words, is never more than twice the size of the theoretical optimal vertex cover.    
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Approximation Example: Traveling Salesperson Problem}
+The TSP problem is a known hard problem.  However, if all the nodes satisfy the triangle equality (e.g., the sum of the weights of two edges is always greater than the third edge), the problem becomes tractible.  This can be used for approximation purposes.
+
+\subsection*{Branch and Bound Optimization}
+Branch and bound is a method of brute force that may be more efficient than blind guessing.  This is also known as the search tree method.  
+\begin{itemize}
+	\item Consider the vertex cover problem again.  Consider a binary tree, where each layer basically asks whether a given node is present in the vertex cover.  Following the tree, use DPS.  Once a contradiction is found, there is no more need going down that branch, which can eliminate very large sections of the search tree.  
+	\item We use a \textbf{heuristic} to help decide when a solution does not work or is suboptimal, and therefore should ascend the tree instead of continue searching down the same branch.  These heuristics tend to be approximations.
+\end{itemize}
+
+\subsection*{Transformation}
+ILP (Integer linear program):
+\begin{itemize}
+	\item Input: $\vec{a} = a_1, \dots, a_n$, $C = [\text{$n \times n$ matrix}]$, $\vec{b} = b_1, \dots, b_n$
+	\item Output: $x_1, \dots, x_n \in [0, 1]$ such that $C_{11}x_1 + C_{12}x_2 + \dots + C_{n1}x_n \leq b_1$, $C_{21}x_1 + C_{22}x_2 + \dots + C_{n2}x_n \leq b_2$, etc\dots, basically, $C\vec{x} \leq \vec{b}$
+	\item Objective: $\min a_1x_1 + a_2 x_2 + \dots + a_n x_n$
+	\item Vertex cover: $G = (V, E), v_1, \dots, v_n, x_1, \dots, x_n \forall(v_i, v_j) \in E \rightarrow x_i + x_j \geq 1$, $\min \sum_{\forall i} x_i$
+\end{itemize}
+Basically, we convert our problem into a matrix optimization problem, and plug it into a solver.  The existing solvers can do a pretty good job at approximating a solution.
+
+\subsection*{Satisfiability (SAT)}
+\begin{itemize}
+	\item Input: $x_i \in [True, False]$
+	\item Boolean Formula (BF): $\phi = (x_1 \lor x_2 \lor x_3) \land \dots$, basically some boolean formula, or series of boolean formulas.
+	\item Question: Does there exist $x_1, \dots, x_n$ such that $\phi(\vec{x}$) is true?
+\end{itemize}
+
+\subsection*{Heuristics}
+\begin{itemize}
+	\item Hill climbing: Keep doing moves until you can't do any more moves that improves your solution.
+	\item Simulated Annealing: Keep doing moves until you can't do any more moves, even if it makes the solution worse temporarily.
+	\item Genetic Algorithm: Come up with a solution, and apply mutations to it and hope it gets better.
+	\item Coordinated Descent: Divide and conquer, basically.  Divide the big problem into smaller problems, and solve them individually.
+	\item Kitchen Sink: Use every variable, feature, and resource in an attempt to find a solution.
+	\item Give up:  If you can't find an acceptable solution, maybe you need a new model!
+\end{itemize}
+
 \end{document}
 
