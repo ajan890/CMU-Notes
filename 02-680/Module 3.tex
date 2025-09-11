@@ -1,0 +1,128 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Module 3}}
+
+\title{02-680 Module 3 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Ordered Collections}
+Recall that a set is a well-defined collection of distinct objects.
+\begin{itemize}
+	\item No duplicates
+	\item No order
+	\item Suitable for representing "which" elements are in a group.
+\end{itemize}
+However, in many contexts, order matters.  For example, a set like \{latitude, longitude\} cannot distinguish between $(31.2, 121.4)$ and $(121.4, 31.2)$.  These are different locations!
+
+\subsection*{Sequences}
+A sequence, also known as a list or tuple, is an \textbf{ordered collection} of objects.  (typically called components or entries)
+\begin{itemize}
+	\item When the number of objects in the collection is 2, 3, 4, or $n$
+	\item the sequence is called an (ordered pair), triple, quadruple, or $n$-tuple.
+	\item In some conventions they may be written using \textbf{angle brackets} $\langle \rangle$, but parenthesis also work.
+\end{itemize}
+Tuples may be used for representing positions, color, etc.
+
+\subsection*{Tuples}
+When these have small cardinality (length) we can use terms like
+\begin{itemize}
+	\item Ordered pair
+	\item Triple
+	\item Quadruple
+	\item or more generically an "$n$-tuple"
+\end{itemize}
+
+\subsection*{Cartesian Product}
+A very useful way to \textbf{construct} set of tuples is using the \textbf{cartesian product} operator, which in essence creates all possible pairs of elements from two sets.
+\[S \times T = \{\langle x, y \rangle | x \in S \land y \in T\}\]
+As an example, let's remember the first two sets from our examples before:
+\begin{align*}
+    A &= \{\text{"Welcome"}, \text{"to"}, \text{"02-680"}\}\\
+    B &= \{x^2 | x = 2 \lor x = 3\} = \{4, 9\}
+\end{align*}
+In this case, the \textbf{cartesian product} is
+\[A \times B = \{\langle \text{"Welcome"}, 4\rangle, \langle \text{"to"}, 4\rangle, \langle \text{"02-680"}, 4\rangle, \langle \text{"Welcome"}, 9\rangle, \langle \text{"to"}, 9\rangle, \langle \text{"02-680"}, 9\rangle\} \]
+It doesn't have to be different sets in the cartesian product though, we can have the product with a set and itself.  In fact, this is performed so often it has its own notation:
+\[B \times B = B^2 = \{\langle 4, 4 \rangle, \langle 4, 9 \rangle, \langle 9, 4 \rangle, \langle 9, 9 \rangle\}\]
+This notation also generalizes, so $S^3 = S \times S \times S$, etc.
+\begin{itemize}
+	\item Note that $S^2$ will contain all the tuples of length $2$, $S^3$ will contain all the tuples of length $3$, etc.
+	\item If a tuple is raised to the zeroth power, it results in an empty tuple.
+\end{itemize}
+
+\subsection*{Sets of Tuples with Varying Lengths}
+Sometimes we want to have a set of tuples of different lengths.  Remember sets don't need to be over objects of the same type.\\\\
+Let $B = \{4, 9\}$.  In this case, $B^2$ represents all the 2-tuples over $B$, and $B^3$ represents all the 3-tuples over $B$.
+\begin{itemize}
+	\item Therefore, the union $B^2 \cup B^3$ will contain both, even though the tuples are not the same length.
+\end{itemize}
+
+\subsubsection*{Kleene Star}
+If we wanted to enumerate all binary numbers up to 8 digits (while omitting leading 0's), how do we express this set?
+\begin{itemize}
+	\item We can use a cartesian product and a union to define the set:
+	\[\{1\} \times \bigcup_{i = 1}^7 \{0, 1\}^i\]
+\end{itemize}
+The $\{1\}$ ensures the first digit is 1.  The union represents the other digits.  However, sometimes we want the set of all tuples of \textbf{any length}, then we use the \textbf{Klenne Star}, denoted by $*$ to generate all finite-length tuples formed from elements of a set.
+\begin{itemize}
+	\item For some set $S$, we define $S^* = \bigcup_{i = 0}^\infty S^i$.
+	\item $S^0 = \langle \rangle$ (the empty tuple) for any $S$, and in the case of $\Sigma^0$, we often call it the \textbf{empty string}.
+\end{itemize}
+
+\subsection*{Strings as Tuples Over an Alphabet}
+In certain contexts, sequences of elements from the same set are called \textbf{strings}.  For a set $\Sigma$ called an alphabet, a string over $\Sigma$ is an element of $\Sigma^n$, for some nonnegative integer $n$.\\\\
+In other words, a string is any element of $\bigcup_{n \in Z \geq 0} \Sigma^n$.  The length of a string $x \in \Sigma^n$ is $n$.
+\begin{itemize}
+	\item For example, the set of all 5-letter English words is a subset of:
+	\[\{A, B, \dots, Z\}^5\]
+\end{itemize}
+
+\subsubsection*{Notation Conventions for Strings}
+When writing strings, we usually omit angle brackets and commas (unlike regular tuples.)
+
+
+\subsubsection*{Empty String}
+Strings are just sets of characters in an alphabet.  They can have any non-negative length, including zero.  For an alphabet $\Sigma$:
+\[\Sigma^0 \{\epsilon\}\]
+Here, $\epsilon$ is the empty string:
+\begin{itemize}
+	\item It contains zero elements
+	\item It is unique (only one such string exists)
+\end{itemize}
+\begin{center}
+    \begin{tabularx}{\textwidth}{XXX}
+    \textbf{String} & \textbf{Belongs to} & \textbf{Explanation} \\
+    ABRACADABRA & $\{A, B, \dots, Z\}^{11}$ & A string of 11 capital letters \\
+    11010011 & $\{0, 1\}^8$ & A binary string of length 8
+    \end{tabularx}
+\end{center}
+\end{document}
+  

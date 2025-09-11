@@ -96,59 +96,26 @@ We can actually optimize this further if we convert the structs to arrays.  The 
     \node (0, 0) (origin) {};
     % set label array
     \node[align=left] at (1.25, 0.75) (setLabelArray) {Set Label Array};
-    \node[align=left] at (0.25, -0.25) (label0) {1};
-    \node[align=left] at (0.75, -0.25) (label1) {2};
-    \node[align=left] at (1.25, -0.25) (label2) {3};
-    \node[align=left] at (1.75, -0.25) (label3) {4};
-    \node[align=left] at (2.25, -0.25) (label4) {5};
-    \node[align=left] at (2.75, -0.25) (label5) {6};
-    \node[align=left] at (3.25, -0.25) (label6) {7};
-    \node[align=left] at (3.75, -0.25) (label7) {8};
-    \node[align=left] at (4.25, -0.25) (label8) {9};
-    \node[align=left] at (4.75, -0.25) (label9) {10};
+    \foreach \i in {1,...,10} {
+        \node[align=left] at ({-0.25 + 0.5 * \i}, -0.25) (label\i) {\the\numexpr\i\relax};
+    }
     \draw (0, 0) rectangle (5, 0.5);
-    \draw (0.5, 0) -- (0.5, 0.5);
-    \draw (1, 0) -- (1, 0.5);
-    \draw (1.5, 0) -- (1.5, 0.5);
-    \draw (2, 0) -- (2, 0.5);
-    \draw (2.5, 0) -- (2.5, 0.5);
-    \draw (3, 0) -- (3, 0.5);
-    \draw (3.5, 0) -- (3.5, 0.5);
-    \draw (4, 0) -- (4, 0.5);
-    \draw (4.5, 0) -- (4.5, 0.5);
-    \node at (0.25, 0.25) (lind1) {1};
-    \node at (0.75, 0.25) (lind2) {2};
-    \node at (1.25, 0.25) (lind3) {1};
-    \node at (1.75, 0.25) (lind4) {1};
-    \node at (2.25, 0.25) (lind5) {5};
-    \node at (2.75, 0.25) (lind6) {2};
-    \node at (3.25, 0.25) (lind7) {7};
-    \node at (3.75, 0.25) (lind8) {7};
-    \node at (4.25, 0.25) (lind9) {2};
-    \node at (4.75, 0.25) (lind10) {1};
+    \foreach \i in {0,...,8} {
+        \draw ({0.5 + 0.5 * \i}, 0) -- ({0.5 + 0.5 * \i}, 0.5);
+    }
+    \foreach [count=\i] \val in {1,2,1,1,5,2,7,7,2,1} {
+        \node at ({0.25 + 0.5*(\i-1)}, 0.25) (lind\i) {\val};
+    }
 
     % sizes array
     \node[align=left, rotate=270] at (6.25, -1.4) (sizesArray) {Sizes Array};
-    \node[align=left] at (5.25, -0.75) (size1) {1};
-    \node[align=left] at (5.25, -1.25) (size2) {2};
-    \node[align=left] at (5.25, -1.75) (size3) {3};
-    \node[align=left] at (5.25, -2.25) (size4) {4};
-    \node[align=left] at (5.25, -2.75) (size5) {5};
-    \node[align=left] at (5.25, -3.25) (size6) {6};
-    \node[align=left] at (5.25, -3.75) (size7) {7};
-    \node[align=left] at (5.25, -4.25) (size8) {8};
-    \node[align=left] at (5.25, -4.75) (size9) {9};
-    \node[align=left] at (5.25, -5.25) (size10) {10};
+    \foreach \i in {1,...,10} {
+        \node[align=left] at (5.25, {-0.25 - 0.5 * \i}) (size\i) {\the\numexpr\i\relax};
+    }
     \draw (5.5, -0.5) rectangle (6, -5.5);
-    \draw (5.5, -1) -- (6, -1);
-    \draw (5.5, -1.5) -- (6, -1.5);
-    \draw (5.5, -2) -- (6, -2);
-    \draw (5.5, -2.5) -- (6, -2.5);
-    \draw (5.5, -3) -- (6, -3);
-    \draw (5.5, -3.5) -- (6, -3.5);
-    \draw (5.5, -4) -- (6, -4);
-    \draw (5.5, -4.5) -- (6, -4.5);
-    \draw (5.5, -5) -- (6, -5);
+    \foreach \i in {0,...,8} {
+        \draw (5.5, {-1 - 0.5 * \i}) -- (6, {-1 - 0.5 * \i});
+    }
     \node at (5.75, -0.75) (sind1) {4};
     \node at (5.75, -1.25) (sind2) {3};
     \node at (5.75, -1.75) (sind3) {0};
@@ -308,5 +275,65 @@ With this data structure, we can now calculate the running time of Kruskal's alg
     \item Therefore, the total time is O($m \log m + 2m + m \log n$).  Since there are more edges than vertices, the O($m \log m$) dominates.  Sorting the edges takes the longest amount of time.
 \end{itemize}
 
+\section*{Heaps}
+A \textbf{heap} is a data structure that has the ability to provide the smallest (or largest) value in constant time.  For example, a series of integers can be added to the heap, one at a time, and removing the root of the heap would provide the values back in increasing order.  One inspiration of this structure requires us to go back to Prim's Algorithm.
 
+\subsection*{Implementation of Prim's Algorithm}
+\begin{enumerate}
+	\item Define \texttt{distToT[]} as an array of length \texttt{numVertices}, and initialize every value to \texttt{INTEGER\_MAX}
+	\item Let \texttt{u} be an arbitrary node
+	\item Set \texttt{distToT[u] = INTEGER\_MIN}
+	\item Set \texttt{distToT[v] = d(u, v)} if smaller for $v \in \text{Neighbors}(v)$
+	\item Set \texttt{parent(v) = v} if updated
+	\item Set \texttt{u = ClosestVertex(T)}
+	\item While \texttt{v} exists, go to (3).
+\end{enumerate}
+
+\subsubsection*{Aside: Asymptotics}
+Asymptotics is a way of measuring running time relative to input size.  This is often written as the Big-O notation.
+\begin{itemize}
+	\item $x = 4 \cdot y$ is O(1), since no matter the inputs, there are 2 operations.  ($\cdot$ and $=$).  The exact number of operations does not matter, just that it is a constant.
+	\item $\forall i \::\: z[i] = 4 + w[i]$ is O(n), since there are 2 times $|z|$ operations.  The number of operations scales with the length of $|z|$, or $n$.
+	\item $\forall i, j \::\: a[i] = b[i] \cdot b[j]$ is O($n^2$), since there are $2 \cdot |b| \cdot |b|$ operations.
+\end{itemize}
+Remember that what we care about is not the exact number of operations, but rather what the operation count curve would look like as the number of elements approaches infinity.  Therefore, a line with $2n$ operations and one with $3n$ operations are both O($n$), since when approaching infinity, they are both straight lines.  Similarly, a function with $n^2$ operations and $n^2 + 500n$ operations are also both O($n^2$), since when approaching infinity, the $n^2$ term will dwarf the $500n$ term, so they are both O($n^2$).
+\begin{itemize}
+	\item You can always drop the coefficient and terms that are not of the highest power when writing Big-O notation.
+	\item Some other consequences of this include that 
+	\begin{itemize}
+	    \item Factorial time is worse than Exponential time, which is worse than any polynomial time.  In polynomial time, higher powers are worse than lower powers.  
+        \item $\log(n)$ lies between constant time and $n$, so by the same logic, $\log(n)$ is better than $n$, and $n\log(n)$ is better than $n^2$
+        \item Since coefficients can be dropped, O($\log_2(n)$) and O($\log_3(n)$) are actually equivalent.
+    \end{itemize}
+\end{itemize}
+\rule{\textwidth}{0.4pt}
+Going back to Prim's algorithm, if we do the runtime analysis, the slowest steps are steps 4-6, which without including the loop, takes O($m$).  With the loop, it is O($m \cdot n$).  Can we improve this?
+\begin{itemize}
+	\item The issue is that when we search for the closest vertex using an array, we have to search every vertex of the graph, which is why that specific step is O($m$).  
+	\item We can make this faster!  This goes back to the heap.
+\end{itemize}
+As it turns out, the heap allows you to get the smallest value in the entire array in O($1$) time.  This is much faster than O($n$).
+
+\subsection*{Heap Structure}
+A heap uses a binary tree structure, where the smallest element is always at the root.  Suppose we want the smallest element.  This is O($1$) time since we can just extract the root!  However, we have to do some other things to maintain the structure.
+\begin{itemize}
+	\item Find() is O($1$), as described.
+	\item Insert() is O($\log n$).
+	\begin{itemize}
+	    \item First, insert node as a leaf at the bottom of the tree.
+	    \item If that node is smaller than its parent, swap its position with its parent.
+	    \item Repeat until the node's value is larger than its parent.
+	    \item Note that to optimize the number of times to "bubble" up, we need an array to keep track of pointers to the leaves for quick access, but also to ensure the lengths of all the branches are approximately equal.
+    \end{itemize}
+    \item Delete() is also O($\log n$)
+    \begin{itemize}
+        \item Pop the node to be deleted (often the root).
+        \item Replace the node with the \textit{smaller} child, if there is one.
+        \item Repeat until there are no more children.
+    \end{itemize}
+\end{itemize}
+Delete and insert are O($\log n$) since they are dependent on the depth of the tree.  Since the tree is (ideally) a complete, binary tree, the height is on the order of $\log n$, where $n$ is the number of nodes in the tree.
+[insert diagrams for delete/insert]
+
+Note that a heap can be stored in an array.
 \end{document}

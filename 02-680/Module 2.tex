@@ -390,7 +390,41 @@ The \textbf{domain} and \textbf{codomain} of a fuction are its sets of possible 
 	\item Not has domain \{True, False\}, and codomain \{True, False\}.  In this case, range = codomain.
 	\item The square function maps $\mathbb{R} \rightarrow \mathbb{R}$.  However, in this case, Range $\subset$ Codomain, since the range does not span negative numbers.
 \end{itemize}
+\textbf{Extra Details:}
+\begin{itemize}
+	\item Note that the specification of the function includes both the \textbf{domain} and the \textbf{codomain}.
+	\item But if those three elements are not compatible, it's not a function.
+	\item For example, if a function has domain $\mathbb{R}$ and codomain $\mathbb{Z}$, then this implies that any real number passed into the function must return an integer.  For a function like $y = 3x^2$, this does not work, since if $x = 1.5$, then $y$ is not an integer; the codomain is incorrect.  Thus, the specification $f(x) = 3x^2, f\::\: \mathbb{R} \mapsto \mathbb{Z}$ is not a function.
+\end{itemize}
 
+\subsection*{A Visual Representation of Functions}
+This is a many-to-one function, where multiple inputs can map to the same output, but each input has exactly one output.
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{M2_5.png} 
+\end{center}
 
+\subsection*{Function Composition ($\circ$)}
+We may find ourselves needing to apply one function to the output of another.  This is known as \textbf{function composition}, defined formally as
+\[g \circ f \::\: S \mapsto U \text{ assuming } f \::\: S \mapsto T \land g\::\: T \mapsto U\]
+For two functions $f \::\: S \mapsto T$ and $g \::\: T \mapsto C$, the function $g \circ f \::\: S \mapsto C$ maps an element $a \in S$ to $g(f(a)) \in C$.  The function $g \circ f$ is called the composition of $f$ and $g$.
+\begin{itemize}
+	\item Notice a slight oddity of the notation: $g \circ f$ applies the function $f$ first and the function $g$ second, even though $g$ is written first.
+	\item In use it may look like $g(f(x))$, so $x$ would need to be from $S$ since that's the input to $f$ and since the input to $g$ needs to be from $T$.
+	\item That also needs to be the codomain of $f$ then the codomain of $g$ ends up as the codomain of the composite function.
+\end{itemize}
+
+\subsubsection*{Example: Function Composition}
+Let $f \::\: \mathbb{R} \mapsto \mathbb{R}$ and $g \::\: \mathbb{R} \mapsto \mathbb{R}$ be defined by $f(x) = 2x + 1$ and $g(x) = x^2$.  Then:
+\begin{itemize}
+	\item $g \circ f = g(f(x)) = g(2x + 1) = (2x + 1)2 = 4x^2 + 4x + 1$
+	\item $f \circ g = f(g(x)) = f(x^2) = 2x^2 + 1$
+	\item $g \circ g = g(g(x)) = g(x^2) = \left(x^2\right)^2 = x^4$
+	\item $f \circ f = f(f(x)) = f(2x + 1) = 2(2x + 1) + 1 = 4x + 3$
+\end{itemize}
+
+\subsection*{Visual Representation of Functions}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{M2_6.png} 
+\end{center}
 
 \end{document}
