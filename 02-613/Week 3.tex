@@ -160,7 +160,77 @@ def determineIfBipartite(G):
 For the purpose of contradiction, assume that there exists a $(u, v) \in E$ that is monolayer.  Let $Z$ be the common ancestor of $u$ and $v$ and let the path length from $Z$ to $u$ and $v$ be $l_i$.  In this case, edge $(u, v)$ will create a cycle with length $2 l_i + 1$.  This length is always odd for any $l_i \in \mathbb{Z}$, and results in a contradiction since bipartite graphs cannot have odd-length cycles.  This algorithm will have a time complexity of O($|V| + |E|$) since it is limited by the BFS step.
 
 \section*{Topological Sort}
+\subsection*{Graph Decomposition Method}
 Given a DAG (directed, acyclic graph), find a bijective mapping $f$ from $v$ to $\{1, \dots, |V|\}$ such that $\forall (u, v) f(u) < f(v)$.
 
+\subsubsection*{Theorem}
+Every DAG has at least one node with no incoming edges.
+
+\noindent\rule{\textwidth}{0.4pt}
+Because of this fact, we can sort the nodes of the DAG, such that any node would have no parents that come after it.
+\begin{enumerate}
+	\item First, for every vertex, store the number of incoming edges in an array.  O($|V|$).
+	\item While not every vertex is sorted,
+	\begin{itemize}
+	    \item Delete every node in the graph (and its outgoing edges) if it has 0 incoming edges
+	    \item Store those nodes.
+    \end{itemize}
+\end{enumerate}
+In this case, every vertex is visited once for the preprocessing, and afterwards, every vertex and every edge is visited.  Therefore, the total runtime is O($|V| + |E|$).
+
+\subsection*{DFS Method}
+Consider a DFS run on a graph.  Every node can be assigned entering and leaving numbers, which represent the order in which the node was first visited and last visited.  We start from $A$ since it is the only node with no incoming edges.
+\begin{center}
+\begin{tikzpicture}
+    \node[draw, circle, label=above:{1, \textcolor{red}{11}}] at (0, 0) (A) {A};
+    \node[draw, circle, label=above:{2, 8, \textcolor{red}{10}}] at (2, 2) (B) {B};
+    \node[draw, circle, label=below:{\textcolor{red}{9}}] at (2, 0) (C) {C};
+    \node[draw, circle, label=below:{3, 5, \textcolor{red}{7}}] at (4, 0) (D) {D};
+    \node[draw, circle, label=above:{\textcolor{red}{4}}] at (6, 2) (E) {E};
+    \node[draw, circle, label=below:{\textcolor{red}{6}}] at (6, 0) (F) {F};
+    \draw[->] (A) edge (B);
+    \draw[->] (B) edge (C);
+    \draw[->] (A) edge (C);
+    \draw[->] (B) edge (D);
+    \draw[->] (C) edge (D);
+    \draw[->] (D) edge (E);
+    \draw[->] (D) edge (F);
+    \draw[->] (F) edge (E);
+\end{tikzpicture}
+\end{center}
+
+Notice how a valid topological sorting is the leaving numbers of every node on the graph, in reverse order.
+
+\section*{Shortest Path Algorithm}
+Suppose we have a directed, weighted graph (which may contain cycles) and we want to find the shortest path from node $A$ to every other node.\\\\
+Dijkstra's Algorithm:
+\begin{itemize}
+    \item $\forall u d[u] = \infty$, $p[u] = \emptyset$, $F = V$
+    \begin{itemize}
+	    \item Let $d[]$ represent the distance from a starting node, let $s$ be the starting node, let $p[u]$ represent the parent of $u$ (e.g., which parent is part of the shortest path to $u$)
+    \end{itemize}
+    \item $d[s] = 0$
+    \item while $F \neq 0$:
+    \begin{itemize}
+	    \item $u$ = vertex from $F$ with minimum $d[u]$
+	    \item remove $u$ from $F$
+	    \item $\forall$ neighbors $v$ of $u$:
+	    \begin{itemize}
+	        \item if $d[u]$ length($u, v$) < $d[v]$
+	        \begin{itemize}
+	            \item update($d[v], p[v]$)
+            \end{itemize} 
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Proof of Dijkstra's}
+First, a corrolary:\\\\
+\textbf{\underline{Corr. 1:}} let $T$ be the set of nodes explored at some point in the algorithm.  $\forall u \in T$, the path found by Dijkstra's is shortest.
+We can prove this by induction.
+\begin{itemize}
+	\item Base case: $|T| = 1$, $T = (\{s\}, \{\})$, $d[s] = 0$.  This is obviously correct, since the shortest distance between a starting node and itself must be $0$.
+	\item Hypothesis: Assume Corr. 1 at $|T| = k$.  Let $v$ be the $(k+1)$-th node.  Let $P_v$ be the path by Dijkstra.  Let $p'$ be any other $s \rightarrow v$ path.  If $s \rightarrow u \rightarrow v < p'$, by design or Dijkstra since otherwise we would have added $y$.
+\end{itemize}
 
 \end{document}

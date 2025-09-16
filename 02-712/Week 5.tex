@@ -1,0 +1,112 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/Week 5}}
+
+\title{02-712 Week 5 \\ \large{Biological Modeling and Simulation}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Deterministic Systems - Linear Model with Multiple Variables}
+Depending on the type of problem, if it is possible to ignore probabilities, you should always try to do so
+\begin{itemize}
+	\item That is, abstract out the randomness of the biological system.
+\end{itemize}
+
+\subsection*{Example 1}
+Condsider a bacterial growth system.  ($r$ is the rate.)
+\begin{align*}
+    \frac{\dd m}{\dd t} &= r \cdot m
+\end{align*}
+In this case, the solution is $m(t) = m(0) \cdot e^{rt}$.  If you can predict how the system starts, then you can predict how the system ends.  If $r > 0$, then the number of bacteria increase.  If $r < 0$, then the number of bacteria decrease.  Etc.\\\\
+Suppose we want to find when the system is at equilibrium.  The system \textit{is} at equilibrium if $r = 0$, but we can't just change the $r$ since that is defined by how fast the bacteria divide.  Instead now, our only choice is to make $m(t) = 0$.\\\\
+In general, for most systems we cannot just solve the differential equation, and we must instead make an estimate.
+
+\subsubsection*{Phase Diagrams}
+We can use phase diagrams to determine whether a equilibrium is stable.  A phase diagram (for now in 1D) is a number line, in which vectors are drawn in the direction of the derivative.  
+\begin{itemize}
+	\item In our example, if $r < 0$, then following the derivative formula, the number of bacteria would tend to zero.  (There are no negative bacteria!)  Therefore, equilibrium is stable.
+	\item If $r > 0$, then following the derivative formula, the number of bacteria will explode and not stop at any number.  Therefore the equilibrium is not stable.
+\end{itemize}
+In general, an equilibrium is stable if when you keep applying the rule of change, the end result tends to some number.  An equilibrium is unstable if end result tends to an infinity.
+
+\subsection*{Example 2}
+Now, consider the system:
+\begin{align*}
+    \frac{\dd m_1}{\dd t} &= r_1 m_1(t)\\
+    \frac{\dd m_2}{\dd t} &= r_2 m_2(t)
+\end{align*}
+This system has two variables (we are now on a 2D plane instead of a number line).
+\begin{itemize}
+    \item We can solve this system too.  (Since the two equations are independent from each other, it is same as the first system twice.)
+    \begin{align*}
+        m_1(t) &= m_1(0) e^{r_1 t}\\
+        m_2(t) &= m_2(0) e^{r_2 t}
+    \end{align*}
+	\item By looking at this system, we know that the equilibrium is at $(0, 0)$.
+	\item Also, since the two equations are independent, some things can be inferred about the biological system, such as, the two bacteria must not be competing for resources, space, etc.
+	\item The phase diagram for this system is now a vector field on a 2D plane.
+\end{itemize}
+This problem is modeled with an \textbf{affine} model.  Essentially, describing the model using vectors and matrices.  We can rewrite this system as
+\[\frac{\dd \vec{m}}{\dd t} = \begin{bmatrix} \frac{\dd m_1}{\dd t} \\ \frac{\dd m_2}{\dd t}\end{bmatrix} = M \begin{bmatrix} m_1 \\ m_2 \end{bmatrix}, \text{ where } M = \begin{bmatrix} r_1 & 0 \\ 0 & r_2 \end{bmatrix}\]
+Therefore,
+\[\frac{\dd \vec{m}}{\dd t} = M \cdot \vec{m} + \vec{C}\]
+
+\subsection*{Example 3}
+Consider now, the two populations of bacteria depend on each others' rates.
+\begin{align*}
+    \frac{\dd m_1}{\dd t} &= a m_1(t) + b m_2(t) \\
+    \frac{\dd m_2}{\dd t} &= c m_1(t) + d m_2(t)
+\end{align*}
+Therefore, 
+\[\frac{\dd \vec{m}}{\dd t} = M \vec{m}, \text{ where } M = \begin{bmatrix} a & b \\ c & d \end{bmatrix}\]
+This model has only one equilibrium, provided that $\det(M) \neq 0$.
+\begin{itemize}
+	\item If $\det(M) = 0$, then there are an infinite number of solutions.  (Non-zero determinant means the matrix is invertible.)
+\end{itemize}
+
+\subsection*{Example 4}
+Metastasis is a process in which cancer cells spread through the body.  Sometimes cancer cells move via the bloodstream and become lodged into capillaries, in which they start new tumors.  We will construct a model for the dynamics of the number of cancer cells lodged in the capillaries of an organ, $C$, and the number of cancer cells that have invaded the organ $I$.  Suppose that cells are lost from the capillaries by dislodgement or death at a per capita rate $\delta_1$ and that they invade the organ $I$ from the capillaries by a per capita rate $\beta$.  Once cells are in the organ $I$, they die at a rate of $\delta_2$, and the cancer cells in $I$ replicate at a per capita rate $\rho$.  All of the parameters are assumed positive.\\\\
+First, we can summarize the information:
+\begin{itemize}
+	\item Parameters: $\delta_1, \delta_2, \beta, \rho$
+	\item Variables: $C(t), I(t)$.  (Number of cancer cells in capillaries and organs, respectively)
+	\item Assumptions: All parameters are positive.  No randomness.  Things not mentioned here don't matter.
+\end{itemize}
+Next, we can write the rules of change:
+\begin{align*}
+    \frac{\dd C}{\dd t} &= - C(t) \cdot (\delta_1 + \beta)\\
+    \frac{\dd I}{\dd t} &= I(t) \cdot (\rho - \delta_2) + C(t) \cdot \beta
+\end{align*}
+Now, we can convert the system of differential equations into the affine form:
+\[M = \begin{bmatrix} - \beta - \delta_1 & 0 \\ \beta & -\delta_2 + \rho \end{bmatrix}\]
+
+
+\end{document}
