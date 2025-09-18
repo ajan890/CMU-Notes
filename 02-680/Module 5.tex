@@ -89,5 +89,73 @@ Examples:
 	\item $4.4 \langle 1.1, 2.2, 3.3 \rangle = \langle 4.84, 9.68, 14.52 \rangle$
 \end{itemize}
 
+\subsubsection*{Dot Product}
+Given two vectors, $x, y \in \mathbb{R}^n$, the \textbf{dot product}, denoted $x \cdot y$ 
+\begin{itemize}
+	\item is a value in $\mathbb{R}$ calculated as $\sum_{i = 1}^n x_i y_i$
+	\item that is, it is the sum of corresponding components.
+\end{itemize}
+Example:
+\[\langle 1, 2, 3 \rangle \cdot \langle 4, 5, 6 \rangle = 1 \cdot 4 + 2 \cdot 5 + 3 \cdot 6 = 4 + 10 + 18 = 32\]
+Intuitively, it measures the extent to which the two vectors point in the "same direction."
+\begin{itemize}
+	\item Consequently, a unit vector dot product with itself will always return 1.  (Because they point in the same direction).
+	\item Dot product is maximized if the two vectors are pointing in the same direction.
+	\item Dot product of two perpendicular vectors is always 0.
+\end{itemize}
+
+\subsubsection*{Vector Norm}
+The norm of a vector $x \in \mathbb{R}^n$ is defined as $||x|| = \sqrt{x \cdot x} = \sqrt{\sum_{i = 1}^n (x_i)^2}$.
+\begin{itemize}
+	\item This can be thought of as the magnitude (or length) of a vector.
+	\item Informally, $\ell_p$ norm of a vector is a measure of its size.
+	\item Here, $p \in \mathbb{Z}^{\geq 1}$.
+	\item All norms, written as a function $||\_||_p \::\: \mathbb{R}^n \rightarrow \mathbb{R}$
+\end{itemize}
+In general, the formal definition of $\ell_p$ norm of a vector is:
+\[||x||_p = (|x_1|^p + |x_2|^p + \cdots + |x_n|^p)^{1 / p}\]
+The typical norm we use is therefore $||x||_2$.
+\textbf{Norm Properties:}
+\begin{itemize}
+	\item Non-negativity: The norm of any vector is always non-negative.  Norm represents length of a vector, and lengths cannot be negative.
+	\item Absolute Homogeneity (or Positive Scalability): If a vector is scaled by a scalar $c$, its norm also scales by $|c|$.
+	\item Triangle Inequality: $\forall x, y \in \mathbb{R}^n \::\: ||x + y||_p \leq ||x||_p + ||y||_p$, the norm of the sum of two vectors is \textbf{no greater} than the sum of their individual norms.
+	\begin{itemize}
+	    \item This is like saying "taking a direct route is never longer than going through an intermediate stop."  It guarantees that the norm behaves like a \textbf{distance} in geometry.
+    \end{itemize}
+    \item Definiteness:  $||x||_p = 0 \Leftrightarrow x = 0$.  The only vector with a norm of zero is the zero vector.
+\end{itemize}
+
+\subsection*{Orthogonal Vectors}
+If the dot product of vectors $\vec{u}$ and $\vec{v}$ is 0, then the two vectors are perpendiular, or \textbf{orthogonal}.
+\begin{itemize}
+	\item If two vectors are generally pointing in the \textbf{same direction}, then their dot product is positive.  If they are generally pointing in opposite directions, the dot product is negative.
+	\item The dot product gets larger as the two vectors get closer to parallel and smaller as the two vectors get closer to anti-parallel.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{M5_2.png} 
+\end{center}
+If two orthogonal vectors are the edges of a triangle, $||x + y||^2 = ||x||^2 + ||y||^2$
+
+\subsection*{Vector Length}
+Often times, called the $\ell_2$ or \textbf{Euclidian-norm} or a vector.
+\begin{itemize}
+	\item If we think of the vector as an arrow, we can say the length of the vector (arrow) is the same as the hypotenuse right triangle with each leg having the same length as each one of the elements.
+	\item In that case, if we know that vector $x = \langle x_1, x_2 \rangle \in \mathbb{R}^2$, the length is $\sqrt{x_1^2 + x_2^2}$
+\end{itemize}
+
+\subsubsection*{Manhattan / Taxicab Distance}
+The $\ell_1$-norm (Manhattan / Taxicab distance) is represented by 
+\[||x||_1 = \sum_{i = 1}^n |x_i|\]
+The $\ell_1$ norm of a vector is the \textbf{sum of the absolute values} of its components.  It's called the Manhattan or Taxicab distance because it measures distance by summing movements along grid lines - like a taxi driving in a city.
+
+\subsection*{The $\ell_\infty$ Norm}
+The $\ell_\infty$ norm is represented by:
+\[||x||_\infty = \max_{x_i \in x}(|x_i|)\]
+For example, if $x= [3, -4, 2]$, then $||x||_\infty = \max(|3|, |-4|, |2|) = 4$.
+\begin{itemize}
+	\item The $\ell_\infty$ norm of a vector is the maximum absolute value of its components.
+\end{itemize}
+
 
 \end{document}

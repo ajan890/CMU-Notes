@@ -112,7 +112,63 @@ $p^*$ is the known optimal solution, and $h^*$ is the optimal heuristic.
 	
 \end{itemize}
 
-\subsection*{Shortest Paths Summary}
+\section*{Bellman-Ford Algortihm}
+What if our graph contains negatively weighted edges?  Now Dijkstra's doesn't work since for Dijkstra's, once a node is visited, it is not visited again.\\\\
+However, with the introduction of negatively weighted edges, we have a problem to address first:
+\textbf{Negative Weight Cycles}
+\begin{itemize}
+	\item What if a cycle on a graph has a negative weight overall?  In this case, the solution would be infinitely long since it is always "worth it" to go around the cycle one more time.
+	\item To fix this, we need to first detect the negative weight cycles before attempting to solve for the lowest weight path between two points.
+\end{itemize}
+Now, we can start.  The problem statement: Given a directed graph with edge weights $(u, v) \in \mathbb{R}$:
+\begin{enumerate}
+	\item Determine if it contains a negative cycle
+	\item If so, return infinity.  If not, find the shortest $s \rightarrow t$ path.
+\end{enumerate}
+The algorithm goes as follows:
+\begin{itemize}
+	\item Let $d_s$[u] be the current estimated $s \rightarrow ud$
+	\item d[s] = 0, d[u] = $\infty \forall u \neq s$ 
+	\item \textbf{Ford Step:} Find edge $(u, v)$ such that $d_s$[v] > $d_s$[u] + d(u, v).  Set $d_s$[v] = $d_s$[u] + d(u, v).
+\end{itemize}
+
+
+\subsection*{Theorem}
+If you cannot relax (via Ford), then $d_s$[u] is the shortest $s \rightarrow u$ path $\forall u$
+
+\subsubsection*{Proof}
+We first need some lemmas:\\\\
+\underline{Lemma 1:}  After Step $i$, either for any v $\in$ V, $d_s$[v] = $\infty$, or there exists an $s \rightarrow v$ path of length $d_s$[v].\\\\
+To prove this lemma, we can use induction.  First, if $d_s$[v] = $\infty$, we can't say anything.  For the other case:  
+\begin{itemize}
+    \item When $i = 0$ (base case), $d_s$[s] = 0 (which is less tha infinity), there exists an $s \rightarrow s$ path of weight 0.  
+    \item Let's assume (inductive step) the lemma is true for $i - 1$.  In the $i$-th step, we update edge $(u, v)$ where $d_s$[v] = $d_s$[u] + d(u, v).
+	\item From here, we know that since $d_s$[u] was updated at step $i - 1$ or earlier, there exists a path from $s \rightarrow u$ of length $d_s$[u].
+	\item Therefore, there exists a path $s \rightarrow u \rightarrow v$ of distance $d_s$[u] + d(u, v).
+\end{itemize}
+\underline{Lemma 2:}  When no more Ford steps are possible, for all paths $P_{sv}$, $s \rightarrow v$, length($P_{sv}$) $\geq d_s$[v]\\\\
+Thie lemma can also be proven by induction:
+\begin{itemize}
+	\item When $|P_{sv}| = 1$ (base case), then the path is a single edge.  Therefore, it cannot be relaxed.  $d_s$[v] $\leq$ d(s, v).
+	\item Assume the lemma is true for all $|P_{sv}| \leq (k - 1)$.  (Inductive case).  
+    \item Let $P_{sv}$ be an $s \rightarrow v$ path of length $k$ edges.  $P_{sv} = P_{su} + (u, v)$  (Note that $P_{su}$ has length 1.)
+    \item cost($P_{sv}$) = cost($P_{su}$) + d(u, v)
+    \item Inductive Hypothesis $\geq d_s$[u] + d(u, v) $\geq d_s$[v].
+\end{itemize}
+
+\subsection*{Implementation}
+\begin{verbatim}
+Initialize d[u] = infinity forall u, d[s] = 0
+for i in [n]:
+    for (u, v) in E:
+        if d[v] > d[u] + d(u, v):
+            d[v] = d[u] + d(u, v)
+            parent[v] = u
+\end{verbatim}
+
+
+
+\section*{Shortest Paths Summary}
 \begin{itemize}
 	\item BFS, O(n + m), unweighted graphs
 	\item Dijkstra, O(m log(n)), positive edge weights, single source all paths
