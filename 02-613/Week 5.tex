@@ -1,0 +1,103 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 4}}
+
+\title{02-613 Week 4 \\ \large{Algorithms and Advanced Data Structures}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Asymptotics}
+We need a formal definition of algorithm efficiency.
+\begin{itemize}
+	\item Must be concrete and falsifiable.
+	\item We care about large problems.
+\end{itemize}
+
+\subsection*{Example: Heap Operations}
+Proposal for runtime: count the exact number of operations\\
+\underline{\textbf{Insert to heap:}}
+\begin{itemize}
+	\item Find leaf node (1 operation)
+	\item Compare two and swap (4 operations)
+	\begin{itemize}
+	    \item Worst case number of swaps ($\log n$ operations)
+    \end{itemize}
+\end{itemize}
+\underline{\textbf{Delete from heap:}}
+\begin{itemize}
+	\item Find leaf (1 operation)
+	\item Swap (3 operations)
+	\item Delete leaf (1 operations)
+	\item Bubbling ($\max(4 \log n, (2 + 3) \log n)$)
+	\begin{itemize}
+	    \item (2 from compare, 3 from swap)
+    \end{itemize}
+\end{itemize}
+The thing is, we don't care about the exact number of operations.  Sometimes, implementations may be abstracted out of the programming language too.  However, what we do care about is how it scales.
+\begin{itemize}
+	\item In terms of the heap example, the only term we will ever care about is the $\log(n)$ term, because with a large amount of nodes, it will grow larger than everything else.
+\end{itemize}
+
+\subsection*{Big-O}
+A running time $T(n)$ is $O(f(n))$ if $\exists$ constants $n_0 \geq 0$, $c \geq 0$, such that
+\[T(n) \leq c \cdot f(n) \quad \forall n \geq n_0\]
+For example, if $1 + 4\log n \leq c \log n$, then $c = 5$.  Or, if $6 + \max(4, 5) \log m \leq cn$, then $c = 7$.\\
+In other words, O($f(n)$) is the set that contains all functions $c f(n)$, where $c$ is a constant.
+
+\subsection*{Big-$\Omega$}
+$T(n) \in \Omega(f(n))$ for constant $\varepsilon \geq 0$, $n_0 \geq 0$, if $T(n) \geq \epsilon f(n) \quad \forall n \geq n_0$.\\
+Big-Omega gives a upper bound for running speed.  Unlike Big-O, we consider the best-case scenario.
+\begin{itemize}
+	\item From our heap deletion example earlier, the Big-Omega of the delete operation would be O(1).  This is because if we delete a leaf, we are instantly done.
+\end{itemize}
+
+\subsection*{Big-$\Theta$}
+$T(n) \in \Theta(f(n))$ if and only if $T(n) \in O(f(n)) \land T(n) \in \Omega(f(n))$.
+\begin{itemize}
+	\item For example, Big-Theta of BFS is $\Theta(n + m)$.  This is because in the worst case, we have O($n + m$).  However, in the best case, we still must visit every node, therefore $\Omega(n + m)$.
+\end{itemize}
+
+\subsection*{Asymptotic Limit}
+\textbf{Theorem ($\Theta$)}: if $\lim_{n \rightarrow \infty} \frac{T(n)}{g(n)} = c$, for some constant $c \geq 0$, then $T(n) \in \Theta(g(n))$.
+\subsubsection*{Proof:}
+There exists a $n_0$ such that $\frac{c}{2} \leq \frac{T(n)}{g(n)} \leq 2c$, for all $n > n_0$.  This implies that $T(n) \leq 2c \cdot g(n)$ for $n > n_0$, which gives $T_n \in O(g(n))$.
+
+\subsection*{Example Asymptotics:}
+\begin{itemize}
+    \item O($\log n$): Binary search
+	\item O($n \log n$): Sorting
+	\item O($n^2$): 2D arrays, all pairs of objects
+	\item O($n^3$): Matrix multiplication (sometimes)
+	\item O($n^k$): Tensor Multiplication, independent sets, finding all $k$-groups of objects
+	\item O($2^n$): (these are evil) Largest independent set in a graph
+	\item O($n^n$): (aka $n!$, also evil) List all permutations of a set
+\end{itemize}
+
+
+\end{document}
