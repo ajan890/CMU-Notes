@@ -1,0 +1,146 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Module 6}}
+
+\title{02-680 Module 6 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Matrices}
+You can almost think of a \textbf{matrix} as a 2-dimensional vector.  We say that an ``$n$-by-$m$'' matrix $M \in \mathbb{R}^{n \times m}$ has $n$ rows and $m$ columns, and we usually write it as:
+\begin{center} 
+	\includegraphics*[width=\textwidth]{M6_1.png} 
+\end{center}
+
+\subsection*{Matrix to Vector Transformation}
+$\mathbb{R}^{n \times m}$ is the set of all real-valued $(n, m)$-matrices.  $M \in \mathbb{R}^{n \times m}$ can be equivalently represented as $M \in \mathbb{R}^{n \times m}$ by stacking all $n$ columns of the matrix into a long vector.
+\begin{itemize}
+	\item By stacking its columns, a matrix $M$ can be represented as a long vector $a$.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{M6_2.png} 
+\end{center}
+
+\subsection*{Matrix Element}
+Let $A$ be an $m \times n$ matrix.  We will generally write $a_{i, j}$ for the entry in the $i$th row and the $j$th column.  It is called the $i, j$ entry of the matrix.
+
+\subsubsection*{Matrix Transpose}
+For a given matrix $M \in \mathbb{R}^{n \times m}$, the transpose $M^T \in \mathbb{R}^{m \times n}$ is defined such that:
+\[\forall i \in [1, n], j \in [1, m] \::\: M_{j, i}^T = M_{i, j}\]
+This operation works for both matrices and vectors (which are really just $n \times 1$ matrices.)
+\[\left(\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{bmatrix}_{3 \times 3}\right)^T = \begin{bmatrix} 1 & 4 & 7 \\ 2 & 5 & 8 \\ 3 & 6 & 9 \end{bmatrix}_{3 \times 3}\]
+
+\section*{Matrix Operations}
+\subsection*{Matrix Addition}
+Like with vectors, the addition of two matrices as well as scalar multiplication are element-wise operations, so for matrices $M, N \in \mathbb{R}^{n \times m}$:
+\[O = M + N \rightarrow O_{i, j} = M_{i, j} + N_{i, j} \quad \forall 1 \leq i \leq n, 1 \leq j \leq m\]
+Note that to be able to add, both matrices must be the same size.
+
+\subsection*{Scalar Multiplication}
+Let $M$ be an $n \times m$ matrix and scalar $a \in \mathbb{R}$.  Denote the columns of $M$ by $v_1, v_2, \dots, v_p \::\: O = aM \rightarrow O_{i, j} = aM_{i, j} \quad \forall 1 \leq i \leq n, 1 \leq j \leq m$.
+\[M = \begin{bmatrix} | & | & & | \\ v_1 & v_2 & \cdots & v_p \\ | & | & & | \end{bmatrix} \hspace{1cm} aM = \begin{bmatrix}| & | & & | \\ av_1 & av_2 & \cdots & av_p \\ | & | & & | \end{bmatrix}\]
+
+\subsection*{Matrix Multiplication}
+In general, to multiply a $m \times n$ matrix by an $n \times p$ matrix, the $n$ must be the same, and the result is an $m \times p$ matrix.\\\\
+Example:
+\[\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 & 6 & 7 \\ 8 & 9 & 10 \end{bmatrix} = \begin{bmatrix}
+1 \cdot 5 + 2 \cdot 8 & 1 \cdot 6 + 2 \cdot 9 & 1 \cdot 7 + 2 \cdot 10 \\ 3 \cdot 5 + 4 \cdot 8 & 3 \cdot 6 + 4 \cdot 9 & 3 \cdot 7 + 4 \cdot 10 \end{bmatrix} = \begin{bmatrix} 21 & 24 & 27 \\ 47 & 54 & 61 \end{bmatrix}\]
+This also works for vectors, where a vector is essentially a matrix with one of the dimensions being 1.  Two vectors multiplied together (one must be a row vector, one must be a column vector) is just equal to the dot product between the two vectors.
+\begin{itemize}
+	\item Note that matrix multiplication is \textbf{not} commutative!  If we swap the order of the matrices, the result will not be the same.
+\end{itemize}
+
+\section*{Square Matrices}
+A square matrix is one that has an equal number of rows and columns.  (e.g., $m = n$).  These matrices have a few special properties.
+\begin{itemize}
+	\item \textbf{Main diagonal} is the entries where the horizontal and vertical component are equal.
+	\begin{itemize}
+	    \item A \textbf{diagonal matrix} is one where all the numbers on the main diagonal are nonzero, and all the other numbers are zero.
+    \end{itemize}
+	\item \textbf{Symmetry:} a square matrix is \textbf{symmetric} if $A = A^T$
+	\item \textbf{Anti-symmetry:} a matrix's anti-symmetric is $A = -A^T$.  Below: Left - symmetric.  Right - anti-symmetric.
+	\[\begin{bmatrix} x & a & b \\ a & y & c \\ b & c & z \end{bmatrix} \quad \begin{bmatrix} 0 & a & b \\ -a & 0 & c \\ -b & -c & 0 \end{bmatrix}\]
+    \item \textbf{Trace:} the trace of a matrix $\text{tr}(A)$ is the sum of the diagonal elements.
+    \item \textbf{Identity:} an identity matrix of size $n$ is an $n \times n$ matrix where the main diagonal values are 1 and all other values are 0.  Symbolized by $I_{n \times n}$.
+    \begin{itemize}
+	    \item If $I$ is multiplied with any other matrix, the other matrix does not change.  $AI = IA = A$.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Determinant of a Square Matrix}
+The determinant of a square matrix $A$ is a real number $\det(A)$.  It is defined via its behavior with respect to row operations; this means we can use row reduction to compute it.
+\begin{itemize}
+	\item Written with the $\det(A)$ function, or $|A|$.
+\end{itemize}
+
+\subsubsection*{2x2 Determinant Example}
+Let us compute
+\[\det \left(\begin{bmatrix} 2 & 1 \\ 1 & 6 \end{bmatrix}\right)\]
+We obtain
+\[\det = 2 \cdot 6 - 1 \cdot 1 = 12 - 1 = 11\]
+Basically, sum the products of diagonals going towards the right, and subtract products of diagonals going to the left.
+
+\subsubsection*{Recursive Determinant Example}
+Compute 
+\[\det \left(\begin{bmatrix} 2 & 6 & 1 \\ 3 & 2 & 5 \\ 2 & 3 & 6 \end{bmatrix}\right)\]
+\begin{align*}
+    \det(A) &= A_{11} \cdot \det \left(\begin{bmatrix} 2 & 5 \\ 3 * 6 \end{bmatrix}\right) - A_{12} \cdot \det \left(\begin{bmatrix} 3 & 5 \\ 2 & 6 \end{bmatrix}\right) + A_{13} \cdot \det \left(\begin{bmatrix} 3 & 2 \\ 2 & 3 \end{bmatrix}\right)\\
+    &= 2 (-3) 0 6(8) + 1(5)\\
+    &= -6 - 48 + 5\\
+    &= -49
+\end{align*}
+Using the notation of sets of column/row indices ($A = A_{[n], [n]}$) can then use set math to manipulate those rows/columns (mainly using $\setminus$):
+\[A_{[n]\setminus i, [n] \setminus j}\]
+Which is $A$ with all but row $i$ and all but column $j$/
+\[A = \begin{bmatrix} A_{11} & A_{12} & A_{13} \\ A_{21} & A_{22} & A_{23} \\ A_{31} & A_{32} & A_{33} \end{bmatrix} \quad A_{[3] \setminus 2, [3]} = \begin{bmatrix} A_{11} & A_{12} & A_{13} \\ A_{31} & A_{32} & A_{33} \end{bmatrix}\]
+To make this easier we will shorten this to:
+\[A_{[n] \setminus i, [n] \setminus j} \Leftrightarrow A_{\setminus i, \setminus j}\]
+We need that notation to more easily define the determinate for any chosen $j$:
+\[|A| \::= \sum_{i = 1}^n (-1)^{(i + j)} A_{ij} |A_{\setminus i, \setminus j}\]
+
+\subsubsection*{Determinant Transpose Property}
+\[\det(A) = \det(A^T)\]
+
+\subsection*{Adjoint / adjugate matrix}
+Define $\tilde{A}$ to be:
+\[\tilde{A} = \begin{bmatrix}
+(-1)^{1 + 1} |A_{\setminus 1, \setminus 1}| & (-1)^{1 + 2} |A_{\setminus 1, \setminus 2}| & \cdots & (-1)^{1 + n} |A_{\setminus 1, \setminus n}| \\
+(-1)^{2 + 1} |A_{\setminus 2, \setminus 1}| & (-1)^{2 + 2} |A_{\setminus 2, \setminus 2}| & \cdots & (-1)^{2 + n} |A_{\setminus 2, \setminus n}| \\
+\vdots & \vdots & \ddots & \vdots \\
+(-1)^{n + 1} |A_{\setminus n, \setminus 1}| & (-1)^{n + 2} |A_{\setminus n, \setminus 2}| & \cdots & (-1)^{n + n} |A_{\setminus n, \setminus n}|
+\end{bmatrix}\]
+to be the matrix of coefficients.  The transpose $\tilde{A}$ (or $\tilde{A}^T$) is called the adjoint of $A$, denoted simply $\text{adj}(A)$.
+\begin{itemize}
+	\item If $A$ is nonsingular, then:
+	\[A^{-1} = \frac{1}{\det(A)}(\text{adj}(A))\]
+\end{itemize}
+
+\end{document}

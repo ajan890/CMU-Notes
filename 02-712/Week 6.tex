@@ -1,0 +1,181 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/Week 6}}
+
+\title{02-712 Week 6 \\ \large{Biological Modeling and Simulation}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Derivative Free Optimization}
+A lot of times, we will be working with models that have a lot of parameters.  (e.g., protein folding). 
+\begin{itemize}
+	\item With problems like this, it is often impossible to take a derivative, or know the function.
+	\item With our protein folding example, you would have to be able to calculate the free energy of a given energy state, and also the free energy states of every possible tiny change to be able to get the derivative.  This is simply not feasible.
+\end{itemize}
+For these types of problems, we have a function $\Phi(\vec{x})$, where $\Phi$ is sort of a black box function that takes in our parameters.
+\begin{itemize}
+	\item In our protein folding problem, $\Phi$ is a function that takes in the protein, $\vec{x}$, and returns the current free energy.
+	\item We want to find $\min \Phi(\vec{x})$
+\end{itemize}
+
+\subsection*{Some derivative-free methods}
+\subsubsection*{Metropolis Method}
+We can use a heuristic to solve these problems.  Simulated annealing:
+\begin{itemize}
+	\item Set up some "moves", $\vec{x} \rightarrow \vec{x}'$
+	\item Define likelihood, $L(\vec{x}) = e^{-\Phi(\vec{x})/T}$
+	\item Define metropolis, $r = \frac{e^{-\Phi(\vec{x}') / T}}{e^{-\Phi(\vec{x}) / T}}$
+	\item If r > 1, we jump back to step 2 (define likelihood), and repeat until $r$ < 1.
+\end{itemize}
+This is called the Metropolis method.
+
+\subsubsection*{Genetic Algorithm}
+\begin{itemize}
+	\item mutate($\vec{x}$) \textrightarrow $\vec{x}'$
+	\item mating($\vec{x}_1, \vec{x}_2$) \textrightarrow $\vec{x}'$
+	\item repeat:
+	\begin{itemize}
+	    \item "breed" mutate(mate($\vec{x}_i, \vec{x}_j$))
+	    \item select $n$ best models, and continue until the model is good enough.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Response Surface Method}
+Suppose you want to optimize some unknown function, $f(x)$, and you have some data points for it.  You can take the derivative of the function, since maybe the data is extremely expensive to compute, or perhaps the data is noisy.
+\begin{itemize}
+	\item First, fit a curve to the data points.  (This curve is known as the response surface.)
+	\item Now, optimize based on the curve.  A well-selected curve reasonably passes through all the points, and it is differentiable.
+	\item Now, find the minimum of the response surface, and test the minimum on the real function.
+	\item This method can be done with many dimensions too, except it gets harder with more parameters.
+\end{itemize}
+
+\subsubsection*{Trust Region Method}
+Used with the response surface method.  Essentially asks, how good is the response surface for the data?
+\begin{itemize}
+	\item We would generate a lot of random points using the response surface and estimate the minimum of the surface.
+	\item Additionally, we test whether the points generated are similar to the original dataset using some likelihood calculation.
+\end{itemize}
+
+
+\subsection*{Kriging Methods}
+This is a class of different derivative-free methods.
+
+\subsubsection*{Gaussian Mixture Model (GMM)}
+A way of taking a sample of points and coming up with a representation of what is happening to the rest of the points.
+\begin{itemize}
+	\item Sample some points and get $\vec{x}_1, \vec{x}_2, \dots, \vec{x}_n$.  Calculate $\Phi(\vec{x}_1), \dots, \Phi(\vec{x}_n)$.
+	\item All of the other points are labelled with a probability to be part of each group.  Essentially, for a given point $\vec{x}$, we are finding $P(\Phi(\vec{x}) = \Phi(\vec{x}_i)), \quad \forall i \leq n$.
+\end{itemize}
+
+\subsubsection*{Gaussian Process Model}
+Suppose we have a set of a lot of (possibly noisy) points.  We want a best fit curve.
+\begin{itemize}
+	\item We assume that every point is preturbed from the best fit line by some gaussian.
+	\item We are trying to find the best fit line (or even region!) that fits the points the best.
+\end{itemize}
+
+\subsubsection*{Lipschitzian Methods (Lipschitz Continuity)}
+\[\Vert \Phi(\vec{x}) - \Phi(\vec{y})|| \leq L||\vec{x} - \vec{y}||\]
+This essentially means that our functions do not change too quickly.  ($L$ is a constant, and if the change of the function can be written as a constant times the change of $x$ and $y$, it must not be exponential.)
+\begin{itemize}
+	\item $L$ is known as the Lipschitz Constant.
+	\item The goal is to pick a point, $\vec{x}$, such that $\Phi(\vec{x})$ is within the radius of the $\Phi(\vec{x_d})$, where $x_d$ are datapoints.  Basically, we can set a minimum and maximum bound for a data point to be part of the group.
+	\item We can pick many different points to be locations for local optimizers, and from there, you know one of them will be the global optimizer. 
+	\item To find a global optimizer, you can recursively sample near the positions of local optimizers, and pick one that works best.
+\end{itemize}
+
+\subsection*{AI Surrogate Models}
+Turn a problem you are trying to solve, and turn it into a pattern recognization test.
+\begin{itemize}
+	\item Suppose we have a very large set of data consisting of (Input 1, output 1), (Input 2, output 2), \dots, (Input $n$, output $n$)\dots
+	\item We would throw these in as training data for a deep learning neural network and have it 'classify' our current problem and spit out an output.
+	\begin{itemize}
+	    \item This is a way that estimates the function.  It is essentially a not well-defined optimization problem.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Alphafold}
+This is a deep learning method for folding proteins.  In theory, it is optimizing minimum free energy of the protein, but alpha does not really do that.  Rather, it 'learns' from past work.\\\\
+It requires multiple parts:
+\begin{itemize}
+	\item Lots of data.  Input amino acid sequences, and output protein pairs.  Alphafold got this from the Protein Databank, where researchers would publish protein structures.
+	\item Representational of model (response surface), transformer NN models
+	\item Algorithms to train model (Adam optimizer)
+	\item Hardware (GPUs)
+\end{itemize}
+
+\section*{Case Study: Cancer}
+Cancer is a disease of evolution.  A single mutation may cause a cell to grow out of control, and also pick up different mutations much faster.
+
+\subsection*{Evolutionary Biology and the Cancer Treatment Timeline}
+\begin{enumerate}
+	\item Surveillance (Health): Are there patterns of somatic evolution predictive of risk?  Can we steer that towards lower risk?
+	\item Intervention (Precancer): Are precancerous lesions likely to evolve towards cancer?
+	\item Treatment (Cancer): Should we treat?
+	\item Monitoring (Remission): Is recurrence likely?  Can we make it less likely?
+	\item Treatment (Recurrence): How can we reverse emerging resistance?  Are there other resistance mechanisms we can anticipate?
+	\item Palliative Care (Metastasis): Is metastatic disease progressing?  How can we slow that down?
+\end{enumerate}
+
+\subsection*{Phylogeny Problem}
+A tumor can be made up of multiple different cell populations, so it is challenging to figure out how the different types of cells interact with each other.
+\begin{itemize}
+	\item We can take the bulk tumor data, and do a deconvolution problem to separate out the different cells.
+	\begin{itemize}
+	    \item Deconvolution isn't as easy as finding two matrices to create the input matrix, because the problem is inherently underconstrained.  We therefore must add an objective function to optimize the resulting matrices towards.
+    \end{itemize}
+	\item Afterwards, we can build a phylogenetic tree.
+	\begin{itemize}
+	    \item We can do this using the continuous optimization methods discussed earlier.
+    \end{itemize}   
+\end{itemize}
+
+\subsection*{Solving Optimization Problems using ILP}
+\begin{itemize}
+	\item Integer Linear Programming: create a set of variables to optimize, a linear objective, and constraints, and use a ILP solver.
+	\item Semidefinite (Convex) Programming: similar to ILPs, except the objective need not be linear.  Also solvable, but not as efficiently.
+\end{itemize}
+\subsection*{ILP for Phylogeny Inference: Intuition}
+\begin{enumerate}
+	\item Create a graph of all possible nodes and edges
+	\item Create a "flow" to each input sequence from an arbitrary root
+	\item Minimize edges needed to accommodate all flows.
+\end{enumerate}
+Usually we make the root a healthy cell since all cancer cells are descendants of healthy cells.
+\begin{itemize}
+	\item Then, we can define a flow from the healthy cell through steiner nodes to cancer cells.
+	\item The paths between the cells would be a tree, and the tree would somewhat represent how the cell evolved.
+\end{itemize}
+
+
+
+
+\end{document}
