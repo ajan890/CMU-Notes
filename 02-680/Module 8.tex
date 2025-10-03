@@ -1,0 +1,208 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Module 8}}
+
+\title{02-680 Module 8 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Vector Spaces}
+A vector space is a set of vectors for which you can define addition and scalar multiplication, and the following hold:
+\begin{itemize}
+	\item commutativity
+	\item associativity
+	\item additive identity
+	\item additive inverse
+	\item multiplicative identity
+	\item distributive properties
+\end{itemize}
+Whenever the term "space" is used in a mathematical context, it refers to a vector space, vis, real or complex $n$-space, the space of continuous functions on the line, the space of self-adjoint linear operators and so on.  The purpose of this section is to define the notion of a vector space and to give some examples.
+
+\subsection*{Sets}
+A vector space consists of three elements: a \textbf{set of objects} $V$ along with definitions of \textbf{addition} and \textbf{scalar multiplication} on the elements in $V$.\\\\
+$V$ is
+\begin{itemize}
+	\item the collection of objects called vectors.
+	\item Example: $\mathbb{R}^2$, $\mathbb{R}^3$, or a set of functions.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{M8_1.png} 
+\end{center}
+
+\subsubsection*{Vector Addition}
+\begin{itemize}
+	\item A rule that defines how to add any two vectors in $V$.
+	\item Denoted as: if $u, v \in V$, then $u + v \in V$.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.4\textwidth]{M8_2.png} 
+\end{center}
+
+\subsubsection*{Scalar Multiplication}
+\begin{itemize}
+	\item A rule that defines how to \textbf{multiply} any vector in $V$ by a scalar (from a field, e.g., $\mathbb{R}$)
+	\item Denoted as: if $a \in R, v \in V$, then $a \cdot v \in V$.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{M8_3.png} 
+\end{center}
+
+\subsection*{Vector Spaces: Axioms}
+Let $V$ be a \textbf{vector space} and $v$ a \textbf{vector}.  Assume that there is a binary opertion on $v$ called \textbf{addition} which assigns to each pair of elements $v_1$ and $v_2$ of $V$ a unique sum $v_1 + v_2 \in V$.\\\\
+Assume also that there is a second operation, called \textbf{scalar multiplication}, which assigns to any $a \in V$ and any $v \in V$ a unique scalar multiple $av \in V$.  Suppose that addition and scalar multiplication together satisfy the following axioms.\\\\
+To be considered a vector space, \textbf{the 3 elements} have to satisfy the following 10 conditions.  Axioms 1-5 of the definition describe how vectors can be \textbf{added together}.  Axioms 6-10 describe how these vectors can be scaled using the field of \textbf{scalars}.
+\begin{enumerate}
+	\item \textbf{Closed Under Addition}: 
+    \[\forall v_1, v_2 \in V \::\: v_1 + v_2 \in V\]
+    e.g., if you pick any two elements from the set, their sum must also belong to the set.  This is one of the two key properties required to determine whether a set $V$ is a vector space.
+	\item \textbf{Commutative Property for Addition}: 
+    \[\forall v_1, v_2 \in V \::\: v_1 + v_2 = v_2 + v_1\]
+    The order of addition does not affect the result.
+	\item \textbf{Associativity of Addition}: 
+    \[\forall v_1, v_2, v_3 \in V \::\: (v_1 + v_2) + v_3 = v_1 + (v_2 + v_3)\]
+    When adding three vectors, the way you group them does not affect the result.
+	\item \textbf{Additive Identity}: 
+    \[\exists \text{ unique } 0 \in V \::\: \forall v \in V \::\: v + 0 = 0\]
+    $0$ is called the \textbf{zero} vector.  It is the element that leaves any vector unchanged when added.
+	\item \textbf{Additive Inverse}: 
+    \[\forall v \in V \::\: \exists \text{ unique } u \in V \::\: v + u = 0\]
+    (usually denoted $-v$).  This axiom guarantees that every vector has an \textbf{opposite}, which allows us to \textbf{subtract} vectors and solve equations like $v + x = w$.  Without additive inverses, we cannot define \textbf{negative scalar multiples} or balance vector equations.
+	\item \textbf{Closed Under Scalar Multiplication}: 
+    \[\forall v \in V, a \in \mathbb{R} \::\: av \in V\]
+    This axiom says that scaling any vector by any real number keeps the result inside the same vector space.  It lets us stretch, shrink, or flip vectors without leaving $V$, which is essential for forming linear combinations.  In $\mathbb{R}^n \::\: a(x_1, \dots, x_n) = (ax_1, \dots, ax_n) \in \mathbb{R}^n$.
+	\item \textbf{Distributivity of Scalar Multiplication over Vector Addition}: 
+    \[\forall v_1, v_2 \in V, a \in \mathbb{R} \::\: a(v_1 + v_2) = av_1 + a_2\]
+    Intuition: scale after adding = add after scaling.  Enables expanding and simplifying linear combinations.
+    \item \textbf{Distributivity of Scalar Addition over Vectors}: 
+    \[\forall v_1, v_2 \in V, \alpha, \beta \in \mathbb{R} \::\: (\alpha + \beta)v = \alpha v + \beta v\]
+    By intuition, add the scalars first, or scale separately and add after.  Same result.
+	\item \textbf{Associativity of Scalar Multiplicaiton}: 
+    \[\forall v_1, v_2 \in V, \alpha, \beta \in \mathbb{R} \::\: \alpha(\beta v) = (\alpha \beta) v\]
+    By intuition, scaling by $\beta$ then by $\alpha$ equals one scaling by $\alpha \beta$.
+	\item \textbf{Multiplicative Identity}: 
+    \[\exists \text{ unique } 1 \in V \::\: \forall v \in V \::\: 1v = v\]
+    By intuition, scaling by 1 leaves vectors unchanged.
+\end{enumerate}
+
+\subsection*{Vector Spaces: Examples}
+Let's ask if the following is a vector space:
+\[V = \{\langle x_1, x_2 \rangle | x_1, x_2 \in \mathbb{R}\}\]
+with \textbf{addition} defined as
+\[\langle a_1, a_2 \rangle + \langle b_1, b_2 \rangle = \langle a_1 + b_1, a_2 - b_2 \rangle\]
+(note the second dimension) and \textbf{scalar multiplication} defined as
+\[a\langle a_1, a_2 \rangle = \langle aa_1, aa_2 \rangle\]
+Since multiplication is as we normally see it, we know axioms (6), (8), (9), (10) are satisfied.  We can also see that axiom (1) is satisfied.  Let's check (2) commutativity of addition:
+\begin{align*}
+\langle a_1, a_2 \rangle + \langle b_1, b_2 \rangle &?= \langle b_1, b_2 \rangle + \langle a_1, a_2 \rangle\\
+\langle a_1 + b_1, a_2 - b_2 \rangle &?= \langle b_1 + a_1, b_2 - a_2 \rangle\\
+a_1 + b_1 &= b_1 + a_1\\
+\therefore a_2 - b_2 \neq b_2 - a_2
+\end{align*}
+Therefore, what we defined (with the non-standard addition) is \textbf{not} a vector space.
+
+\subsection*{Other Spaces}
+Is $\mathbb{R}^2$ a vector space?\\\\
+Yes!  With standard addition and scalar multiplication, $\mathbb{R}^2 = \{(x, y) | x, y \in \mathbb{R}\}$ is a vector space.  
+\begin{itemize}
+	\item It satisfies all 10 vector space axioms.  (Closure, associativity, identity, inverse, distributivity, etc.)
+\end{itemize}
+The most common vector spaces we will be using is $\mathbb{R}^n$ (for a fixed $n$).  In addition to $\mathbb{R}^n$, $\mathbb{R}^{m \times n}$ are also vector spaces (for fixed $m$ and $n$) with the usual definitions of addition and scalar multiplication for matrices.
+
+\subsection*{Matrices Vector Spaces}
+Are matrices vector spaces?  Yes!\\\\
+We define: $\mathbb{R}^{m \times n} = \{A | A \text{ is a $m \times n$ real matrix}\}$.  This set forms a vector space when equipped with:
+\begin{itemize}
+	\item Matrix addition (element-wise)
+	\item Scalar multiplication (scalar times each entry)
+\end{itemize}
+Even though \textbf{matrices} are not vectors in appearance, they behave like vectors under these operations and \textbf{satisfy all vector space axioms.}
+
+\subsection*{Function Spaces as Vector Spaces}
+The set of real-valued functions $F$ (over a fixed interval) is also a \textbf{vector space}, though in this case we may call it a \textbf{function space}.  We can define
+\[(f + g)(x) = f(x) + g(x) \text{ and } (af)(x) = af(x)\]
+
+\subsection*{Example: Set of Real-Valued Functions}
+Let $\mathbb{R}^{[a, b]}$ be the set of all real-valued functions defined on $[a, b] \subset \mathbb{R}$.  That is, each element $f \in \mathbb{R}^[a, b]$ is a function $f \::\: [a, b] \rightarrow \mathbb{R}$.\\\\
+For functions $f, g \in \mathbb{R}^{[a, b]}$ and scalar $r \in \mathbb{R}$:
+\begin{itemize}
+	\item Addition: $(f + g)(x) = f(x) + g(x) \forall x \in [a, b]$
+	\begin{center} 
+	    \includegraphics*[width=0.8\textwidth]{M8_4.png} 
+    \end{center}
+    \item Scalar multiplcation: $(cf)(x) = cf(x), \forall x \in [a, b]$
+    \begin{center} 
+        \includegraphics*[width=0.4\textwidth]{M8_5.png} 
+    \end{center}
+\end{itemize}
+
+\subsubsection*{Closure Properties}
+$\mathbb{R}^{[a, b]}$ is closed under addition:
+\[f, g \in \mathbb{R}^{[a, b]} \Rightarrow f + g \in \mathbb{R}^{[a, b]}\]
+$\mathbb{R}^{[a, b]}$ is closed under scalar multiplication:
+\[f \in \mathbb{R}^{[a, b]}, c \in \mathbb{R} \Rightarrow cf \in \mathbb{R}^{[a, b]}\]
+Because these operations satisfy closure (and other vector space axioms), the set $\mathbb{R}^{[a, b]}$ forms a \textbf{vector space} over $\mathbb{R}$.
+
+\section*{Vector Subspaces}
+A subset $S$ of a vector space $V$ is called a \textbf{subspace} if $S$ is also a vector space under the operations \textbf{inherited} from $V$ (note this would inherently require that $0 \in S$, but this should fall out from the requirements below).  Every vector space has at least two subspaces:
+\begin{enumerate}
+	\item $V$ itself, and
+	\item $\{0\} \subseteq V$.
+\end{enumerate}
+These are both called \textbf{trivial subspaces}.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{M8_6.png} 
+\end{center}
+In the above example, only $D$ is a subspace of $\mathbb{R}^2$.  In $A$ and $C$, the closure property is violated, and $B$ does not contain 0.
+
+\subsection*{Examples}
+Let's look at two subsets in $\mathbb{R}^2$.
+\[S = \{\langle 0, x_2 \rangle | x_2 \in \mathbb{R}\} \text{ and } T = \{ \langle 1, x_2 \rangle | x_2 \in \mathbb{R}\}\]
+\begin{itemize}
+	\item Starting with $S$, because any real number times $0$ is $0$, as well as $0 + 0 = 0$, we can see that all of the axioms above hold.  The first dimension always remains 0, and the second dimension inherits all of its properties from scalar addition and multiplication.
+	\item Now for $T$, we can start with the axiom (1) for $a, b \in T$.
+	\begin{align*}
+        a + b &?\in T\\
+        \langle 1, a_2 \rangle + \langle 1, b_2 \rangle &?\in T\\
+        \langle 1 + 1, a_2 + b_2 \rangle &?\in T\\
+        \langle 2, a_2 + b_2 \rangle &\notin T
+    \end{align*}
+    Namely, axiom (6) does not hold, so $T$ is not a vector space.
+\end{itemize}
+
+\subsection*{Proving Subspaces}
+For any non-empty subset $S \subseteq V$ for vector space $V$.  $S$ is a subspace \textbf{if and only if} it is closed under addition and scalar multiplication.\\\\
+That is, for any subset (that's not empty), if we know $V$ is a vector space, we only need to prove (1) and (6) to show $S$ is a subspace.
+\begin{itemize}
+	\item (1) $\forall v_1, v_2 \in V \::\: v_1 + v_2 \in V$ (\textbf{closed under addition})
+	\item (6) $\forall v \in V, a \in \mathbb{R} \::\: av \in V$ (\textbf{closed under scalar multiplication})
+\end{itemize}
+
+\end{document}

@@ -21,9 +21,9 @@
 % verbatim greek
 \usepackage{alphabeta}
 
-\graphicspath{{./assets/images/Week 4}}
+\graphicspath{{./assets/images/Week 6}}
 
-\title{02-613 Week 4 \\ \large{Algorithms and Advanced Data Structures}}
+\title{02-613 Week 6 \\ \large{Algorithms and Advanced Data Structures}}
  
 \author{Aidan Jan}
 
@@ -71,6 +71,17 @@ For step 1, if $k = 2$, then $c \cdot 2 \log 2 = 2c \leq T(n)$, where $c$ is a c
 It turns out this math would also work out for any running time larger than $n \log n$, such as $n^2$.  However, we only care about the tightest runtime we can assign.  It will not work for O($n$).
 \begin{itemize}
     \item Recall that O($n \log n$) is actually also O($n^2$).
+\end{itemize}
+
+\subsection*{The Master Theorem}
+For divide and conquer cases, we can typically write the runtime of the worst case as 
+\[T(n) = a T\left(\frac{n}{b}\right) + f(n)\]
+where $a$ is the number of subproblems the main problem gets split into per iteration, and $b$ is the size of the subproblem relative to the original.  For example for merge sort, $a = 2$ and $b = 2$, since every iteration splits into 2 subproblems, each half the size of the original.  Finally, $f(n)$ is the runtime of the combine operation.  For merge sort, $f(n) = n$.\\\\
+The master theorem states that:
+\begin{itemize}
+    \item If $n^{\log_b a} > f(n)$, then the final runtime would be $n^{\log_b a}$.
+    \item If $f(n) > n^{\log_b a}$, then the final runtime would be $f(n)$.
+    \item If $f(n) = n^{\log_b a}$, then the final runtime would be $f(n) \log (n^{\log_b a})$.
 \end{itemize}
 
 \subsection*{Closest Two Points on a Plane}
