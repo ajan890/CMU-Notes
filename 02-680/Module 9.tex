@@ -1,0 +1,144 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Module 9}}
+
+\title{02-680 Module 9 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Linear Independence}
+First, we need to first define linear dependence.
+\begin{itemize}
+	\item A set of vectors is \textbf{linearly dependent} if at least one of the vector lies in the span of the others, meaning it adds no new dimension
+	\item In other words, by summing or scalar multiplying the other vectors, it is possible to produce the given vector.
+\end{itemize}
+
+\subsection*{Linear Combinations of Vectors}
+for a list of vectors $v_1, \dots, v_m$, a linear combination is written in the form:
+\begin{itemize}
+	\item $a_1 v_1 + \dots + a_m v_m$
+	\item where $a_1, \dots, a_m$ are scalars.
+\end{itemize}
+
+\subsection*{Building a Vector Space}
+Vectors are elements of a \textbf{vector space}, and we can:
+\begin{itemize}
+	\item Add them
+	\item Scale them with scalars
+	\item Use them to build other vectors through combinations
+\end{itemize}
+Vector spaces follow the \textbf{closure property}:
+\begin{itemize}
+	\item Addition and scalar multiplication are closed
+	\item The result always stays within the \textit{same} vector space.
+\end{itemize}
+
+\subsection*{Why Linear Independence Matters}
+To build the whole space efficiently from a vector set, we want:
+\begin{itemize}
+	\item No redundancy in our set.
+	\item No vector in the set can be written as a combination of the others.
+	\item Each vector adds a new direction.
+\end{itemize}
+This leads to the concept of \textbf{Linear Independence} - a foundational idea before we define a basis.
+
+\subsection*{Definition of Linear Independence}
+Let $S = \{v_1, v_2, \dots, v_n\} \subseteq V$ be a set of vectors in a vector space $V$.  We say that $S$ is linearly independent if:
+\[a_1 v_1 + a_2 v_2 + \cdots a_n v_n = 0 \Rightarrow a_1 = a_2 = \dots = a_n = 0\]
+A linear combination of vectors in $S$ equals the zero vector only \textbf{when all the coefficients are zero}.
+\begin{itemize}
+	\item This is because linear independence is defined this way to ensure that each vector contributes a new, non-redundant direction to the span.  It guarantees a minimal set of generators, uniqueness in representation, and full dimensionality of the space spanned by the vectors.
+	\item In other words, the equation says that for any vector $v_i \in S$ there is \textbf{no linear combination} of $S \setminus \{v_i\}$ that is equal to $v_i$.  Here, $a_1 v_1 + a_2 v_2 + \cdots + a_n v_n$ with $\forall i \::\: a_i \in \mathbb{R}$ is a linear combination of the vectors in $S$.
+	\item This is usually simplified to:
+	\[\sum_{i = 1}^n \alpha_i v_i\]
+\end{itemize}
+Note that linear dependence and linear independence are notions that apply to a \textbf{collection} of vectors.  It does not make sense to say things like ``this vector is linearly dependent on these other vectors,'' or ``this matrix is linearly independent.''
+
+\subsubsection*{Example}
+Is the set 
+\[\left\{\begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix}, \begin{pmatrix} 1 \\ -1 \\ 2 \end{pmatrix}, \begin{pmatrix} 3 \\ 1 \\ 4 \end{pmatrix}\right\}\]
+linearly independent?  Equivalently, we are asking ifthe homogeneous vector equation
+\[x \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix} + y \begin{pmatrix} 1 \\ -1 \\ 2 \end{pmatrix} + z \begin{pmatrix} 3 \\ 1 \\ 4 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}\]
+We can solve this by forming a matrix and row reducing.
+\[\begin{pmatrix} 1 & 1 & 3 \\ 1 & -1 & 1 \\ 1 & 2 & 4 \end{pmatrix} \longrightarrow \begin{pmatrix} 1 & 0 & 2 \\ 0 & 1 & 1 \\ 0 & 0 & 0 \end{pmatrix}\]
+This says $x = -2z$ and $y = -z$.  So there exist nontrivial solutions: for instance, taking $z = 1$ gives this equation of \textbf{linear dependence}:
+\[-2 \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix} - \begin{pmatrix} 1 \\ -1 \\ 2 \end{pmatrix} + \begin{pmatrix} 3 \\ 1 \\ 4 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}\]
+\[-2 v_1 - v_2 + v_3 = 0 \Rightarrow v_3 = 2v_1 + v_2\]
+This shows that the three vectors are linearly dependent.
+\begin{itemize}
+	\item We can test whether any set of vectors are independent using this method.  If the only solution to $a_1 v_1 + a_2 v_2 + a_3 v_3 = 0$ is the trivial solution, $a_1 = a_2 = a_3 = 0$, then the vectors are linearly independent.
+	\item If a non-zero solution exists (meaning that one vector can be written in terms of the other two), then it is not.
+\end{itemize}
+
+\subsection*{Facts about Linear Independence}
+\begin{enumerate}
+	\item Two vectors are linearly dependent if and only if they are colinear, i.e., one is a scalar multiple of the other.
+	\item Any set containing the zero vector is linearly dependent.
+	\item If a subset of $\{v_1, v_2, \dots, v_k\}$ is linearly dependent, then $\{v_1, v_2, \dots, v_k\}$ is linearly dependent as well.
+\end{enumerate}
+
+\section*{Span}
+A \textbf{span} is the set of all possible linear combinations of a list of vectors $v_1, \dots, v_m$:
+\[\text{span}(v_1, \dots, v_m) = \{a_1 v_1 + \dots a_m v_m \::\: a_1, \dots, a_m \in \mathbb{R}\}\]
+The span is the smallest subspace that contains all the elements of the list.
+\begin{itemize}
+	\item Drawing a picture of span\{$v_1, v_2, \dots, v_k$\} is the same as drawing a picture of all linear combinations of $v_1, v_2, \dots, v_k$.
+\end{itemize}
+
+\subsection*{Finding Span}
+For a set of vectors, we say that \textbf{span} is another set of vectors that consists of all linear combinations.  So in the case above:
+\[\langle 8, 7 \rangle \in \text{span}(\{\langle 1, 2 \rangle, \langle 2, 1 \rangle\}) = \{a_1 \langle 1, 2 \rangle + a_2 \langle 2, 1 \rangle | a_1, a_2 \in \mathbb{R}\}\]
+We want to know \textbf{whether} $\langle 8, 7 \rangle$ can be written as such a linear combination.\\\\
+To do this, we assume:
+\[\langle 8, 7 \rangle = a_1 \langle 1, 2 \rangle + a_2 \langle 2, 1 \rangle\]
+First, we distribute the variables:
+\[\langle a_1 + 2a_2, 2 a_1 + a_2 \rangle = \langle 8, 8 \rangle\]
+Now, we can convert it into a linear system:
+\begin{align*}
+    a_1 + 2a_2 &= 8 \\
+    2a_1 + a_2 &= 7
+\end{align*}
+We can solve this using substitution, elimination, or converting it to a matrix and reducing.  In this case, $a_1 = 2$ and $a_2 = 3$.
+\begin{itemize}
+	\item Since the solution exists, yes, $\langle 8, 7 \rangle$ is in the span of $\{\langle 1, 2 \rangle, \langle 2, 1 \rangle\}$
+	\item Formally, for a set of vectors $D$ with cardinality $|D| = n$,
+	\[\text{span}(D) \::= \left\{\left.\sum_{i = 1}^n \alpha_i D_i \right\vert \forall i \in [n] \::\: \alpha_i \in \mathbb{R}\right\}\]
+    \item If $D \subseteq V$ for a vector space $V$, then $D$ is always a valid subspace of $V$.
+    \item So in the example above since $\{\langle 1, 2 \rangle, \langle 2, 1 \rangle\} \subseteq \mathbb{R}^2$, the vector space defined by the set is also a subspace of $\mathbb{R}^2$.
+\end{itemize}
+
+
+
+
+
+
+
+\end{document}

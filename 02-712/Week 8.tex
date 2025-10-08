@@ -1,0 +1,85 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/Week 8}}
+
+\title{02-712 Week 8 \\ \large{Biological Modeling and Simulation}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Partial Differential Equations (PDEs)}
+A lot of times we want to model populations in space.  Normal differential equations cannot account for this since they only handle one variable, while if multiple populations are present in the same area, they may have an influence on each other.\\\\
+Let's start with an example:
+
+\subsection*{Example:}
+A beneficial mutant appears at one point along a long habitat (e.g., coastline, intestinal tract).  It grows where it is, and moves randomly through the continuous habitat.  We want to know how fast does this mutant take over the space.  What is the mutant progress over the space over time?\\\\
+Define a state variable $u(x, i)$, which represents the proportion of the population at positive $x$ that carries the mutant at time point $t$.  Let the rate of change be
+\[\frac{\partial u}{\partial t} = D \partial_{xx}u + ru(1 - u)\]
+where $D$ is a diffusive term or diffusive coefficient.  $\partial_{xx}$ represents the second derivative of the function in terms of $x$.\\\\
+
+\subsubsection*{SI Model with PDEs}
+\begin{align*}
+    \partial_t S &= D_S \partial_{xx} S - \beta SI \\
+    \partial_t I &= D_I \partial_{xx} I + \beta SI - \gamma I
+\end{align*}
+$\gamma$ is the death rate, and $\beta$ is the rate at which susceptible organisms become infected.\\\\
+If we imagine this SI model on a long habitat like the example above, the mutants can spread over the space as time progresses.  By taking the derivative of their change in $x$, we can describe where the mutants are located.  
+\begin{itemize}
+    \item Suppose we cut up the $x$ length into $\Delta D$ (small) intervals, and also write the progression of time iteratively (e.g., current time is $t$, and the next time step $t + \Delta t$), as a function on our current state.
+    \[u(x, t + \Delta t) = Du(x - \Delta x, t) + u(x, t)(1 - 2D) + D u(x + \Delta x, t)\]
+    \item In other words, the number of individuals at position $x$ at time $t + \Delta t$ is equal to the number of individuals that moved from the left (first term), the amount that stayed at the current location (second term), and the amount coming from the right side (last term)
+    \item The $(1 - 2D)$ comes from the (current population) minus (the diffusion to the two sides), which therefore represents the number of individuals stayed at the same location.
+\end{itemize}
+Now, how do we write the $\frac{\partial u}{\partial t}$ from the example above in terms of $D \partial_{xx} u$?  To get there, we take a taylor expansion.
+\begin{align*}
+    u(x, t + \Delta t) &= D\left[u(x, t) - \frac{\partial u(x, t)}{\partial x} \Delta x + \frac{\partial^2 u(x, t)}{2\partial x^2} (\Delta x)^2 + \theta(\Delta x^3)\right] \\
+    &\quad + u(x, t)(1 - 2D) \\
+    &\quad + D\left[u(x, t) + \frac{\partial u(x, t)}{\partial x} \Delta x + \frac{\partial^2 u(x, t)}{2\partial x^2} (\Delta x)^2 + \theta(\Delta x^3)\right]\\
+    u(x, t + \Delta t) - u(x, t) &= \frac{\partial u(x, t)}{\partial x} \Delta t + \frac{\partial u(x, t)}{\partial x^2}D (\Delta x)^2\\
+    \frac{u(x, t + \Delta t) - u(x, t)}{\Delta t} &= \frac{\partial^2 u(x, t)}{\partial x^2} D
+\end{align*}
+Since $\frac{\partial^2 u(x, t)}{\partial x^2}$ can be written as $\partial_{xx}u$, we obtain the $D\partial_{xx}u$ term from the example at the beginning.
+
+\subsection*{Numerical Derivatives of PDEs}
+Similarly to how we take derivatives in one dimension by cutting into tiny intervals, we can take derivatives in two dimensions by cutting it into a fine mesh, in this case cutting the time and $x$ dimensions into tiny intervals.
+Let
+\begin{align*}
+    x_m &= x_0 + m \Delta x \quad\text{ where } m = 0, 1\\
+    t_j &= t_0 + j \Delta t \quad\text{ where } j = 0, 1
+\end{align*}
+Also, let an instance of $u(x, t)$, e.g., population at a point $x$ at a given time $t$ be represented in our mesh as $u(x_m, t_j) \equiv u_{m, j}$.  Now, we can express a given point as a function of neighboring points and previous times.
+\begin{itemize}
+    \item If we have the current spatial distribution at the current time, we can use the information to calculate the distribution at time $t + \Delta t$, or $u_{m, j + 1}$
+\end{itemize}
+
+
+
+
+\end{document}

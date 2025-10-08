@@ -235,4 +235,98 @@ In the opposite case, where $i$ was the right subchild to begin with, we get:
 \end{center}
 A single rotation is called a \textbf{Zig}.
 
+\subsubsection*{ZigZag}
+A zig does not affect grandparents.  However, a zigzag does.
+
+\begin{center}
+\begin{tikzpicture}
+    \node[circle, thick, draw, red, minimum size=0.9cm] at (0, 1) (red) {$P_l$};
+    \node[circle, thick, draw, blue, minimum size=0.9cm] at (1, 0) (blue) {$x_l$};
+    \node[circle, thick, draw, green, minimum size=0.9cm] at (3, 0) (green) {$x_r$};
+    \node[circle, thick, draw, minimum size=0.9cm] at (2, 1) (x) {$x$};
+    \node[circle, thick, draw, minimum size=0.9cm] at (1, 2) (Px) {$P$};
+    \node[circle, thick, draw, orange, minimum size=0.9cm] at (3, 2) (orange) {$G_R$};
+    \node[circle, thick, draw, minimum size=0.9cm] at (2, 3) (P2x) {$G$};
+
+    \draw[->] (P2x) edge (orange);
+    \draw[->] (P2x) edge (Px);
+    \draw[->] (Px) edge (red);
+    \draw[->] (Px) edge (x);
+    \draw[->] (x) edge (blue);
+    \draw[->] (x) edge (green);
+
+    \node[] at (4, 1) (text) {$\Longrightarrow$};
+
+    \node[circle, thick, draw, red, minimum size=0.9cm] at (5, 0) (red1) {$P_l$};
+    \node[circle, thick, draw, blue, minimum size=0.9cm] at (7, 0) (blue1) {$x_l$};
+    \node[circle, thick, draw, green, minimum size=0.9cm] at (9, 0) (green1) {$x_r$};
+    \node[circle, thick, draw, orange, minimum size=0.9cm] at (11, 0) (orange1) {$G_R$};
+    \node[circle, thick, draw, minimum size=0.9cm] at (6, 1) (G1) {$G$};
+    \node[circle, thick, draw, minimum size=0.9cm] at (10, 1) (P1) {$P$};
+    \node[circle, thick, draw, minimum size=0.9cm] at (8, 2) (x1) {$x$};
+
+    \draw[->] (x1) edge (G1);
+    \draw[->] (x1) edge (P1);
+    \draw[->] (P1) edge (green1);
+    \draw[->] (P1) edge (orange1);
+    \draw[->] (G1) edge (red1);
+    \draw[->] (G1) edge (blue1);
+\end{tikzpicture}
+\end{center}
+
+\subsubsection*{ZigZig}
+
+
+\subsection*{Cost of Splay}
+What we really care about in runtime of the splay operation is the change of rank.
+\begin{itemize}
+    \item Assign every node in the tree with a weight, where weight is defined as the number of nodes in the subtree rooted at that node.  (e.g., all leaf nodes have weight 0)
+    \item The rank of a node is defined as the floor of the log of its weight ($\text{rank}(u) \::= \lfloor \log \text{weight}(u) \rfloor$), and represents approximately how high up it is in the tree.
+\end{itemize}
+
+\textbf{Theorem:} It costs at most $3 \lfloor \log n \rfloor + 1$ new dollars to splay and keep the money invariant.
+\begin{itemize}
+	\item Each operation may be more expensive, but it can use savings.
+\end{itemize}
+Assume that we have the following costs for the varying splay operations:
+\begin{itemize}
+	\item Zig = $3(r^1(x) - r^0(x)) + 1$
+	\item ZigZag = $3(r^1(x) - r^0(x))$
+	\item ZigZig = $3(r^1(x) - r^0(x))$
+\end{itemize}
+In this case, $r^1$ refers to the rank of the parent, and $r^0$ refers to the rank of the child.  Why is this?
+\begin{align*}
+    &3(r^k(x) - r^0(x)) + 1 \\ 
+    &\leq 3 r^k(x) + 1 \\
+    &\leq 3 \lfloor \log(n) \rfloor + 1
+\end{align*}
+\begin{itemize}
+	\item In the worst case, $r^0(x)$ is a leaf node, so the rank is 0.
+	\item Also in the worst case, $r^k(x)$ is the root node, so the rank is $\log(n)$.
+\end{itemize}
+In the case of splaying multiple ranks, we have to use ZigZags and ZigZigs, so our total cost of the operation would be:
+\[3(r^1(x) - r^0(x)) + 3(r^2(x) - r^1(x)) + \cdots + 3(r^k(x) - r^{(k - 1)}(x)) + 1\]
+Where each term is to move subtrees up or down.
+\begin{itemize}
+	\item Refer to the costs described above.  The $+1$ at the end comes from the sole Zig operation at the end.
+\end{itemize}
+
+Now, how do we prove these costs are correct?
+\subsubsection*{Proof}
+First, we need a few lemmas:
+\textbf{Lemma 1:} [FILL]\\
+\textbf{Lemma 2:}
+\[\text{cost}(\text{zigzig}) \leq 3(r^1(x) - r^0(x))\]
+needs $r^1(R) - r^0(x)$ new dollars.  $R$ refers to the grandparent node, and $S$ (which will be seen later) is the parent node we are doing the zigzag operation around.  In other words, $G \mapsto R$, $P \mapsto S$ in the diagrams above.
+
+Assume that $r^1(R) = r^1(S) \cdot \alpha$, where $\alpha$ is defined as $\alpha = r^1(x) = r^0(R) = r^0(S) = r^0(x)$.  We know that
+\begin{align*}
+    2^\alpha &\leq w^1(R) \leq 2^{\alpha + 1} \\
+    2^\alpha &\leq w^1(S) \leq 2^{\alpha + 1}
+\end{align*}
+Here, $\alpha$ is some constant, and $w$ is the weight of the node.  However, we know that
+\[w^1(x) \geq w^1(R) + w^1(S)\]
+because at the end, the node $x$ is at the top, and therefore its weight must be greater than that of both its children.  Therefore,
+\[w^1(x) \geq 2 \cdot 2^\alpha = 2^{\alpha + 1} \Rightarrow r^1(x) = \alpha + 1\]
+This is a contradiction since $r^1(x) \::= \alpha$.
 \end{document}
