@@ -79,7 +79,71 @@ Also, let an instance of $u(x, t)$, e.g., population at a point $x$ at a given t
     \item If we have the current spatial distribution at the current time, we can use the information to calculate the distribution at time $t + \Delta t$, or $u_{m, j + 1}$
 \end{itemize}
 
+\section*{Brownian Motion}
+Brownian motion describes how a particle moves in a solution subject to random thermal fluctuations.  Brownian motion tends to be very jagged, as the particles can very quickly change direction.
 
+\subsection*{Symmetric Random Walk}
+The symmetric random walk is defined by the equation
+\[x_m = \sum_{k = 1}^m \alpha_k\]
+As we make the step interval smaller, the curve appears less smooth or jagged.  A random walk with and infinitely small step size (e.g., size $\dd x$ would simulate a Brownian motion.)\\\\
+Random walks do have other properties:
+\begin{itemize}
+    \item The expected value of random walk in 1 dimension is zero.  This is because there is an equal chance of moving up and down.
+    \item The variance scales proportionally to the number of steps you take ($m$).
+    \item It has a fractal-like pattern, where if you zoom in, the line is always jagged, never smooth.
+\end{itemize}
+
+\subsection*{Brownian Motion as Noise}
+Suppose we have a colony of bacteria that grows exponentially.  
+\begin{itemize}
+	\item The issue is, bacteria don't necessarily increase by exactly a certain number every time step.  The general population will follow the $c \cdot e^x$ trend, but the exact count will almost never fall exactly on the line.
+	\item To model this noise, we can add Brownian motion
+\end{itemize}
+We can write the original rate of change of the bacteria as
+\[\frac{\dd S}{\dd t} = r \cdot S_0^{ert}\]
+With the added noise, we now have
+\[\frac{\dd S}{\dd t} = S_0 e^{ert} \left(r + \beta \frac{\dd \beta}{\dd t}\right)\]
+Where $\beta(t)$ represents the noise function.  Since the growth rate of bacteria is the derivative of its population (and noise is applied to the population), the rate of change of population involves the rate of change of the noise.
+\begin{itemize}
+	\item The one major issue with this is that the noise function is not differentiable!
+	\item Since every step is random, the function forms a cusp at every time step; the slope is not conceptually defined.
+\end{itemize}
+This acts as the inspiration to stochastic integration.
+
+\subsection*{Stochastic Integrals}
+
+\subsection*{Example: Neutral Drift in an Evolving Population}
+Suppose we have a population of bacteria of size $N$ with two mutants, $A$ and $B$.  Let $A$ and $B$ be neutral variants - that is, neither are beneficial or detrimental in the face of natural selection.  At every time step, a random individual is chosen for reproduction.  One random indivudual is chosen for death.  The identical offspring of the first individual replaces the second.
+\begin{itemize}
+	\item The total population does not change.  However, the counts of $A$ and $B$ may change.
+	\item So we can analyze this system, let the population of $A$ be $i$, and the population of $B$ be $N - i$.  $i$ is a stochastic variable; it fluctuates randomly.
+	\item First, note which possibilities can happen on each time step:
+	\begin{itemize}
+	    \item $A$ reproduces, and $A$ dies.  ($i_{t + 1} = i_t$, with probability $(i / N)^2$)  
+	    \item $B$ reproduces, and $B$ dies.  ($i_{t + 1} = i_t$, with probability $((N - i) / N)^2$)
+	    \item $A$ reproduces, and $B$ dies.  ($i_{t + 1} = i_t + 1$, with probability $(i(N - i) / N^2)$)
+	    \item $B$ reproduces, and $A$ dies.  ($i_{t + 1} = i_t - 1$, with probability $(i(N - i) / N^2)$)
+    \end{itemize}
+    \item With these probabilities, we can write our rules of change as:
+	    \[i_{t + 1} = \begin{cases}
+            i_t - 1 & \frac{i (N - i)}{N^2} \\
+            i_t + 1 & \frac{i (N - i)}{N^2} \\
+            i_t & \frac{N^2 - 2iN + 2i^2}{N^2}
+        \end{cases}\]
+    \item If we draw a transition matrix, where every $i$ is a state, then every state has a loop and can only move to the two states next to it.  (Except for $i = 0$ or $i = N$, which are sinks.)
+\end{itemize}
+We can define a variable $X_i$ as the probability of ending up at $N$, when starting from $i$.
+\begin{itemize}
+	\item There are only two possible endpoints, $N$ and $0$.  $i$'s closer to zero will more likely end up at $0$ than $N$.
+	\item Therefore, $X_0 = 0$, and $X_N = 1$.  What about at any other $i$?
+	\item $X_i = P_{i, i - 1}X_{i - 1} + P_{i, i}X_{i} + P_{i, i + 1}X_{i + 1}$, where $P_{a, b}$ represents the probability of transitioning from state $a$ to $b$.
+	\item Solving for $X_i$ is an exercise for the reader, but $X_i = \frac{i}{N}$.
+	\item Notice that if $N$ is big, then the fraction is close to zero.  If $N$ is small, then the fraction is huge!  
+    \begin{itemize}
+        \item The implication of this is that population drift does not occur in large populations (large $N$), because usually $i$ starts so small that it is more likely to go to zero than to become dominant.
+        \item Meanwhile, if the population is small, random mutations are much more powerful.
+    \end{itemize}
+\end{itemize}
 
 
 \end{document}
