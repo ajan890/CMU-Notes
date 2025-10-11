@@ -197,7 +197,6 @@ Now the middle number of the parent node is pushed to the root, and we split the
 	\item Also, if the parent is full, we would create a new (empty) node above the parent, and do a split.  This creates a new root with two branches.
 \end{itemize}
 
-
 \section*{a, b - Trees}
 The more general case for the $2, 3$-Tree is the $a, b$-Tree
 \begin{itemize}
@@ -208,6 +207,7 @@ The more general case for the $2, 3$-Tree is the $a, b$-Tree
         \item $a \geq 2$ because otherwise we can't have branches.
 	    \item $b \geq 2a - 1$ because otherwise split does not work.
     \end{itemize}
+    \item Note that there is also a \textbf{B-Tree}, which is a subset of a, b-Trees where $a = \frac{b + 1}{2}$, where $b$ is odd.  It is basically a tree that perfectly matches the requirements for the $a, b$-Tree.
 \end{itemize}
 Suppose we have a node with $b$ keys and $b + 1$ children, and we need to split.  What do we do?
 \begin{itemize}
@@ -232,7 +232,7 @@ In summary:
 
     \node[thick, draw, rectangle, minimum width=1.6cm, minimum height=0.6cm] at (-3, -3) (rootBL) {};
     \node[thick, draw, rectangle, minimum width=1.6cm, minimum height=0.6cm] at (-3, -4) (L1BL) {$ABCDE$};
-    \node[label=below:{Split}] at (0, -3.5) (arrow) {$\Longleftrightarrow$};
+    \node[label=below:{Split}] at (0, -3.5) (arrow) {$\Longrightarrow$};
     \node[thick, draw, rectangle, minimum width=1.5cm, minimum height=0.6cm] at (3, -3) (rootBR) {$C$};
     \node[thick, draw, rectangle, minimum width=1.5cm, minimum height=0.6cm] at (2, -4) (L1N1BR) {$AB$};
     \node[thick, draw, rectangle, minimum width=1.5cm, minimum height=0.6cm] at (4, -4) (L1N2BR) {$DE$};
@@ -242,5 +242,51 @@ In summary:
     \draw[->] (rootBR) edge (L1N2BR);
 \end{tikzpicture}
 \end{center}
+
+\subsubsection*{Merge}
+What if we wish to delete nodes?  We can't just leave empty nodes, so we need to add a \texttt{merge} function.
+\begin{center}
+\begin{tikzpicture}
+    \node[thick, draw, rectangle, minimum width=1.5cm, minimum height=0.6cm] at (-3, 0) (rootL) {$C$};
+    \node[thick, draw, rectangle, minimum width=1.5cm, minimum height=0.6cm] at (-4, -1) (L1N1L) {$AB$};
+    \node[thick, draw, rectangle, minimum width=1.5cm, minimum height=0.6cm] at (-2, -1) (L1N2L) {$DE$};
+    \node[label=below:{Merge}] at (0, -0.5) (arrow) {$\Longrightarrow$};
+    \node[thick, draw, rectangle, minimum width=1.5cm, minimum height=0.6cm] at (3, -0.5) (rootR) {$ABCDE$};
+    \node[] at (4.7, -0.5) (placeholder) {};
+
+    \draw[->] (rootL) edge (L1N1L);
+    \draw[->] (rootL) edge (L1N2L);
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Delete Algorithm}
+As just alluded to, our delete algorithm relies on the merge function.
+\begin{center}
+    [INSERT IMAGE]
+\end{center}
+
+\section*{Variants of a, b-Trees}
+\subsection*{B-Trees}
+\textbf{B-Trees} are a subset of a, b-Trees where $a = \frac{b + 1}{2}$, where $b$ is odd.  It is basically a tree that perfectly matches the requirements for the $a, b$-Tree.
+
+\subsection*{B$^+$-Trees}
+The B$^+$-Tree is a subset of the B-Tree, where each node also stores the parent's keys.
+\begin{itemize}
+	\item We can define $M = 2a = b + 1$.
+	\item All nodes have between $a$ and $m - 1$ keys, except the root (minimum 2).
+	\item We can add an additional property that all client (child) nodes contain copies of parent key.
+	\item Leaves are ``external'' (as in, external storage).
+\end{itemize}
+
+\begin{center}
+    [INSERT IMAGE]
+\end{center}
+An real-world example of a B$^+$-Tree is a network attached storage (NAS).  A NAS stores directories in a B$^+$-Tree.  The tree stores directory entries in the tree (e.g., directory file), and the actual files in other parts of storage.
+
+\subsubsection*{Runtime Analysis}
+Suppose our B$^+$-Tree has $n$ elements.  If we write the height of the tree as a function of $n$, we get
+\[\log_{\frac{M}{2}}(n) \geq \#\text{levels} \geq \log_{m - 1}(n)\]
+This means that our search time must be bounded by $\log_{m - 1}(n)$ and $\log_{\frac{m}{2}}(n)$, since at worst we must traverse the height of the tree.  Search runs in $\Theta(\log(n))$. 
+
 
 \end{document}
