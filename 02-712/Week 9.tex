@@ -1,0 +1,187 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+\newcommand{\pr}{\text{Pr}}
+
+\graphicspath{{./assets/images/Week 9}}
+
+\title{02-712 Week 9 \\ \large{Biological Modeling and Simulation}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Probability and Sampling}
+Suppose we have a colony of fruit flies, some have white eyes and some have black eyes.  Let $S$ be our \textbf{sampling space} (set of outcomes), which contains $n$ flies.  We can label the flies as
+\[S = \{0, 1, 2, \dots, n\}\]
+An \textbf{event set} is a set of possible events.  $E = S^*$.  For example,
+\begin{itemize}
+	\item $\{0\}$ = we only select the first fly
+	\item $\{0, 2, 4, \dots\}$ = we select even number flies
+	\item $\{0, 1, 2, \dots, n\}$ = we select all the flies.
+\end{itemize}
+A \textbf{probability density function} (pdf) is a function $P \::\: E \rightarrow \mathbb{R}$, which maps the event set to real numbers.  For example:
+\begin{itemize}
+	\item $\forall e \in E, 0 \leq p \leq 1$
+	\item $P(\emptyset) = 0$
+	\item If the events are independent, we know that $P(e_1 \cup e_2 \cup \cdots \cup e_n) = P(e_1) + P(e_2) + \dots + P(e_n)$ with $e_i \cap e_j = \emptyset \forall i, j$
+\end{itemize}
+$e$ refers to events.\\\\
+A \textbf{random variable} is a function $X \::\: S \rightarrow \mathbb{R}$.  We might declare that $X$ is a random variable that returns 1 if at least one black-eyed fly is chosen, 0 otherwise.
+Therefore,
+\begin{align*}
+    X(0) &= 0 \\
+    X(1) &= 1 \\
+    X(2) &= 1
+\end{align*}
+Using the probability density function, we can derive that $\pr\{X = 0\} = \frac{1}{4}$, $\pr\{X = 1\} = \pr\{1\} + \pr\{2\} = \frac{1}{2} + \frac{1}{4} = \frac{3}{4}$.
+
+\subsection*{Discrete Random Variables}
+\begin{itemize}
+    \item A \textbf{Bernoulli} random variable is two disjoint events, $A$ and $B$, such that $\pr(A) = p$ and $\pr(B) = 1 - p$.  Basically, the outcome is either $A$ or $B$.
+    \item A \textbf{Binomial} random variable is a sum of $n$ bernoulli events.  $\sum n$ independently distributed Bernoulli trials, where 
+    \begin{itemize}
+        \item $n$ = num trials
+        \item $p$ = probability per trial
+        \item $S = \{0, 1, 2, \dots, n\}$
+        \item $x(i) = i$
+        \item In our fly example, this would be like, if we chose $n$ flies, and each fly has a $p$ chance of having black eyes, then what is the chance we get $k$ black-eyed flies? 
+        \item The formula: $\pr \{X = k\} = {n \choose k} p^k (1 - p)^{n - k}$
+    \end{itemize}
+    \item A \textbf{Geometric} random variable is one where the sample space is $S = \{1, 2, \dots, \infty\}$, and $x(i) = i$. 
+    \begin{itemize}
+	    \item We want to know how many trials need to be done before we get one successful trial.  
+	    \item This means the formula is $\pr\{X = k\} = (1 - p)^{k - 1}p$.  Basically, $k - 1$ failed trials (with their probabilities) followed by the single successful trial at the end.
+	    \item For the fly example, how many flies do we need to check the eye color before we find one that has black eyes?
+    \end{itemize}
+    \item A \textbf{Poisson} random variable is a set of events that is based on an exponential.
+    \begin{itemize}
+        \item $S = \{0, 1, 2, \dots, \infty\}$
+        \item $\pr(X = k) = \frac{\lambda^k}{k!}e^{-\lambda} \text{Poisson}(\lambda)$
+        \item As an example, this would be like radioactive atom decay.  They follow half-lives, and every time step will decay some percentage.  The lambda is a parameter to the function represents the number of time steps in this case.
+        \item A poisson distribution is also what the binomial distribution would look like if $n = \infty$.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Continuous Random Variables}
+These use cumulative distribution functions (cdf) instead of pdf, which describes the probability that the value of $X$ is less than a given value $k$.  Additionally, since the distribution is continuous, the probability of landing on any exact value is zero.  (It is one value, out of an infinite range of values).
+
+There are some requirements for continuous random variables:
+\begin{enumerate}
+	\item $f(x) \geq 0 \forall x$
+	\item $\int_{-\infty}^{\infty} f(u) \dd u = 1$
+	\item For any $(a, b)$, $\pr(a \leq X \leq b) = \int_a^b f(u) \dd u$
+\end{enumerate}
+
+$f(X)$ represents the integral of the function.  The graph represents the probability the value is less than a threshold value.
+$F(x_0)$ represents the probability that $x$ is a given value.
+Some distributions are:
+\begin{itemize}
+	\item \textbf{Uniform distribution:}
+	\[f(X) = \begin{cases} 0 & x < a \\ \frac{1}{b - a} & a \leq x < b \\ 0 & x > b \end{cases}\]
+    \begin{itemize}
+	    \item The uniform distribution has a cdf graph that looks like a ramp from $a$ to $b$, from $y = 0$ to $y = 1$.
+    \end{itemize}
+    \item \textbf{Normal (Gaussian) distribution:}
+    \[N(\mu, \sigma^2)\]
+    \begin{itemize}
+	    \item This is the classic bell curve function.  The center of the distribution is $\mu$, and the standard deviation is $\sigma$.
+	    \item There is no closed-form solution for the cdf, but it would be the integral of the function:
+	    \[f(x) = \frac{1}{\sqrt{2\pi} \sigma} e^{-\frac{(x - \mu)^2}{2 \sigma^2}}\]
+    \end{itemize}
+    \item \textbf{Exponential distribution:}
+	    \[\text{Exp}(\lambda)\]
+        \[f(X) = \begin{cases} 0 & x < 0 \\ \lambda e^{-\lambda x} & x \geq 0 \end{cases}\]
+        \[F(x_0) = \begin{cases} 0 & x_0 < 0 \\ 1 - e^{-\lambda x_0} & x_0 \geq 0 \end{cases}\]
+\end{itemize}
+
+\subsection*{Joint Distributions}
+Sometimes we want to model multiple random variables instead of a single one.  We may look at two variables instead:
+\begin{align*}
+\pr\{X = x_i, Y = y_i\} &= f_{xy}(x_i, y_i) \\
+\pr\{x_0 \leq X \leq x_1, y_0 \leq Y \leq Y_1\} = \int_{x = x_0}^{x_1} \int_{y = y_0}^{y_1} f_{xy}(x_i, y_i) \dd y \dd x
+\end{align*}
+Conditional probabilities also fall into this category:
+\[\pr \{X = x_i | Y = y_i\}, \quad \text{where } f_{xy}(x_i, y_i)\]
+We also have Moments:
+\begin{itemize}
+	\item Moments quantify a distribution's location, shape and scale.  It is an abstraction of expected value.
+	\item The first moment is the mean ($\mathbb{E}(x)$)
+	\item The second moment is the variance ($\mathbb{E}(x)^2$)
+	\item etc.
+\end{itemize}
+\begin{align*}
+    \mathbb{E}(x) &= \int_{-\infty}^\infty x f(x) \dd x \\
+    \text{Var}(x) &= \int_{-\infty}^\infty x^2 f(x) \dd x - \left(\int_{-\infty}^\infty x f(x) \dd x\right)^2 \\
+\end{align*}
+
+\section*{Sampling}
+\subsection*{Discrete Uniform Random Variables}
+A discrete uniform random variable is basically a random number generator.  This random variable represents a random number between the range of two numbers, often from 0 to some integer.
+\subsection*{Uniform Random Variables}
+If we want go from random integers to random floats in a range, we can do the following:
+\begin{itemize}
+	\item Suppose we want a something uniform between 0 and 1.  All we have to do is take the random number we generate, and divide it by the range.  It would give a number between 0 and 1 that has decent precision if the original max integer is large.
+	\item To get a value between an arbitrary range $[a, b)$, then divide the random integer by $(b - a)$, then add $a$.
+\end{itemize}
+
+\subsection*{Fundamental Transformation Law of Probability}
+Given $X$ and density $f(X)$ and the function $y(X) \::\: \mathbb{R} \rightarrow \mathbb{R}$, $y(X)$ has density $g(y)$ where $g(y) = f(x) \left|\frac{\dd y}{\dd x} \right|$
+
+\subsubsection*{Transformation Method}
+Let $f(x) = u(0, 1]$.  $u$ is the uniform distribution.  Let $g(y)$ be the target density.\\\\
+Let $F(x) = 1$ on $(0, 1]$. \\\\
+If $\frac{\dd x}{\dd y} = g(y)$, then it implies $\dd x = g(y) \dd y$.
+\[x = \int \dd x = \int g(y) \dd y = G(y)\]
+In summary, there are four steps:
+\begin{enumerate}
+	\item Integrate $x$
+	\item Invert $G^{-1}(u)$
+	\item Sample: $x = u(0, 1]$
+	\item Transform: $y = G^{-1}(x)$
+\end{enumerate}
+What we are really doing here is if the CDF is a curve on a graph (it will range from 0 to 1 in the $x$ (vertical)-axis), we are using the curve and the values $x_0$ and $x_1$ to estimate what range of $y$ (horizontal axis) would generate those values.
+\begin{itemize}
+	\item What if we can't invert $G$?
+	\begin{itemize}
+        \item We know that $y = G^{-1}(x)$.  Therefore, $G(y) = x$, and $G(y) - x = 0$.  From here, we can input this into a zero finder and solve.
+    \end{itemize}
+    \item What if we can't integrate $g(y)$ to get $G(y)$?
+    \begin{itemize}
+	    \item We can use one of the many numerical integration methods from before.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{The Rejection Method}
+Suppose we want to find a density function that we don't know the function of, but we have a sample curve with a lot of noise.  How do we find the cdf?
+\begin{itemize}
+	\item One way is with the rejection method, where we choose a function $h(x)$ that is strictly greater than our function $g(x)$ for all of $x$.  Then, let $A = \int_{-\infty}^\infty h(u) \dd u$, and $F(x) = \frac{1}{A} h(x)$.
+	\item Then, pick a point below the envelope function, and then test if that point happens to also be under $g(x)$.  If it is, then we consider it as a fair random sample under $g(x)$.  Otherwise, we throw away the point and try again.
+	\item This is an easier method than Transformation, but it would take a lot of time if the envelope is bad, since most of the sampled points will fail.
+\end{itemize}
+
+\end{document}
