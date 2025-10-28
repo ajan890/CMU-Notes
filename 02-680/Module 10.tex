@@ -41,5 +41,185 @@ For a matrix $A \in \mathbb{R}^{n \times n}$, we define
 	\item an \textbf{eigenvector} $x \in \mathbb{R}^n \setminus 0$ such that 
 	\item $Ax = \lambda x$
 \end{itemize}
+To say that $Av = \lambda v$ means that $Av$ and $\lambda v$ are \textbf{collinear} with the origin.   So, an eigenvector of $A$ is a nonzero vector $v$ such that $Av$ and $v$ lie on the same line through the origin.  In this case, $Av$ is a scalar multiple of $v$; the eigenvalue is the scaling factor.
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{M10_1.png} 
+\end{center}
+For example, let
+\[A = \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix},\quad x = \begin{bmatrix} 2 \\ 1 \end{bmatrix}, \quad\lambda = 5\]
+Then, we can calculate both $Ax$ and $\lambda x$.
+\begin{align*}
+    Ax &= \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix} \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 10 \\ 5 \end{bmatrix} \\
+    \lambda x &= 5 \cdot \begin{bmatrix} 2 \\ 1 \end{bmatrix} = \begin{bmatrix} 10 \\ 5 \end{bmatrix}
+\end{align*}
+We can verify eigenvectors by doing this multiplication and seeing if $Aw$ is a scalar multiple of $w$.
+
+\subsection*{Finding Eigenelements}
+Suppose we have a matrix we want to find the eigenelements for.  Consider $A = \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix}$ as an example.  The eigenvectors must fit the form: $Av = \lambda v$, so we can write the equation:
+\[\begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = \lambda \begin{bmatrix} v_1 \\ v_2 \end{bmatrix}\]
+Now we can simplify:
+\begin{align*}
+    &= \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = \lambda \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} \\
+    &= \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} - \lambda \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \end{bmatrix} \\
+    &= \left(\begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix} - \lambda \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}\right) \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \end{bmatrix}
+\end{align*}
+This will only have \textbf{nontrivial} solutions when this left matrix is \textbf{singular}.  In other words, the determinant must be equal to zero.\\\\
+The general process to solve for eigenvectors and eigenvalues is as follows:
+\begin{enumerate}
+	\item Subtract lambda from the main diagonal of matrix $A$.
+	\item Find the determinant of the resulting matrix, and solve for all the possible values of $\lambda$.
+	\begin{itemize}
+	    \item The polynomial we get in terms of $\lambda$ while solving for them is called the \textbf{characteristic equation} (or characteristic polynomial) of $A$.
+    \end{itemize}
+    \item Plug in the solutions of $\lambda$ and solve for the vectors.
+\end{enumerate}
+For example, let $A = \begin{bmatrix} 3 & 4 \\ 2 & 1 \end{bmatrix}$.  Then, we first find the determinant with the $\lambda$'s.
+\[\det \left(\begin{bmatrix} 3 - \lambda & 4 \\ 2 & 1 - \lambda \end{bmatrix} \right)\]
+When we simplify, we get the characteristic equation $(3 - \lambda)(1 - \lambda) - (4)(2) = 0$, which simplifies to $\lambda^2 - 4\lambda - 5$.\\\\
+Solving, we get $\lambda = -1, 5$.  Now we can plug the values in:
+\begin{align*}
+    \begin{bmatrix} 3 - (-1) & 4 \\ 2 & 1 - (-1) \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} &= \begin{bmatrix} 0 \\ 0 \end{bmatrix} \Rightarrow \begin{bmatrix} 4 & 4 \\ 2 & 2 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \end{bmatrix} \\
+    \begin{bmatrix} 3 - (5) & 4 \\ 2 & 1 - (5) \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} &= \begin{bmatrix} 0 \\ 0 \end{bmatrix} \Rightarrow \begin{bmatrix} -2 & 4 \\ 2 & -4 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \end{bmatrix}
+\end{align*}
+Solving for $v_1$ and $v_2$ for both cases gives the eigenvectors $\begin{bmatrix} 1 \\ -1 \end{bmatrix}$ and $\begin{bmatrix} 2 \\ 1 \end{bmatrix}$.
+
+\subsection*{Linear Independence}
+The eigenvectors $x_1, x_2, \dots, x_n$ of a matrix $A \in \mathbb{R}^{n \times n}$ with $n$ \textbf{distinct} eigenvalues $\lambda_1 \neq \lambda_2 \neq \dots \neq \lambda_n$ are linearly independent.
+\begin{itemize}
+	\item the eigenvectors form a \textbf{basis} in $\mathbb{R}^n$
+	\item By the spectral theorem, \textbf{if} $A \in \mathbb{R}^{n \times n}$ is \textbf{symmetric}, there exists an \textbf{orthonormal basis} of the corresponding vector space $V$ consisting of eigenvectors of $A$, and each eigenvector is real.
+	\begin{itemize}
+        \item $A = V \land V^T$ where $V \in \mathbb{R}^{n \times n}$ is an orthonormal matrix of eigenvectors of $A$, and $\land \in \mathbb{R}^{n \times n}$ is a real diagonal matrix of eigenvalues.
+    \end{itemize}
+    \item If a matrix is symmetric (e.g., $A = A^T$), then all eigenvalues are real and all eigenvectors are orthonormal.
+    \item For any matrix $B \in \mathbb{R}^{m \times n}$, $B^T B$ is a square, symmetric, \textbf{positive semidefinite}.
+    \item A matrix $M$ is "positive semi-definite" if and only if $x^T M x \geq 0 \quad \forall x \in \mathbb{R}^n$.
+\end{itemize}
+
+\subsection*{Characteristic Polynomial}
+Let $A$ be an $n \times n$ matrix.  The characteristic polynomial of $A$ is the function $f(\lambda)$ given by
+\[f(\lambda) = \det(A - \lambda I_n)\]
+Finding the characteristic polynomial means computing the determinant of the matrix $A - \lambda I_n$, whose entries contain the unknown $\lambda$.
+\begin{itemize}
+	\item Basically, subtract $\lambda$ from each element of the main diagonal, and find the determinant.
+\end{itemize}
+The characteristic polynomial can be used to compute \textbf{eigenvalues}.  Eigenvalues are roots of the characteristic polynomial.
+\begin{itemize}
+	\item Setting the characteristic polynomial to zero (e.g., $\det(A - \lambda I_n) = 0$) gives the \textbf{characteristic equation}.  This is the equation that you solve to find the eigenvalues of matrix $A$.
+\end{itemize}
+Note that
+\begin{itemize}
+	\item the \textbf{determinant} is the product of all the eigenvalues.
+	\item the \textbf{rank} of $A$ is equal to the number of non-zero eigenvalues.
+	\item If $A$ is \textbf{nonsingular}, then $1 / \lambda i$ is an eigenvalue of $A^{-1}$ with the same associated original eigenvector.
+\end{itemize}
+
+\subsection*{Triangular Matrices}
+Triangular matrices (those where all of the entries above/below the diagonal ard 0) make computing both a determinant and eigenelements \textbf{easier}.
+\begin{itemize}
+	\item The determinant becomes the product of the entries on the diagonal.
+	\item The characteristic equation of the matrix is then the product of the diagonals in $A - \lambda I_n$, and thus the eigenvalues are the original values in the diagonal of $A$.
+\end{itemize}
+A matrix $T \in \mathbb{R}^{n \times n}$ is \textbf{triangular} if all values on one side of the diagonal are 0.  There are two types: upper-triangular and lower-triangular.
+\begin{align*}
+    &\begin{bmatrix} * & * & * & * \\ 0 & * & * & * \\ 0 & 0 & * & * \\ 0 & 0 & 0 & * \end{bmatrix} &\begin{bmatrix} * & 0 & 0 & 0 \\ * & * & 0 & 0 \\ * & * & * & 0 \\ * & * & * & * \end{bmatrix} \\
+    &\text{upper-triangular} & \text{lower-triangular}
+\end{align*}
+
+\subsection*{Additional Terminology}
+\begin{itemize}
+	\item Two matrices $A$ and $A' \in \mathbb{R}^{n \times n}$ are \textbf{equivalent} if there exists nonsingular matrices
+	\[S \in \mathbb{R}^{n \times n}, T \in \mathbb{R}^{m \times m} \text{ such that } A' = T^{-1}AS\]
+    \item Two matrices $B$ and $B' \in \mathbb{R}^{n \times n}$ are \textbf{similar} if there exists a nonsingular matrix $P \in \mathbb{R}^{n \times n}$ such that $B' = P^{-1} BP$.
+    \item Note that all similar matrix pairs are equivalent, but not all equivalent matrix pairs are similar.  Or, "similar" $\Rightarrow$ "equivalent".
+\end{itemize}
+
+
+\section*{Eigendecomposition and Diagonalization}
+\subsection*{Diagonalization}
+A diagonal matrix $D \in \mathbb{R}^{n \times n}$ has the value $0$ in all off-diagonal locations:
+\[\begin{bmatrix} c_1 & \cdots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \cdots & c_n \end{bmatrix}\]
+A matrix $A \in \mathbb{R}^{n \times n}$ is \textbf{diagonalizable} if it is similar to a diagonal matrix $D \in \mathbb{R}^{n \times n}$.
+\begin{itemize}
+	\item If there exists a nonsingular $P \in \mathbb{R}^{n \times n}$ such that $D = P^{-1} AP$.
+\end{itemize}
+Let $A \in \mathbb{R}^{n \times n}$, let $\lambda_1, \dots, \lambda_n$ be scalars, and let $p_1, \dots, p_n$ be vectors in $\mathbb{R}^n$.  Define
+\begin{itemize}
+	\item $P = [p_1, \dots, p_n]$ (here the $p_i$'s are the columns of a matrix) and
+	\item $D \in \mathbb{R}^{n \times n}$ be a diagonal matrix with diagonal values $\lambda_1, \dots, \lambda_n$.
+\end{itemize}
+Then, $AP = PD$ if and only if
+\begin{itemize}
+	\item $\lambda_1, \dots, \lambda_n$ are the eigenvalues of $A$ and
+	\item $p_1, \dots, p_n$ are the corresponding eigenvectors.
+\end{itemize}
+If we create a new matrix $X \in \mathbb{R}^{n \times n}$ where each column is one of the eigenvectors of $A$, then create $\land \in \mathbb{R}$
+\begin{itemize}
+	\item $n \times n$ which contains the eigenvalues on the diagonal (i.e., $\land = \langle \lambda_1, \lambda_2, \dots, \lambda_n \rangle I_n$)
+	\item it turns out that $AX = X\land$ because it satisfies all of the eigenelement sets simultaneously.
+\end{itemize}
+If the eigenvectors are linearly independent then $X$ is invertible.  If $X$ is invertible, 
+\[A = X\land X^{-1}\]
+We call $A$ diagonalizable if it can be rewritten this way.  This is sometimes also called an eigendecomposition.
+
+\subsection*{Eigendecompositions}
+A square matrix $A \in \mathbb{R}^{n \times n}$ can be factored into $A = PDP^{-1}$ where $P \in \mathbb{R}^{n \times n}$ and $D$ is a diagonal matrix whose entries are the eigenvalues of $A$, if and only if the eigenvalues form a basis of $\mathbb{R}^n$.
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{M10_2.png} 
+\end{center}
+
+\section*{Singular Value Decomposition (SVD)}
+The form $A = X \land X^{-1}$ is similar to what is known as the Singular Value Decomposition (SVD) of a \textbf{rectangular} matrix $R \in \mathbb{R}^{n \times n}$ as
+\[R = USV\]
+(sometimes $\Sigma$ is used in place of $S$ but this is a reserved character in this class) where $U \in \mathbb{R}^{n \times n}$, $V \in \mathbb{R}^{m \times m}$ and
+\[S \in \left\{\widehat{\text{diag}_{n \times m}}(x) | x \in \mathbb{R}^{\min(n, m)}\right\} \subset \mathbb{R}^{n \times m}\]
+Here, the
+\[\widehat{\text{diag}_{n \times m}}(\langle x_1, x_2, \dots, x_m \rangle) = 
+\begin{bmatrix} x_1 & 0 & \cdots & 0 \\ 
+                0 & x_2 & \cdots & 0 \\ 
+                \vdots & \vdots & \ddots & \vdots \\ 
+                0 & 0 & \cdots & x_m \\ 
+                0 & 0 & \cdots & 0 \\ 
+                \vdots & \vdots & \vdots & \vdots \end{bmatrix} 
+\text{ or } \begin{bmatrix} 
+                x_1 & 0 & \cdots & 0 & 0 & \cdots \\ 
+                0 & x_2 & \cdots & 0 & 0 & \cdots \\ 
+                \vdots & \vdots & \ddots & \vdots & \vdots & \vdots \\ 
+                0 & 0 & \cdots & x_m & 0 & \cdots \end{bmatrix}\]
+It produces the left matrix when $n > m$ and the right when $m > n$.  That is, it creates a diagonal matrix padded with $0$ rows or columns to make it the correct size.
+
+\subsection*{Meaning of SVD}
+Let's assume you are in the situation where you have $n$ users who reviewed $m$ movies and those ratings are in matrix $E \in \mathbb{R}^{n \times m}$.  If you can find the SVD of the matrix such that $E = FGH$ such that
+\begin{itemize}
+	\item $F \in \mathbb{R}^{n \times m}$, $H \in \mathbb{m \times m}$ and $G$ is a diagonal $m$-dimension square matrix each of these represents something about your set.  
+	\item $F$ and $H$ show commonalities between users or movies respectively, and $G$ is a connection matrix.
+\end{itemize}
+Another example would be gene correlations, assume you have multiple assays of a gene's expressions in various conditions.  If you can decompose that matrix using the theory above you'd have a correlation matrix of genes, correlation of assays, and a relationship matrix.  The details about finding this are beyond the scope of this course.
+
+\subsection*{SVD Theorem}
+Let $A \in \mathbb{R}^{m \times n}$ be a rectangular matrix of rank $r \in [0, \min(m, n)]$.  The SVD of $A$ is a decomposition of the form, where
+\begin{itemize}
+	\item $U \in \mathbb{R}^{m \times m}$ and $V \in \mathbb{R}^{n \times n}$ are orthogonal matrices and
+	\item $\Sigma \in \mathbb{R}^{m \times n}$ is a matrix with $\Sigma_{ii} = \sigma_i$ and all other values equal 0.
+\end{itemize}
+It is worth noting that the columns of $U$ ($u_1, u_2, \dots, u_m$) and $V$ ($v_1, v_2, \dots, v_n$) are called the left- and right-singular vectors, respectively.  Additionally, the $\sigma_i$'s are called \textbf{singular values} and $\sigma_1 \geq \sigma_2 \geq \dots \geq \sigma_n \geq 0$
+
+\subsection*{Intuition}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{M10_3.png} \\
+    \includegraphics*[width=\textwidth]{M10_4.png} 
+\end{center}
+
+\subsection*{Constructing SVD}
+Recall that in Eigendecomposition for symmetric positive semidefinite matrices, we had $S = S^T = PDP^T$.  And for SVD we have $S = U\Sigma V^T$.
+\begin{itemize}
+	\item if $V = U = P$ and $\Sigma = D$, then they are the same.
+\end{itemize}
+Recall that we can make a square positive semidefinite from any matrix multiplied by its transpose: $A^T A$.  Now, we need to find $U$ to be the orthonormal matrix paired with $V^T$ such that:
+\[u_i = \frac{Av_i}{\Vert Av_i \Vert} = \frac{1}{\sqrt{\lambda_i}} Av_i = \frac{1}{\sigma_i} Av_i \Longleftrightarrow Av_i = \sigma_i u_i \quad i = 1, \dots, \min(m, n)\]
+Note that
+\[(Av_i)^T (Av_i) = v_i^T(A^T A) v_i = v_i^T (\lambda_i v_i) = \lambda_i (v_i^T v_i) = \lambda_i\]
+
+
 
 \end{document}

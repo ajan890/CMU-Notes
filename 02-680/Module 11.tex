@@ -1,0 +1,72 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Module 11}}
+
+\title{02-680 Module 11 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Calculus Review}
+\subsection*{Derivatives}
+For some function $f(x)$ where $x$ is a scalar, 
+\begin{itemize}
+	\item the derivative $\frac{\dd f}{\dd x}$ is the change in the value of $f$ as you increase/decrease $x$.
+	\item formally, $\frac{\dd f}{\dd x} = \lim_{h \rightarrow 0} \frac{f(x + h) - f(x)}{h}$
+	\item Know basic derivatives.  (e.g., polynomials, trig functions, inverse trig functions, exponentials, logarithms)
+	\item Know basic derivative rules.  (e.g., chain rule, product rule, quotient rule)
+\end{itemize}
+
+\subsection*{Integrals}
+For some function $f'(x)$ where $x$ is a scalar, the integral $\int f'(x)$ can be thought of as the inverse of differentiation.\\\\
+For example:
+\begin{align*}
+    f'(x) &= nx^{n - 1} \\
+    \int nx^{n - 1} \dd x &= n \int x^{n - 1} \dd x \\
+    &= n \cdot \frac{x^n}{n} + C
+    &= x^n + C
+\end{align*}
+Know the following:
+\begin{itemize}
+	\item Rules: constant multiple rule, polynomial rule, exponent rules, log rule, sum rule.
+\end{itemize}
+
+\subsection*{Application: Gradient Based Optimization}
+\textbf{Optimization} is the task of either minimizing or maximizing some function.\\\\
+For some $f(x)$, find the $x$ that maximizes $f(x)$.  Using mathematics:
+\[x^* = \argmax_{\forall x} f(x)\]
+Note that above we use maximization, but this would be equivalent to minimizing some function $g(x) = -f(x)$.
+
+\subsection*{Gradient Descent}
+Remember the derivative of a function is the rate of change, or slope; thus it can be used to tell us how to change $x$ in order to have a maximizing impact on $f(x)$.
+\[\frac{\dd f}{\dd x} \approx \frac{f(x + \epsilon) - f(x)}{\epsilon} \rightarrow f(x + \epsilon) \sim f(x) + \epsilon f'(x) \rightarrow f(x + \epsilon) - f(x) \sim \epsilon f'(x)\]
+When $f'(x) = 0$ we call this a \textbf{critical}, or \textbf{stationary}, point.
+
+\end{document}

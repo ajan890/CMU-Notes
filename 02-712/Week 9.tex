@@ -182,6 +182,69 @@ Suppose we want to find a density function that we don't know the function of, b
 	\item One way is with the rejection method, where we choose a function $h(x)$ that is strictly greater than our function $g(x)$ for all of $x$.  Then, let $A = \int_{-\infty}^\infty h(u) \dd u$, and $F(x) = \frac{1}{A} h(x)$.
 	\item Then, pick a point below the envelope function, and then test if that point happens to also be under $g(x)$.  If it is, then we consider it as a fair random sample under $g(x)$.  Otherwise, we throw away the point and try again.
 	\item This is an easier method than Transformation, but it would take a lot of time if the envelope is bad, since most of the sampled points will fail.
+	\item We can rate how good the envelope is by looking at the area under the envelope.  The probability of a good pick is the reciprocal of that.  (This is because the area of the pdf/cdf must be equal to 1, so we are comparing the two areas.)
 \end{itemize}
+This can also be done with discrete random variables.
+
+\section*{Markov Models}
+A Markov model is a finite state system.  
+\begin{itemize}
+	\item To move between the states, we have \textbf{transition probabilities}.  E.g., state 1 has a 50\% chance of transitioning to itself, and 50\% chance of transitioning to state 2.  State 2 has percent chance of going to itself, 1, and 3.  etc.
+	\item All the edges leaving a given state must add up to 1 since they represent probabilities.
+\end{itemize}
+Suppose we started at a given state, and just simulated moving between states.  This series of states, e.g. $s_1, s_2, s_3, s_3, s_3, s_4, s_2$, is known as a \textbf{Markov chain}.
+\begin{itemize}
+	\item Given a Markov chain, we can calculate the probability of that chain occurring by multiplying the state transition probabilities.
+\end{itemize}
+To define a Markov model, we need the following parts:
+\begin{itemize}
+	\item State set $Q = \{q_1, q_2, \dots, q_n\}$.  These are our states.
+	\item Starting density $\pr \{q(0) = q_i\} = p_i$.  Decides the probability of starting the chain at a given state.
+	\item Transition matrix $\pr \{q(n + 1) = q_j | q(n) = q_i\} = p_{ij}$
+\end{itemize}
+From here, we can simulate the Markov model.  The model above is a \textbf{1st order} Markov model, since we only consider the previous state.
+\begin{itemize}
+	\item There also exist $k$-th order Markov models, which consider more previous states for the transition probabilities.
+\end{itemize}
+
+\subsection*{Simulating Markov Models}
+Starting at the first step, we have 
+\[\begin{bmatrix} \pr \{q(0) = q_1\} \\ \pr\{q(0) = q_2\} \end{bmatrix} = \begin{bmatrix} p_1 \\ p_2 \end{bmatrix}\]
+This is simply the starting density, since that defines which state we start in.  Now, how do we find the probabilities for step 2?
+\[\begin{bmatrix} \pr \{q(1) = q_1\} \\ \pr\{q(1) = q_2\} \end{bmatrix} = \begin{bmatrix} (p_1 p_{11} + p_2 p_{21}) \\ (p_2 p_{22} + p_1 p_{12}) \end{bmatrix}\]
+What this means is that the probability we are in state 1 at step 2 is the sum of
+\begin{itemize}
+	\item Probability we were in state 1 in step 1, times the probability we stay in state 1
+	\item Probability we were in state 2 in step 1, times the probability we transitioned from 2 to 1.
+\end{itemize}
+The same logic can be applied to find the probability we are in state 2 at step 2.  Continuing this process, we can find the probabilities at any step.  This is basically a series of matrix multiplications when implemented.
+
+\subsection*{Markov Model End Behavior}
+We can have three different types of model.
+\begin{itemize}
+	\item Type 1: the model converges.  In a state machine representation, exactly one of the states has a transition probability of 1 to itself.  This means that once this node is reached, it stays there.  In other words, starting at any other state (assuming the graph is connected) will eventually end up there.
+	\item Type 2: the model diverges.  In a state machine representation, we have multiple sink nodes.  In an infinite amount of time, starting at any state would result in one of the sink states.  From this, we can gain a \textbf{stationary density} vector, which stores the probabilities of \textit{ending} at each state.  For non-sink nodes, this probability is always 0.
+	\item Type 3: the model oscillates.  In a state machine representation, we have no sink nodes.  Therefore, at an infinite amount of time, the current state may be any state.  We also can derive a stationary density by seeing the values the probabilities converge to.
+\end{itemize}
+The stationary densities can be computed by finding the eigenvectors of the transition matrix.  The eigenvector is the ending state density.  The lambda should be equal to 1, or otherwise it does not make sense.
+\begin{itemize}
+	\item The only case with convergence is when there is exactly one eigenvector with an eigenvalue of 1 or -1.
+\end{itemize}
+
+\subsection*{Kolmogourov Criterion}
+For any cycle $q_1, q_2, \dots, q_k$, if the following is true: 
+\[p_{12} \times p_{23} \times p_{34} \times \cdots \times p_{k-1, k} \times p_{k, 1} = p_{k, k - 1} \times p_{k - 1, k - 2} \times \cdots \times p_{1, k}\]
+e.g., any cycle returns the same probability going in reverse direction, then there is a unique stationary density, and we have detailed balance.
+\begin{itemize}
+	\item Detailed balance means $\forall i, j \quad \pi_i p_{ij} = \pi_j \pi_{ji}$, where $\pi$ represents the stationary density.
+\end{itemize}
+
+\subsubsection*{Mixing Time}
+The mixing time is essentially an index for how long it takes to reach the stationary density.  Or, how many steps need to be taken before all the probabilities converge?
+\begin{itemize}
+	\item This is related to the eigenvalues of the mixing time.
+	\item It is the \textbf{ratio} of the two \textbf{largest eigenvalues.}
+\end{itemize}
+
 
 \end{document}

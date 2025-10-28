@@ -38,8 +38,12 @@ Problem: Given a large known, fixed \textbf{text}, e.g. a dictionary, and many u
 	\item For example, if ``uninterested'' was in the dictionary, and we wanted to search for ``interested'' or ``interest'', they should both show up.
 	\item Using any of our structures so far, there is not an efficient way to do this.
 	\item What we \textit{can} do is make a tree, where each node represents a letter, where every suffix is a path from the root to some leaf node.
+	\item We will use the string $S = ABAABA\$$.  ($\mathdollar$ is a terminus character to mark the end of the string.)
 \end{itemize}
-[insert image here]
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{W9_1.png}\\
+    \textcolor{gray}{\small{Image by Dr. Carl Kingsford @CMU}}
+\end{center}
 
 This structure allows for searching for any word in our dictionary, but also any suffix.
 \begin{itemize}
@@ -63,6 +67,114 @@ To search for a term $q$ in our text $T$, we simply follow the path down from th
 \end{itemize}
 
 \section*{Suffix Trees}
-To be continued...
+Consider the string s = $a^n b^n$, where $n \in \mathbb{Z}$.  Basically, a library of string containing a series of $a$ followed by a suffix if $b$.  The trie would look like:
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{W9_2.png}\\
+    \textcolor{gray}{\small{Image by Dr. Carl Kingsford @CMU}}
+\end{center}
+In this case, once we get into the string of $b$'s, there is only one long branch.  However, if we wanted to encode something like the human genome (with ~3B base pairs), we can't store O($n^2$) nodes like we do here.  To make this more space efficient, we can compress this.
+
+\subsection*{Key Points of Construction}
+\begin{itemize}
+	\item The number of leaves we have after compression is O($n$) with the above example.
+	\item All internal nodes are branching.
+	\item If instead we store string indices rather than the actual string on every edge, we don't have to build every substring in our tree either, which brings storage down to O($n$).
+	\item Tries are useless in practice, we usually build the suffix tree directly.
+\end{itemize}
+
+\subsection*{Building a Suffix Tree}
+\begin{itemize}
+	\item Start from the empty string (root)
+	\item Add one character at the beginning of the string, and add the suffix link too
+	\item Add the next character to the end of every suffix following the suffix link back to the root
+	\begin{itemize}
+	    \item This is equivalent to adding the next character to the end of every existing suffix.
+    \end{itemize}
+    \item Repeat until entire string is represented in the tree.
+\end{itemize}
+
+\begin{verbatim}
+current suffix = longest suffix
+do:
+    add child labeled S[i] to current suffix
+    follow suffix link to set current suffix to next
+    add suffix link to new node
+while not every letter of string is in the tree
+\end{verbatim}
+For this class, construction is not discussed much.  Use Ukkonen's Algorithm for construction in O($n$) time.
+
+\subsection*{Finding Substrings}
+Suppose we want to find the longest common \underline{substring} between $S$ and a query.
+\begin{itemize}
+	\item First, let's find the longest common \underline{prefix}.  To do this, we simply start with $q$, and walk down the suffix tree as far as we can.
+	\item Now, extending this to all substrings, we can change the "starting point" by following the suffix links.
+	\begin{itemize}
+	    \item If we get to a point where we cannot extend our prefix, we follow the last suffix link (which effectively moves the starting point forward by a few positions), and continue iterating!
+	    \item This way, the algorithm will take at longest O($m$), where $m$ is the length of the query, since we never backtrack in the query string.  This beats the naive method which is O($m^2$).
+    \end{itemize}
+\end{itemize}
+\pagebreak
+For example, suppose we want to find the longest common substring between $q = BBAA$ and $S = ABAABA$
+\begin{center}
+    \includegraphics[width=0.7\textwidth]{W9_3.png}\\
+    \textcolor{gray}{\small{Image by Dr. Carl Kingsford @CMU}}
+\end{center}
+
+\subsection*{Suffix Tree of Multiple Strings}
+Given a set $S = \{s_1, s_2, \dots, s_n\}$ sequences from an alphabet, represent as a suffix tree.  How do we construct this?
+\begin{itemize}
+	\item There is an easy way: concatenate all the strings.
+	\item Consider $S = \{aat, tag, gat\}$.  We can build an $S' = aat\$_1 tag\$_2 gat\$_3$.
+	\item Now, build a suffix tree using Ukkonen's on $S'$, iterate through each node, and delete everything past the first terminal character.
+	\item This runs in O($n$), where $n$ is the total length of all the sequences.
+\end{itemize}
+For the above example, we will get the result:
+\begin{center}
+    \includegraphics[width=\textwidth]{W9_4.png}\\
+    \textcolor{gray}{\small{Image by Dr. Carl Kingsford @CMU}}
+\end{center}
+
+\subsection*{Longest Common Substring}
+Building upon the suffix tree of multiple strings, how do we find the longest common substring between two sequences?
+\begin{itemize}
+	\item We can do this also in O($n$) time, where $n$ is the length of the two strings combined.
+	\item Build a suffix tree containing both strings of interest, and run a DFS.
+	\item Propagate the value of each leaf node (always a terminus, $\$_i$) backwards, and the deepest node that can reach both terminus would be the longest common substring.
+\end{itemize}
+We can also use this strategy to find all the strings in a database $\{S_1, S_2, \dots, S_n\}$ that contain any query, $q$.
+
+\subsection*{Longest Common Extension}
+Suppose we are given strings $S$ and $T$.  We will be provided with many pairs $(i, j)$ as queries, and we want to be able to quickly find the longest substring of $S$ starting at $i$ that matches a substring of $T$ starting at $j$.
+\begin{itemize}
+	\item Build a suffix tree containing both $S$ and $T$. 
+	\item Preprocess the tree so that the lowest common ancestors (LCA) can be found in constant time.  (We won't prove this, but it can be done in O($N$), where $N$ is the total length of the two strings.)
+	\item Create an array mapping suffix numbers to leaf nodes.
+	\item Given query $(i, j)$, 
+	\begin{itemize}
+	    \item Find the leaf nodes for $i$ and $j$
+	    \item Return string of the LCA for $i$ and $j$
+    \end{itemize}
+    \item Query can be found in O(1).
+\end{itemize}
+
+\subsection*{LCE for Palindromes}
+A palindrome has the property where the left half is equal to the reverse of the right half.  To find \textbf{maximal} palindromes in $S$ (e.g., given a center point, find the longest palindrome that contains it), we construct the reverse string, $S^r$.
+\begin{itemize}
+	\item Notice that if given a center point $i$, the right half would be a substring beginning at $i$ on the forward string, and the left half would be a string starting at $(n - i)$ on the reverse string.
+	\item With this, we can create a suffix tree containing $S$ and $S^r$, find the LCE given point $i$, and the string going from the root to that intersection would be a palindrome.
+	\item The total runtime is O($n$).
+\end{itemize}
+What if we allow mismatches in our palindrome?
+
+\subsubsection*{$k$-mismatch Palindromes}
+This is the same problem, except this time, we allow for $k$-mismatches.  For example, $TACOBAT$ has $1$ mismatch, since when comparing the left half to the reverse of the right half, there is one mismatch.
+To do this, 
+\begin{itemize}
+	\item Find the maximal palindrome from the center $i$.  Suppose it has length $2j$, so the right of the string is at position $i + j$ on $S$, and the right begins at $n - i - j$ on $S^r$.
+	\item For each $k$ mismatches, we can add one "error" letter, and repeat the process with another LCE, with our query being $i + j + 1$ on $S$ and $n - i - j - 1$ on $S^r$.
+	\item Therefore, for $k$ mismatches, it will take O($kn$).
+\end{itemize}
+
+
 
 \end{document}
