@@ -1,0 +1,183 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\opt}{\texttt{OPT}}
+
+\graphicspath{{./assets/images/Week 9}}
+
+\title{02-613 Week 9 \\ \large{Algorithms and Advanced Data Structures}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Dynamic Programming}
+Dynamic programming is type of problem that requires reusing (or storing) values or subproblems.
+
+\subsection*{Bellman-Ford is Dynamic Programming}
+As a review, Bellman-Ford is the algorithm which finds the shortest path between two points, assuming there can be negative edges (and no negative cycles).\\\\
+We define the function \opt($v, i$) as the \textbf{min cost} from $S \rightarrow v$ in $i$ steps.  ($S$ is the start node.)
+\begin{itemize}
+	\item If the best $S \rightarrow v$ path uses $< i$ edges, then \opt($v, i$) = \opt($v, i - 1$).
+	\item If the best $S \rightarrow v$ path uses $i$ edges, for some $w$, then $\opt(v, i) = d(v, w) + \opt(w, i - 1)$
+\end{itemize}
+Summarized, we have:
+\[\opt(v, i) = \min \begin{cases} \opt(v, i - 1) \\ \min_{w \in N(v)} \left[\opt(w, i - 1) + d(v, w)\right] \end{cases}\]
+Essentially, if we can figure out the set of \opt values at the previous iteration, we can solve for all the \opt values at the current iteration.
+\begin{itemize}
+	\item In the worst case, each recursive case takes O($n$).  In the worst case for an \opt operation, we have $n$ vertices and $n$ (i) steps.  Therefore, the entire algorithm takes O($n^3$).
+	\item However, this is the naive algorithm.  Notice that we probably search for the same \opt value multiple times, and therefore it can be more efficient if we store the values.
+	\item We can draw a 2D grid, with one axis representing the vertices ($v$) and one axis representing allowed path length ($i$).
+	\item Filling the grid (naively) also takes O($n^3$).  However, we can also analyze that each update for allowed path length (e.g., one row of the table) only requires iterating through every \textit{edge}.  Therefore, we can write the runtime as O($VE$) instead.
+\end{itemize}
+
+\subsection*{Subset Sum}
+Given an integer bound $W$ and $n$ items, each with weight $w_i \in \mathbb{N}$, find a subset $S$ of items to maximize $\sum_{i \in S} w_i$ while $\sum_{i \in S} w_i < W$.  To do this, define \opt($j, l$) as the optimal subset considering objects $[1, j]$ with max weight $l \leq w$.\\\\
+We can define the following recurrence relation:
+\[\opt(j, l) = \max \begin{cases} \opt(j - 1, l) \\ w_j + \opt(j - 1, l - w_j) \end{cases}\]
+\begin{itemize}
+	\item We can store all the \opt values in a table, and have the our goal be to solve for \opt($n, w$), which is the bottom corner.  
+    \item To initialize the table, we can assume $\opt(0, l) = 0$ and $\opt(j, 0) = 0$, since they correspond to including zero integers and zero maximum weight, respectively. 
+\end{itemize}
+
+\subsection*{Knapsack Problem}
+Given a bound $W$, and a collection of items (each with weight $w_i$ and value $v_i$), find a subset $S$ which maximizes $\sum_{i \in S} v_i$ while keeping $\sum_{i \in S} w_i \leq W$.\\\\
+The recurrence relation can be defined as
+\[\opt(j, l) = \max\begin{cases} \opt(j - 1, l) \\ v_j + \opt(j - 1, l - w) \end{cases}\]
+The base and goal is the same as subset sum.
+
+\subsection*{Edit Distance}
+Given two strings $A = a_1 a_2 \dots a_n$, $B = b_1 b_2 \dots b_m$, measure some similarity or distance between $A$ and $B$.  One way we can do this is by \textbf{edit distance}.  Edit distance, $d(a, b)$ is defined as the minimum number of single character edits needed to turn $A$ into $B$.\\\\
+For example, let $A = apple$, $b = pear$.  The edit distance between $A$ and $B$ is 4, since
+\begin{verbatim}
+apple   (del a)
+pple    (p -> e)
+pele    (l -> a)
+peae    (e -> r)
+pear
+\end{verbatim}
+How do we calculate this?  Let's consider prefixes.  Compare only the first letter of each string at a time.  There are only three "moves" we can do: replacement, deletion, insertion.  Therefore, we can write the following recurrence relation:
+\begin{itemize}
+	\item If $A_i$ \texttt{==} $B_j$, 
+	\begin{itemize}
+	    \item \opt($i - 1, j - 1$)  (no change)
+    \end{itemize}
+	\item If $A_i$ \texttt{!=} $B_j$,
+	\begin{itemize}
+	    \item \opt($i - 1, j$) + 1  (insertion)
+	    \item \opt($i, j - 1$) + 1  (deletion)
+	    \item \opt($i - 1, j - 1$) + 1  (replacement)
+    \end{itemize}
+\end{itemize}
+The relation is the minimum of all the above choices.  From here, we can draw the classic dp table.
+\begin{center} 
+	\begin{tabular}{cc|ccccc}
+          &   &   & P & E & A & R \\
+          &   & 0 & 1 & 2 & 3 & 4 \\\hline
+          & 0 & 0 & 1 & 2 & 3 & 4 \\
+        A & 1 & 1 & 1 & 2 & 2 & 3 \\
+        P & 2 & 2 & 1 & 2 & 3 & 3 \\
+        P & 3 & 3 & 2 & 2 & 3 & 4 \\
+        L & 4 & 4 & 3 & 3 & 3 & 4 \\
+        E & 5 & 5 & 4 & 3 & 4 & 4         
+    \end{tabular}
+\end{center}
+
+\subsection*{Gap Scoring}
+In the context of a genome, we cannot just insert or delete single nucleotides, because if we do, we may possibly mess up a protein (which one amino acid is three base pairs).  For example, consider ``misspell'' versus ``mispell''.
+\begin{verbatim}
+misspell
+||| ||||
+mis-pell
+\end{verbatim}
+There is one indel, and 7 matches.  Now, consider ``spite'' versus ``suite''.  We can either have one mismatch or two indels.
+\begin{verbatim}
+spite      s-pite
+|X|||      |  |||
+suite      su-ite
+\end{verbatim}
+Depending on what we are optimizing over, it maybe better to have one mismatch, or two indels.  Therefore, we now have the notion of a score, which the user can weigh them differently.  Compared to edit distance, where every modification is weighted the same, this one does not, and is a more general case.
+
+\subsection*{Sequence Alignment}
+\begin{itemize}
+	\item Cost of aligning: $c$  
+	\item Cost of indel: $\lambda$
+\end{itemize}
+\[\text{score}(i, j) = \max \begin{cases} 
+    \text{score} (i - 1, j - 1) + c \\
+    \text{score} (i, j - 1) + \lambda \\
+    \text{score} (i - 1, j) + \lambda \\
+    \text{score} (i - 1, j - 1), & \text{only if } x = y
+\end{cases}\]
+
+\subsection*{Affine Gaps}
+Affine Gap is a subproblem of sequence alignment.  Consider the following two alignments:
+\begin{verbatim}
+ATTTGT            ATTTGT
+A--TGA            A-T-GA
+\end{verbatim}
+Intuitively, which is better?  (It's probably the first one.)  Affine gap, instead of just considering the gaps, also consider the rest of the sequence.  For example, 
+\begin{itemize}
+	\item the first alignment here would score (1 mismatch + 3 matches + 1 gap + 2 extensions)
+	\item the second alignment here would serve (1 mismatch + 3 matches + 2 gaps + 2 extensions)
+\end{itemize}
+This can be done in O($n^2$) using three tables, each table having O($n^2$) cells, each taking O($1$) to fill.
+
+\subsection*{RNA Folding}
+RNA is a single strand that folds up
+\begin{itemize}
+	\item G and C stick together
+	\item A and U stick together
+	\item Bases closer than 4 together cannot pair
+	\item Pairs cannot cross (e.g., if $(i, j)$ and $(k, l)$ pair, then $i < k < l < j$)
+\end{itemize}
+At a given iteration, consider $i$ and $j$:
+\begin{verbatim}
+if we match i + j:
+    OPT(i + 1, j - 1) + 1
+else if we don't match i:
+    OPT(i + 1, j)
+else if we match on something in k in [i + 4, j):
+    OPT(i + 1, k - 1) + OPT(k + 1, j) + 1
+\end{verbatim}
+With this recurrence relation, we need the base cases:
+\begin{itemize}
+	\item The top left corner would be \texttt{OPT}$(i, i + l) \forall l < 4$, which is equal to zero
+	\item We fill from the diagonal, where $i = j$.  Because the third case is a loop, we need to start from the diagonal.  The above base condition is along the diagonal.
+	\item We only fill half of the entire matrix.
+\end{itemize}
+This algorithm has a runtime of O($n^3$).  This is because there are O($n^2$) cells to fill in, and each one takes O($n$) time due to the loop.
+
+
+
+
+
+
+
+
+
+
+\end{document}

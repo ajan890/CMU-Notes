@@ -1,0 +1,139 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/Module 12}}
+
+\title{02-680 Module 12 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction to Probability}
+
+\subsection*{Construction of a Probability Space}
+Objective:
+\begin{itemize}
+	\item Define a mathematical framework to describe \textbf{random outcomes}
+	\item Enable automated reasoning \textbf{under uncertainty}
+\end{itemize}
+Example: Coin Toss
+\begin{itemize}
+	\item A single toss \textrightarrow unpredictable outcome
+	\item Many tosses \textrightarrow observable pattern in average results
+\end{itemize}
+Use mathematics to describe and analyze patterns in random events.
+
+\subsection*{Frequentist vs. Bayesian Interpretations of Probability}
+Frequentist Interpretation
+\begin{itemize}
+	\item Probability is the \textbf{long-run frequency} of an event occurring over repeated trials.
+	\item Defined in the limit as the number of trials goes to infinity.
+	\item Example: "The probability of heads is 0.5" means that in a large number of coin tosses, about half will be heads.
+\end{itemize}
+Bayesian Interpretation
+\begin{itemize}
+	\item Probability reflects a \textbf{degree of belief} or \textbf{uncertainty} about an event.
+	\item Based on \textbf{subjective knowledge} it can be \textbf{updated} as new information becomes available.
+	\item Example: "I am 80\% confident it will rain tomorrow" (based on current data + personal judgment)
+	\item Also called \textbf{subjective probability}
+\end{itemize}
+
+\subsection*{Sample Space}
+The sample space ($\Omega$), sometimes called the universe, is the set of all possible mutually exclusive outcomes of an event.
+\[\Omega_{coin} = \{\text{Heads, Tails}\}\]
+\[\Omega_{twocoin} = \Omega_{coin} \times \Omega_{coin} = \{\langle \text{Heads, Heads} \rangle, \langle \text{Heads, Tails} \rangle, \langle \text{Tails, Heads} \rangle, \langle \text{Tails, Tails} \rangle\}\]
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{M12_1.png} 
+\end{center}
+
+\subsection*{Event}
+A event is a subset of the sample space with some condition.  For instance if the event is that the first of two coin tosses is heads.
+\[A_{firstheads} = \{\langle \text{Heads, Heads} \rangle, \langle \text{Heads, Tails} \rangle\} \subset \Omega_{twocoin}\]
+We say the probability $p(A)$ of an event $A$ is the fraction of all outcomes that $A$ covers.  Therefore, in the example above, $p(A_{firstheads}) = \frac{1}{2}$.
+
+\subsection*{Event Space}
+An \textbf{event space}, $A$, is the set of all possible events.  For discrete events (such as coin flips) this can be thought of typically as the power set of $\Omega$.\\\\
+In continuous spaces it is typically thought of as the Borel field of $\Omega$ (details of this are beyond the scope of the class for now). \\\\
+Another way of saying this: consider non-empty $\Omega$ and $A$:
+\begin{enumerate}
+	\item $A \in \mathcal{A} \rightarrow \bar{A} \in \mathcal{A}$
+	\item $A_1, A_2, \dots, \in \mathcal{A} \rightarrow \bigcup_{i = 1}^\infty A_i \in \mathcal{A}$
+\end{enumerate}
+
+\subsubsection*{Example: Coin Toss}
+\begin{itemize}
+	\item Sample space ($\Omega$): $\{\text{Heads, Tails}\}$
+	\item Event space ($\mathcal{A}$): All subsets of $\Omega$,
+	\begin{itemize}
+	    \item such as: $\mathcal{A} = \{\emptyset, \{\text{Heads}\}, \{\text{Tails}\}, \{\text{Heads, Tails}\}\}$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Example: Rolling a Die}
+\begin{itemize}
+	\item Sample space ($\Omega$): $\{1, 2, 3, 4, 5, 6\}$
+	\item Event space ($\mathcal{A}$): All subsets of $\Omega$,
+	\begin{itemize}
+	    \item such as: $\mathcal{A} = \{\emptyset, \{1\}, \{2, 4\}, \{1, 2, 3\}, \{1, 3, 5\}, \Omega, \dots\}$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{The Three Axioms}
+\subsubsection*{Axiom 1: Positive Probability}
+For any event $A$, $p(A) \geq 0$.\\\\
+That is, we cannot have a negative probability.  In the previous example, if $A_{threetails}$ is the event that you get 3 tails when a coin is tossed twice, $p(A_{threetails}) = 0$, but this can't be negative. 
+
+\subsubsection*{Axiom 2: Total Probability}
+For any sample space, $\Omega$, $p(\Omega) = 1$.  That is, the probability of something in the sample space happening is $1$.  So for the example above, the probability of a single coin flip being either Heads or Tails is $1$, (as defined), and there are no other possible outcomes.
+\[p(\Omega) = p(\text{Head}) + p(\text{Tail}) = 1\]
+
+\subsubsection*{Axiom 3: Disjoint Event Space}
+For disjoint event spaces $A_1, A_2, \dots, A_n$,
+\[p(A_1 \cup A_2 \cup \dots \cup A_n) = p(A_1) + p(A_2) + \dots + p(A_n)\]
+So in a single coin flip if $A_{\text{heads}}$ and $A_{\text{tails}}$ are the events of a single coin flip being heads and tails respectively, we can see the event spaces are disjoint (they don't share any outcomes).\\\\
+So,
+\[p(A_{\text{heads}} \cup A_{\text{tails}}) = p(A_{\text{heads}}) + p(A_{\text{tails}}) = \frac{1}{2} + \frac{1}{2} = 1\]
+As a counter example, let's define
+\[A_{lastheads} = \{\langle \text{Heads, Heads} \rangle, \langle \text{Tails, Heads} \rangle\} \subset \Omega_{twocoin}\]
+We can see that
+\[p(A_{firstheads} \cup A_{lastheads}) \neq p(A_{firstheads}) + p(A_{lastheads})\]
+because $A_{firstheads} \cap A_{lastheads} = \{\langle \text{Heads, Heads} \rangle\} \neq \emptyset$, thus they are not disjoint.
+
+\subsubsection*{Interpreting the Axioms}
+\begin{itemize}
+	\item Axiom 1: $P(A) \geq 0 \forall A$
+	\item Axiom 2: $P(\Omega) = 1$
+	\item Axiom 3: $P(A_1 \cup A_2 \cup \dots \cup A_n) = P(A_1) + \dots + P(A_n)$ for disjoint sets.
+\end{itemize}
+
+
+
+\end{document}

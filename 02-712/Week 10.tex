@@ -131,6 +131,92 @@ Given $Q = \{q_1, \dots, q_n\}$ and $\Pi = \{\pi_1, \dots, \pi_n\}$
 \end{enumerate}
 
 \subsection*{Umbrella Sampling}
+[FILL]
+
+\section*{Continuous Time Markov Model}
+For a continuous time Markov model, we take the discrete model except every change of state essentially represents some amount of time.  For example, $q_1$ corresponds with $t_1$, $q_2$ corresponds with $t_2$, etc.  The states may be discrete, but the time can be continuous.  Of course, as with all time models like this, we get a better estimation the closer the time steps are together.
+
+\subsubsection*{Definitions}
+\begin{itemize}
+	\item $p_{ij}(t) = \pr\{q(t) = q_j | q(0) = q_i\}$
+	\item "Memoryless" - a property of most Markov models; basically previous states do not matter for future states, and future states only depend on the current state.
+	\begin{itemize}
+	    \item $p_{ij}(t) = \pr\{q(t) = q_j | q(0) = q_i\} = \pr\{q(s + t) = q_j | q(s) = q_i\} \forall s > 0$
+    \end{itemize}
+\end{itemize}
+
+We generally have a few ways of implementing (or viewing) continuous time Markov models.
+
+\subsection*{View 1: Converting Discrete Time Markov Models}
+Suppose we have a discrete time Markov model with states $q_1, q_2, \dots, q_n$.  Suppose the edges between the states have weights $\lambda_{12}, \lambda_{13}, \dots, \lambda_{1n}, \lambda_{21}, \dots, \dots, \lambda_{n, n - 1}$.  These are \textit{weights}, not probabilities.
+\begin{itemize}
+	\item To get probabilities, we multiply the edge's weight by $\Delta t$.  So every edge between nodes now has a probability in the form $\lambda_{ij} \Delta t$.
+	\item The smaller the time step, the smaller the probability of transition
+	\item Since probabilities exiting each state must sum to 1, recall that the self-loops (e.g., not transitioning) exist, and they take up the remaining probability.  The chance of remaining on the same state consequently increases with smaller time steps.
+	\item As $\Delta t \rightarrow 0$, the random variables on what the current states are approach an exponential probability density function.
+\end{itemize}
+
+\subsection*{View 2: Sampling Exponential for Markov Models}
+This time, suppose we have a Markov model with the same states, except the weights are $\exp(\lambda_{12}), \exp(\lambda_{13}), \exp(\dots)$.
+
+\begin{verbatim}
+    t <- 0
+    q_i <- q_0
+    repeat
+        t_min <- infty
+        for each (i, j)
+            tij <- exp(lambda_ij)
+            if t_ij < t_min
+                t_min <- t_ij
+                qmext <- q_j
+            q_i <- q_next
+            t <- t + t_min
+\end{verbatim}
+Property: How long do we remain in state $q_i$?  Suppose $\lambda_1, \lambda_2, \dots$ are weights of edges exiting $q_i$.\\\\
+By sampling, the probability we get
+\[\min\{\exp(\lambda_1), \exp(\lambda_2), \dots, \exp(\lambda_k)\}\]
+This is equal to 
+\[\pr\{\exp(\lambda_1) > t\} \times \pr\{\exp(\lambda_2) > t\} \times \cdots \times \pr\{\exp(\lambda_k) > t\}\]
+If we assume all the probabilities are independent (but still sum to 1), then we can simplify this:
+\begin{align*}
+    &= e^{-\lambda_1 t} \times e^{-\lambda_2 t} \times \cdots \times e^{-\lambda_k t}\\
+    &= e^{-t(\lambda_1 + \lambda_2 + \cdots + \lambda_k)}\\
+    &= \pr\{\exp(\lambda_1 + \lambda_2 + \cdots + \lambda_k) > t\}
+\end{align*}
+The expected value of this is $\frac{1}{k}$.  The waiting time is $\sim \exp(\sum_{j = 1}^k \lambda_j)$.\\\\
+Now, what is the probability the next state is $q_j$?  We can do the same analysis except with all the edges going into a state $j$, and we will get
+\[\exp(\sum_{j' \neq j} \lambda_j')\]
+The sum of all the $\lambda$'s is $\lambda^*$.  We want $\pr\{\exp(\lambda_j) < \exp(\lambda^*)\}$.  To find this, we can use some calculus.
+\begin{align*}
+    &\int_0^\infty \int_x^\infty \lambda^* e^{-\lambda^* y} \dd y \lambda_j e^{-\lambda yx} \dd x \\
+    &= \int_0^\infty e^{-\lambda^* x} \lambda_j e^{-\lambda_{j}x} \dd x \\
+    &= \int_0^\infty \lambda_j e^{-(\lambda_j + \lambda^*)x} \dd x \\
+    &= -\frac{\lambda_j}{\lambda_j + \lambda^*} e^{-(\lambda_j + \lambda^*)x} \bigg|_0^\infty \\\
+    &= \frac{\lambda_j}{\lambda_j + \lambda^*} \\
+    &= \frac{\lambda_j}{\lambda_1 + \lambda_2 + \dots + \lambda_j + \dots + \lambda_k}
+\end{align*}
+
+\subsubsection*{Example - Protein Folding}
+Suppose we have a (unfolded) protein, with a completely folded state where the two domains $A$ and $B$ are folded.  In our model, either $A$ can fold first, or $B$ can fold first.  Therefore, our model has four total states.  (Both unfolded, $A$ folded, $B$ folded, both folded.) \\\\
+From the first state, transitioning to state $A$ has probability $\lambda_1$, and state $B$ has probability $\lambda_2$.  How likely is it to follow the pathway where $A$ folds first?
+\[\frac{\lambda_1}{\lambda_1 + \lambda_2}\]
+Also, the pathway where $B$ folds first would be 
+\[\frac{\lambda_2}{\lambda_1 + \lambda_2}\]
+What is the mean folding time?
+\begin{align*}
+    \mathbb{E}[t_{fold}] &= \mathbb{E}(\text{1st step}) + \mathbb{E}(\text{2nd step})
+    &= \mathbb{E}(\text{1st step}) + \pr\{P_1\} \mathbb{E}(\text{2nd step} | P_1) + \pr\{P_2\} \mathbb{E}(\text{2nd step} | P_2)
+    &= \frac{1}{\lambda_1 + \lambda_2} + \frac{\lambda_1}{\lambda_1 + \lambda_2} \frac{1}{\lambda_2} + \frac{\lambda+2}{\lambda_1 + \lambda_2} \frac{1}{\lambda_1}
+\end{align*}
+
+\subsection*{True Evolution of Continuous Time Markov Models}
+Kolmogorov Equations:  Given $\lambda_{ij}$, define $\lambda_{ii} = \sum_{j \neq i} \lambda_{ij}$.
+\subsubsection*{Forward Kolmogorov Equations}
+In physics, known as Fukker-Planck Equations.  In chemistry, Master Equations.
+\[\frac{\dd p_{ij}(t)}{\dd t} = \sum_{k = 1}^n p_{ik}(t) \lambda_{kj}\]
+
+\subsubsection*{Backward Kolmogorov Equations}
+\[\frac{\dd p_{ij}(t)}{\dd t} = \sum_{k = 1}^n \lambda_{ik} p_{kj}(t)\]
 
 
 \end{document}

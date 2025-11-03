@@ -23,6 +23,8 @@
 % verbatim greek
 \usepackage{alphabeta}
 
+\newcommand{\dd}{\text{d}}
+
 \graphicspath{{./assets/images/Module 11}}
 
 \title{02-680 Module 11 \\ \large{Essentials of Mathematics and Statistics}}
@@ -50,7 +52,7 @@ For example:
 \begin{align*}
     f'(x) &= nx^{n - 1} \\
     \int nx^{n - 1} \dd x &= n \int x^{n - 1} \dd x \\
-    &= n \cdot \frac{x^n}{n} + C
+    &= n \cdot \frac{x^n}{n} + C \\
     &= x^n + C
 \end{align*}
 Know the following:
@@ -61,12 +63,67 @@ Know the following:
 \subsection*{Application: Gradient Based Optimization}
 \textbf{Optimization} is the task of either minimizing or maximizing some function.\\\\
 For some $f(x)$, find the $x$ that maximizes $f(x)$.  Using mathematics:
-\[x^* = \argmax_{\forall x} f(x)\]
+\[x^* = \arg \max_{\forall x} f(x)\]
 Note that above we use maximization, but this would be equivalent to minimizing some function $g(x) = -f(x)$.
 
 \subsection*{Gradient Descent}
 Remember the derivative of a function is the rate of change, or slope; thus it can be used to tell us how to change $x$ in order to have a maximizing impact on $f(x)$.
 \[\frac{\dd f}{\dd x} \approx \frac{f(x + \epsilon) - f(x)}{\epsilon} \rightarrow f(x + \epsilon) \sim f(x) + \epsilon f'(x) \rightarrow f(x + \epsilon) - f(x) \sim \epsilon f'(x)\]
-When $f'(x) = 0$ we call this a \textbf{critical}, or \textbf{stationary}, point.
+When $f'(x) = 0$ we call this a \textbf{critical}, or \textbf{stationary}, point.\\\\
+We can rewrite $\frac{\dd f}{\dd x}$ as $f'(x)$ for ease, so then reducing
+\begin{align*}
+    \epsilon f'(x) &\approx f(x + \epsilon) - f(x) \\
+    f(x) + \epsilon f'(x) &\approx f(x + \epsilon)
+\end{align*}
+Notice that when $f'(x) = 0$, we can change $x$, but nothing happens.
+
+\subsubsection*{Example}
+Suppose we want to minimize:
+\[f(x) = \frac{x^2}{2}\]
+$f'(x) = x$.  If $x > 0 f'(x) > 0$, and thus to reach a critical point we need to add a negative $\epsilon$ (since we want to minimize the function value).  Alternatively, if $x < 0; f'(x) < 0$, and thus we need to add a positive $\epsilon$.  If $x = 0, f'(x) = 0$, and thus we've found a critical point.\\\\
+If we change the example, so $g(x) = \frac{-x^2}{2}$, and $g'(x) = -x$, it is still the case that we want to add an $\epsilon$ opposite the sign of the slope since we awant to minimize; if $g'(x) < 0$ then $\epsilon > 0$.  If $g'(x) > 0$ then $\epsilon < 0$, and $g'(x) = 0$ is the critical point.\\\\
+Either way, we have a critical point at $x = 0$, but in the first example, being slightly away from zero sends us to zero, but in the second example, it sends us away.  Therefore, we say the critical point of $x = 0$ is \textbf{stable} for $f(x)$, and \textbf{unstable} for $g(x)$.\\\\
+What we've described here is a slight simplification of gradient descent first described by Cauchy in year 1867.  It is one of the most commonly used optimization procedures in machine learning.
+
+\subsection*{Gradients (Multivariable Derivation)}
+When a function has multiple variables we cannot simply take the derivative of the whole thing, like function $f \::\: \mathbb{R}^n \mapsto \mathbb{R}$.\\\\
+Euclidean norm (instance):
+\[e(x) = \sqrt{x_1^2 + x_2^2}\]
+Since $x$ is a vector, we use gradient $\nabla f$ (sort of like $\frac{\dd f}{\dd x}$ when $x$ is a vector)
+\[\nabla f = \left[\frac{\partial f}{\partial x_1}, \frac{\partial f}{\partial x_2}, \cdots, \frac{\partial f}{\partial x_n}\right], \quad x \in \mathbb{R}^n\]
+In the example of Euclidean norm,
+\[\nabla e = \begin{bmatrix} \frac{\partial e}{\partial x_1} & \frac{\partial e}{\partial x_2} \end{bmatrix} = \begin{bmatrix} \frac{x_1}{\sqrt{x_1^2 x_2^2}} & \frac{x_2}{\sqrt{x_1^2 + x_2^2}}\end{bmatrix}\]
+
+\section*{Application: Least Squares Minimization}
+Problem: $Ax = b$ where $A \in \mathbb{R}^{m \times n}$, and $b \in \mathbb{R}^n$. But $b \notin \text{span}(\text{col}(A))$.  In this condition, $\nexists x \in \mathbb{R}$ such that $Ax = b$.  But we can find something "close enough".\\\\
+It is helpful here to remember that for any vector:
+\[x = (x_1, \dots, x_n)^T \in \mathbb{R}^n, \quad \Vert x \Vert_2^2 = \sum_{i = 1}^n x_i^2 = x^T x\]
+Let's minimize $\Vert Ax - b \Vert_2^2$.  Applying the norm formulas,
+\begin{align*}
+    \Vert Ax - b \Vert_2^2 &= (Ax - b)^T (Ax - b) \\
+    &= (x^T A^T - b^T)(Ax - b) \\
+    &= x^T A^T Ax - 2Ax b^T + b^T b
+\end{align*}
+Now, finding the gradient.  The gradient with respect to $x$ is 
+\[2A^T Ax - 2A^T b = 0 \rightarrow A^T Ax = A^T b\]
+Solve for $x$ (assuming $A^T A$ is invertible): $x = (A^T A)^{-1} A^T b$.
+
+\section*{Jacobian (Multivariable / Multifunction Derivation)}
+Sometimes we also have functions that have both multiple variable input, and multiple variable output, so any function $g \::\: \mathbb{R}^n \mapsto \mathbb{R}^m$, with $m, n \in \mathbb{R}^{\geq 2}$, the \textbf{Jacobian} of $g$ is:
+\[J_g(x) = \begin{bmatrix} \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & \cdots & \frac{\partial f_1}{\partial x_n} \\
+                           \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & \cdots & \frac{\partial f_2}{\partial x_n} \\
+                           \vdots & \vdots & \ddots & \vdots \\
+                           \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & \cdots & \frac{\partial f_m}{\partial x_n}\end{bmatrix}\]
+For a vector map $g \::\: \mathbb{R}^n \rightarrow \mathbb{R}^m$, the Jacobian $J_g(x)$ captures how small input changes or moves the outputs.
+\begin{itemize}
+	\item \textbf{Local linearization.}  Near $x$: $g(x + \dd x) \approx g(x) + J_g(x) \dd x$.  So, $J_g(x)$ maps small input changes $\dd x$ to output changes $\dd y$.  This is the multi-output generalization of the gradient.
+	\item \textbf{Chain rule for multivariable compositions:}  If $y = g(x)$ and $z = h(y)$, then $\dd z = J_h(y) J_g(x) \dd x$, which is the matrix form used for gradient flow through layers.
+\end{itemize}
+
+\subsubsection*{Example}
+Let $h \::\: \mathbb{R}^2 \mapsto \mathbb{R}^2$
+\[h(x) = x^T \begin{bmatrix} 3 & 1 \\ 0 & -1 \end{bmatrix} \begin{bmatrix} x_1 & 0 \\ 0 & x_2 \end{bmatrix} = x^T \begin{bmatrix} 3x_1 & x_2 \\ 0 & -x_2 \end{bmatrix} = \begin{bmatrix} 3x_1^2 \\ x_1 x_2 - x_2^2 \end{bmatrix}\]
+The Jacobian:
+\[J_h(x) = \begin{bmatrix} \frac{\dd (3x_1^2)}{x_1} & \frac{\dd (3x_1^2)}{x_2} \\ \frac{\dd (x_1 x_2 - x_2^2)}{x_1} & \frac{\dd (x_1 x_2 - x_2^2)}{x_2} \end{bmatrix} = \begin{bmatrix} 6x_1 & 0 \\ x_2 & x_1 - 2x_2 \end{bmatrix}\]
 
 \end{document}
