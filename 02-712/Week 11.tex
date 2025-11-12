@@ -1,0 +1,89 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+\newcommand{\pr}{\text{Pr}}
+
+\graphicspath{{./assets/images/Week 11}}
+
+\title{02-712 Week 11 \\ \large{Biological Modeling and Simulation}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Stochastic Processes}
+Suppose we have a state space and transition probabilities.  Let $S = \{0, 1\}$  Let $p$ represent the probability of transitioning from $0 \rightarrow 1$, and $q$ represent the probability of transitioning from $1 \rightarrow 0$.\\\\
+Let us define the starting probabilities
+\begin{itemize}
+	\item $P(x_0 = 0) = \pi_0(0)$
+	\item $P(x_0 = 1) = \pi_1(0)$
+\end{itemize}
+Now, suppose we want to calculate the rate of change of the system:
+\[\frac{\dd x}{\dd t} = rx\]
+We want to find $r$.  How do we do this?  We first write the equation to find the probability of some given state, $t$ that the state is zero.
+\[P(x_t = 0) = (1 - p) P(x_{t - 1} = 0) + q P(x_{t - 1} = 0)\]
+Simplifying,
+\begin{align*}
+    &= (1 - p) P(x_{t - 1} = 0) + q(1 - P(x_{t - 1} = 0)) \\
+    &= (1 - p - q) P(x_{t - 1} = 0)
+\end{align*}
+We can convert this recursive equation to the following:
+\[P(x_t = 0) = (1 - p - q)^t \pi_0(0) + q\left(\sum_{j = 0}^{t - 1} (1 - p - q)^j\right)\]
+We can simplify this:
+\begin{align*}
+    &= \frac{q}{p + q} + (1 - p - q)^t \left(\pi_0(\infty) - \frac{q}{p + q}\right) \\
+    &= \frac{q}{p + q}
+\end{align*}
+The right term goes to zero since at large $t$ (e.g., the model has been running for a long time), the $(1 - p - q)^t$ term approaches zero.\\\\
+We know that $P(x_t = 1) = 1 - P(x_t = 0)$, so therefore, 
+\[P(x_t = 1) = \frac{p}{p + q}\]
+We can generate the \textbf{stationary distribution} from these results, which describes the stochastic distribution after a long time of running the model.
+\[\left\{\frac{q}{p + q}, \frac{p}{p + q}\right\}\]
+
+
+\subsection*{The Pure Birth Model}
+In this model, we have a birth rate and a starting population, and that's it.
+\begin{itemize}
+	\item No death
+	\item Birth rate is $b$ for all bacterial
+	\item Birth rate is independent across individuals
+\end{itemize}
+Let $m(t)$ be the function that represents birth.  We are given the rate of birth,
+\[\frac{\dd m}{\dd t} = bm(t)\]
+to start.  Therefore, $m(t) = e^{bt}$.  Suppose we want to find the population at some state, when the population is $n$.  At each time step, since this model is stochastic, there are two possible outcomes:
+\begin{itemize}
+	\item Either one birth can occur (and therefore, $x_t = m x_{t - \Delta t} = m - 1$)
+	\item No births can occur ($x_t = mx_{t - \Delta t} = m - 1$)
+\end{itemize}
+
+
+We can write
+\[P_m(t + \Delta t) = P(x_{t + \Delta t} = m) = P_{m - 1}(t) \cdot b \Delta t(m - 1) + P_m(t) (1 - b\Delta t m)\]
+We know from the rate of birth, $\frac{\dd P_m(t)}{\dd t} = \frac{P_m(t + \Delta t) - P_m(t)}{\Delta t} =b(m - 1) P_{m - 1}(t) - bm P_m(t)$
+
+
+\end{document}

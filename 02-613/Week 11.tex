@@ -82,5 +82,51 @@ We can imagine this problem as two subproblems.  Pick a multiplication in the mi
 \[\opt(i, k) = \min_{i < j < k} r_i \times c_n \times c_j + \text{cost}\left(\prod_{a = i}^j A_a\right) + \text{cost}\left(\prod_{b = j + 1}^k A_b\right)\]
 We can use the base cases $\opt(i, i) = 0$ and $\opt(i, i + 1) = r_i \times c_j \times r_j$
 
+\section*{Network Fllow}
+A \textbf{flow network} is a graph $G = \{V, E\}$, where
+\begin{itemize}
+    \item each edge $e \in E$ has capacity $c(e) \in \mathbb{N}$.
+    \item source vertex $s \in V$
+    \item sink vertex $t \in V$
+\end{itemize}
+$s-t$ flow is a function $f \::\: E \rightarrow \mathbb{R}^{>0}$.
+\begin{itemize}
+    \item Flow has the property that any flow going into a node must equal to the flow leaving the node
+    \item An exception to this rule is the source node and the sink node.  However, the flow leaving the source must equal the flow entering the sink.
+\end{itemize}
+
+\subsection*{Max Flow Problem}
+Given a flow graph $G$, find a flow $f$ to maximize $v(f)$.
+\begin{enumerate}
+    \item Let $f(e) = 0 \quad \forall e \in E$
+    \item Repeat until stuck:
+    \begin{itemize}
+        \item Choose an $s \rightarrow t$ path and push the maximum flow possible
+        \item Undo some flow along certain edges to create more paths.  We do this using residual graphs.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Residual Graph}
+Given a flow $f$ on a graph $G$, the residual graph $G_f$ is a graph that contains the same nodes, but with different edges or capacities.
+\begin{itemize}
+    \item \textbf{Forward edges:} $\forall e = (u, v) \in G$ where $f(e) < C(e)$, include $e'(u, v) \in G_f$ with capacity $c(e) - f(e)$
+    \item \textbf{Backward edges:} $\forall e = (u, v) \in G$, where $f(e) > 0$, include $e' = (v, u) \in G_f$ with capacity $f(e)$
+\end{itemize}
+
+If $P$ is an $s\rightarrow t$ path in $G_f$, the bottleneck $(P, f)$ is the smallest capacity edge in $P$.  To build the residual graph at each iteration, we "increase" $f(e)$ for all edges in $P$ by bottleneck$(P, f)$.\\\\
+This algorithm is known as \textbf{Ford-Fulkerson}.
+\begin{verbatim}
+Maxflow(G): 
+    set f(e) = 0 for all edges in G
+    while P = findpath(s, t, residual(G)):
+        f = augment(f, P)
+    return f
+\end{verbatim}
+This algorithm runs in O($mC$), where $m$ is the number of edges, and $C$ is the max flow.  This is because in the worst case, the loop runs $C$ times (once per increasing flow by one), and each iteration takes O($m$) to build a new residual graph and find a valid $s \rightarrow t$ path.\\\\
+This is \textbf{pseudopolynomial} time, since the time complexity depends on both the graph size, and the actual max flow.  If max flow scales exponentially, it is not polynomial, but it is otherwise.
+
+
+
+
 
 \end{document}

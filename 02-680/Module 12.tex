@@ -127,11 +127,43 @@ We can see that
 \[p(A_{firstheads} \cup A_{lastheads}) \neq p(A_{firstheads}) + p(A_{lastheads})\]
 because $A_{firstheads} \cap A_{lastheads} = \{\langle \text{Heads, Heads} \rangle\} \neq \emptyset$, thus they are not disjoint.
 
-\subsubsection*{Interpreting the Axioms}
+\subsubsection*{Axioms Summary}
 \begin{itemize}
 	\item Axiom 1: $P(A) \geq 0 \forall A$
 	\item Axiom 2: $P(\Omega) = 1$
 	\item Axiom 3: $P(A_1 \cup A_2 \cup \dots \cup A_n) = P(A_1) + \dots + P(A_n)$ for disjoint sets.
+\end{itemize}
+
+\subsection*{Perspectives}
+For a coin toss effect, there are two methods for explaining P(Heads) = $1/2$.
+\begin{itemize}
+	\item Frequentists: You flip a coin 100 times, you get Heads approximately 50 of those tosses.  Frequentists are very objective in the explanation of things.
+	\item Bayesian: You believe you will get tails 50\% of the times you flip the coin.  Bayesian logic is subject to its interpretation.
+\end{itemize}
+
+\subsection*{Continuous Random Variables}
+A continuous random variable can take any value in an interval of real numbers.  The sample space $\Omega$ is uncountably infinite.
+\begin{itemize}
+	\item Discrete: $\Omega = \{1, 2, 3, 4, 5, 6, \dots\} = \mathbb{N}$.  $\mathcal{A} = \mathcal{P}(\Omega)$
+	\item Continuous: $\Omega = [0, 1] = \mathbb{R}$.  $\mathcal{A} = \mathcal{B}(\Omega)$
+    \item in this case, $\mathcal{P}(\Omega)$ is a power set, and $\mathcal{B}(\Omega)$ is a Borel field.
+\end{itemize}
+For \textbf{discrete} sample spaces, every subset is measurable.  The event space is the power set of $\Omega$.
+\begin{itemize}
+	\item For uncountable sets (like [0, 1], the power set includes non-measurable sets.)
+	\item We use the \textbf{Borel field} for \textbf{continuous} random variables.
+\end{itemize}
+
+\subsection*{Continuous Sample Space}
+Suppose $\Omega = [0, 1]$.  This means that
+\begin{itemize}
+	\item The random outcome could be any \textbf{real number} between 0 and 1.
+	\item There are infinitely many possible values - uncountably many!
+	\item We cannot assign positive probability to a single value.
+	\begin{itemize}
+	    \item $P(X = 0.5) = 0$
+	    \item $P(0.3 \leq X \leq 0.4) > 0$
+    \end{itemize}
 \end{itemize}
 
 
