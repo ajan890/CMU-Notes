@@ -157,5 +157,68 @@ For example:
 \[X_i = \text{observed count of gene} G_i\]
 \[P(X_i = k) = \frac{e^{-\lambda_i} \lambda_i^k}{k!}\]
 
+\section*{Continuous Random Variables - Probability Density Functions}
+In the case of \textbf{continuous random variables} (e.g., height, weight, rainfall, etc.) the probability distribution is referred to as a Probability Density Function (PDF).  We still have the same properties as before, everything sums to 1, all the probabilities are non-negative, etc. but we typically consider a range rather than a single value to test.\\\\
+In the case of PDFs, the probability is the area under the curve along a range (the total area is going to end up being one), but when we're talking about area under the curve, we're really considering the integral:
+\[p(a \leq x \leq b) = \int_a^b f(x) \dd x\]
+Notice that $f(x)$ is not a probability in and of itself, but the probability comes from the integral.  That's why the probability of a single value ($p(X = x)$) is (usually) zero.
+
+\subsection*{Well-Known PDFs: Uniform Distribution}
+$X$ has a Uniform$(a, b)$ distribution, written $X \sim \text{Uniform}(a, b)$, if
+\[f(x) = \begin{cases} \frac{1}{b - a} & \text{for $x \in [a, b]$} \\ 0 & \text{otherwise} \end{cases}\]
+where $a < b$.\\\\
+The cumulative distribution function is
+\[F(x) = \begin{cases} 0 & x < a \\ \frac{x - a}{b - a} & x \in [a, b] \\ 1 & x > b \end{cases}\]
+This is basically a rectangle on a graph; all outcomes with a value between $a$ and $b > a$ are equally probable.
+
+\subsection*{Well-Known PDFs: Gaussian Distribution}
+$X$ has a Normal (or Gaussian) distribution with parameters $\mu$ and $\sigma$, denoted by $X \sim N(\mu, \sigma^2)$ if
+\[f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp \left\{-\frac{1}{2\sigma^2} (x - \mu)^2 \right\}, \quad x \in \mathbb{R}\]
+Is parameterized by the mean (center) value of the samples $\mu \in \mathbb{R}$ and the standard deviation (spread) of the samples $\sigma > 0$.\\\\
+The Normal plays an important role in probability and statistics.  Many phenomena in nature have approximately Normal distributions.  Later, we shall study the Central Limit Theorem, which says that the distribution of a sum of random variables can be approximated by a Normal distribution.\\\\
+We say that $X$ has a standard Normal distribution if $\mu = 0, \sigma = 1$.
+
+\subsection*{Well-Known PDFs: Exponential Distribution}
+Parameterized by a value of $\lambda > 0$, which is the average rate of arrivals over time.
+\[f(k) = \lambda e^{-k\lambda}\]
+The exponential distribution is used to model the lifetimes of electronic components and the waiting times between rare events.
+
+\section*{Cumulative Distribution Functions}
+\subsection*{PMF vs. PDF}
+For review, if $\Omega$ is a discrete sample space, consider a singleton event $\omega \in A$, where $\omega \in \Omega$.
+\[P(\{\omega\}) = p(\omega)\]
+If $\Omega$ is a continuous sample space, consider an interval event $A = [x, x + \Delta x]$, where $\Delta x$ is small.
+\[P(A) = \int_{x}^{x + \Delta x} p(\omega) \dd \omega \approx p(x) \Delta x\]
+
+\subsection*{Discrete CDF}
+A cumulative distribution function (CDF) is the probability that the random variable is lower than a given threshold.  For discrete, this is somewhat intuitive:
+\[p(X \leq x) = \sum_{y \in \{\omega \in \Omega | \omega \leq x\}} p(X = y)\]
+In the example above, the probability
+\[p(C \leq c) = \sum_{d \in \{x \in \mathbb{Z} | x \geq 2 \land x \leq c\}} p(C = d)\]
+So, for example, if we want to know $p(C \leq 4)$, then that can be written as:
+\[p(C \leq 4) = \sum_{d \in \{2, 3, 4\}} p(C = d) = p(C = 2) + p(C = 3) + p(C = 4)\]
+
+\subsection*{Continuous CDF}
+For continuous random variables, it looks similar to the property we had earlier.  So for instance, if we look at the gaussian, we get
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{M14_5.png} 
+\end{center}
+
+\subsection*{Summary}
+\begin{center}
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{c|c|c}
+\textbf{PMF} & \textbf{PDF} & \textbf{CDF} \\ \hline
+$p(x) = P(X = x)$ & $P(a \leq X \leq b) = \int_a^b f(x) \dd x$ & $F(x) = P(X \leq x)$ \\
+Direct probability & Density (area under curve gives probability) & Accumulated probability up to $x$ \\
+$\sum_x p(x) = 1$ & $\int_{-\infty}^\infty f(x) \dd x = 1$ & $F(x) \in [0, 1]$ \\
+Discrete variables & Continuous variables & Both
+\end{tabular}
+\egroup
+\end{center}
+
+
+
 
 \end{document}

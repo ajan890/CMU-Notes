@@ -100,6 +100,78 @@ The likelihood for points in our sample is
 \[\mathcal{L} = \prod_{i = 1}^N \frac{1}{\sqrt{2\pi \sigma^2}} e^{-\frac{(y - \beta x_i)^2}{2\sigma^2}}\]
 To solve this, we use the same method as before, taking the log of this, then the derivative.
 
+\section*{Expectation Maximization}
+Expectation Maximization (EM) algorithms are parameter estimators in probabilistic models with \textbf{incomplete data}.\\\\
+Suppose we have two \underline{unfair} coins $A$ and $B$, with bias $\theta_A$ and $\theta_B$.  Our goal is to be able to estimate $\theta_A$ and $\theta_B$ based off of some data.  Consider the following 50 data points
+\begin{verbatim}
+1. HTTTHHTHTH
+2. HHHHTHHHHH
+3. HTHHHHHTHH
+4. HTHTTTHHTT
+5. THHHTHHHTH
+\end{verbatim}
+Let $x = (x_1, \dots, x_5)$, where $x_i \in \{0, \dots, 10\}$, or the number of heads during the $i$-th toss.  Let $Z = (z_i, \dots, z_5)$, during the $i$-th toss, $z_i \in \{A, B\}$, or the identity of the coins we toss at the $i$-th toss.   The hard part is that we don't know which toss belongs to which coin, so for now, we make a guess.  We can make a data table to keep track:
+\begin{center}
+\begin{tabular}{c|c|c}
+    Toss & Coin A & Coin B \\ \hline
+    HTTTHHTHTH & & 5H, 5T \\
+    HHHHTHHHHH & 9H, 1T & \\
+    HTHHHHHTHH & 8H, 2T & \\
+    HTHTTTHHTT & & 4H, 6T \\
+    THHHTHHHTH & 7H, 3T &
+\end{tabular}
+\end{center}
+Once we have this data, we can guess that coin $A$ made 24H, 6T, and coin $B$ made 9H, 11T.  Once we have this, we can plug it into the maximum likelihood equation:
+\[\max_\theta \log p(x, z, \theta) = \hat{\theta}\]
+So what if we don't have an assumption on which toss belongs to which coin?  We can start with our guess, and refine it.
+
+\subsection*{The EM Algorithm}
+The EM Algorithm consists of two parts:
+\begin{itemize}
+	\item The \textbf{E step} is the step of guessing the probability distribution over completions of the missing data given the current model
+	\item The \textbf{M step} is the step of re-estimating model parameters using the assumptions
+\end{itemize}
+
+
+\subsection*{EM: Coin Flip Example}
+Suppose we start with $A \rightarrow \theta_A = 0.4$ and $B \rightarrow \theta_B = 0.7$.  Now, suppose we have the first toss, with $E \::\: (8H, 2T)$.  In this case,
+\begin{align*}
+    P(E | z_A) &= P(HHHHHHHHTT | A) = {10 \choose 8} (0.4)^8 (0.6)^2 \\
+    P(E | z_B) &= P(HHHHHHHHTT | B) = {10 \choose 8} (0.7)^8 (0.3)^2
+\end{align*}
+By solving these and using Bayes' Theorem, we can calculate $P(z_A | E)$ and $P(z_B | E)$.  The formula for it essentially boils down to:
+\begin{align*}
+    p(z_A | E) &= \frac{\theta_A^h (1 - \theta_A)^t}{\theta_A^h (1 - \theta_A)^t + \theta_B^h (1 - \theta_B)^t} \\
+    p(z_B | E) &= \frac{\theta_B^h (1 - \theta_B)^t}{\theta_A^h (1 - \theta_A)^t + \theta_B^h (1 - \theta_B)^t}
+\end{align*}
+We can get
+\begin{align*}
+    p(z_A | E) &= 0.0435 \\
+    p(z_B | E) &= 0.0956
+\end{align*}
+
+\subsection*{EM: Coin Flip Example (part 2)}
+Now, let's go back to the original problem with the five tosses.  We can make a starting that $\hat{\theta_A}(0) = 0.6, \hat{\theta_B}(0) = 0.5$.  For our E-step, we plug it into the formula for $P(z_A |E)$ and $P(z_B | E)$ we derived above.  We get the first section of the following table.  Now, additionally, we can multiply the probabilities for each coin with the number of heads and tails to generate weights.
+\begin{center}
+\begin{tabular}{c|c|c||c|c }
+    Toss & Coin A & Coin B & Coin A & Coin B\\ \hline
+    HTTTHHTHTH & 0.45 & 0.55 & 2.2H, 2.2T & 2.8H, 2.8T \\
+    HHHHTHHHHH & 0.8 & 0.2 & 7.2H, 0.8T & 1.8H, 0.2T \\
+    HTHHHHHTHH & 0.73 & 0.27 & 5.9H, 1.5T & 2.1H, 0.5T \\
+    HTHTTTHHTT & 0.35 & 0.65 & 1.4H, 2.1T & 2.6H, 3.9T \\
+    THHHTHHHTH & 0.65 & 0.35 & 4.5H, 1.9T & 2.5T, 1.1T
+\end{tabular}
+\end{center}
+From here, we can total the coin A and coin B weights (21.2H, 8.5T) for coin A, (11.8H, 8.5T) for coin B.  
+Finally, we can calculate the new $\theta$ values.  (This is the M-step.)  
+\begin{align*}
+    \theta_A(1) &= \frac{21.2}{21.2 + 8.5} = 0.7138 \\
+    \theta_B(1) &= \frac{11.8}{11.8 + 8.5} = 0.5812
+\end{align*}
+Now, we can repeat the process again, for as many iterations as needed.  Eventually, the $\theta$ values will converge to a number.
+
+
+
 \end{document}
 
 
