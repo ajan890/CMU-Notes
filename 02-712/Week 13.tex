@@ -1,0 +1,96 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+\newcommand{\pr}{\text{Pr}}
+
+\graphicspath{{./assets/images/Week 13}}
+
+\title{02-712 Week 13 \\ \large{Biological Modeling and Simulation}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Hidden Markov Models}
+Suppose we are given a 5' splice site recognition problem.  We have a strand of DNA\\
+\begin{center}
+\texttt{----------------------------------------------------[EXON]------------------|SPLICE SITE|----[INTRON]--------------------------------}\\
+\end{center}
+Basically, we have a strand of DNA composed of one exon followed by one intron.  How do we decide where the splice site is, or where it switches from the exon to the intron?  We have some statistical properties about the strand:
+\begin{itemize}
+    \item An exon typically contains all four nucleotides an about-equal amount
+    \item Splice sites are \texttt{G} base pairs 95\% of the time, and the other 5\% are \texttt{A}'s.
+    \item Introns are \texttt{A-T} rich.  Around 40\% of introns are \texttt{A}'s and \texttt{T}'s (and around 10\% \texttt{C}'s and \texttt{G}'s, each).
+\end{itemize}
+We can define this as a Markov model.  We have 5 states:
+\begin{itemize}
+    \item Start state (source node)
+    \item Exon state ($E$)
+    \item 5' splice state ($5'$)
+    \item Intron state ($I$)
+    \item End state (sink node)
+\end{itemize}
+We have the emission probabilities (model the base composition), and transmission probabilities between states $E \rightarrow 5' \rightarrow I$.  For our example, assume that we start with
+\begin{itemize}
+    \item State E: 
+    \begin{itemize}
+        \item Emission: \{A = 0.25, C = 0.25, T = 0.25, G = 0.25\}
+        \item Transition: \{Self loop: 0.9, 5': 0.1\}
+    \end{itemize}
+    \item State 5':
+    \begin{itemize}
+        \item Emission: \{A = 0.05, C = 0, G = 0, T = 0.95\}
+        \item Transition: \{Self loop: 0, I: 1.0\}
+    \end{itemize}
+    \item State I:
+    \begin{itemize}
+        \item Emission: \{A = 0.4, C = 0.1, T = 0.4, G = 0.1\}
+        \item Transition: \{Self loop: 0.9, End state: 0.1\}
+    \end{itemize}
+\end{itemize}
+Now, consider the sequence:
+\begin{verbatim}
+CTTCATGTGAAAGCAGACGTAAG
+\end{verbatim}
+We can have a \textbf{state path}, which represents the states the Markov model passes through as it goes through the sequence one letter at a time (i.e., Markov Chain.)
+\begin{verbatim}
+Sequence:  CTTCATGTGAAAGCAGACGTAAG
+Statepath: EEEEEEEE5IIIIIIIIIIIIII
+\end{verbatim}
+In a Hidden Markov Model (HMM), the state path is hidden to us.  It happens in the background based on the most likely probability of occurring.  Our goal is given the model, we want to \textit{infer} the statepath.  If we are able to infer the statepath, then we can find out where the 5' splice site is.
+
+\subsection*{Calculating HMM Probabilities}
+The probability $p(S, \pi | \text{HMM}, \theta)$ that the HMM with parameter $\theta$ generates a state path $\pi$ and observed segment $S$ is the product of all emission and transition probabilities.\\\\
+For our example here, we can understand the model's choice by calculating every possible statepath.  The E state is only present before the 5' site and the I state is only present after the 5' site.  Additionally, the 5' site can only be on an \texttt{A} or a \texttt{G}.  Therefore, since there are only 14 different \texttt{A}'s or \texttt{G}'s in the sequence.  We will use log probabilities since multiplying many probabilities less than 1 together usually leads to rounding errors.\\\\
+Even then, many of the statepaths would have very similar probability values.  So how confident are we that the most likely one is \textit{actually} the statepath that occurred?  For this, we use a process called \textbf{posterior decoding}.
+\[p(\text{residue} + \text{emitted by state} k) = \frac{\sum p(\text{state paths that use }k\text{ to generate})}{\sum p(\text{all state paths})}\]
+
+
+
+
+
+\end{document}

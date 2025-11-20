@@ -1,0 +1,130 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx, multirow}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+\newcommand{\var}{\text{Var}}
+
+
+\graphicspath{{./assets/images/Module 17}}
+
+\title{02-680 Module 17 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Expectation and Moments}
+Given a probability distribution $p(X)$ of a random variable $X$, how can we summarize the distribution with a single value?  The \textbf{expectation} of a random variable is a number that attempts to capture the center of $p(X)$ and can be interpreted as the long-run average of many independent samples from the given distribution.
+
+\subsection*{Mean of Discrete Random Variables}
+For a (discrete) random variable $X$, the \textbf{expected value} is:
+\[\mathbb{E}[X] = \sum_{x \in \text{range}(X)} x \cdot p(X = x)\]
+We sometimes also call this the \textbf{mean} or \textbf{first moment} of the variable.\\\\
+range($X$) means the set of all possible values that the random variable $X$ can take.
+
+\subsection*{Bernoulli Random Variable}
+Let $X$ have the Bernoulli distribution with parameter $p$.  That is, assume that $X$ takes only the two values $0$ and $1$ with Pr($X = 1$)$= p$.  Then, the mean of $X$ is:
+\[\mathbb{E}(X) = 0 \times (1 - p) + 1 \times p = p\]
+
+\subsection*{Expectation for a Continuous Distribution}
+The idea of computing a weighted average of the possible values can be generalized to continuous random variables by using integrals instead of sums.  The distinction between bounded and unbounded random variables arises in the case for the same reasons.\\\\
+For a continuous random variable, again we swap a sum for an integral:
+\[\mathbb{E}[X] = \int_{-\infty}^\infty x \cdot f(x) \:\dd x\]
+Once again, the expectation is also called the \textbf{mean} or the \textbf{expected value.}
+
+\section*{Variance and Standard Deviation}
+In addition to the mean, we often want to know something about how `far` the likely outcomes are from the mean.  In the normal distribution, this is visually about how narrow the bell is.\\\\
+To do this we define the \textbf{variance} of a random variable as
+\[\text{Var}[X] = \mathbb{E}[[X - \mathbb{E}[X]]^2]\]
+It represents the expected squared difference between the random variable and its mean.
+
+\subsection*{Alternative Method for Calculating Variance}
+For every random variable $X$,
+\[\var(X) = \mathbb{E}(X^2) - [\mathbb{E}(X)]^2\]
+Proof: Let $\mathbb{E}(X) = \mu$.  Then,
+\begin{align*}
+    \var(X) &= \mathbb{E}[(X - \mu)^2] \\
+    &= \mathbb{E}(X^2 - 2\mu X + \mu^2) \\
+    &= \mathbb{E}(X^2) - 2\mu \mathbb{E}(X) + \mu^2 \\
+    &= \mathbb{E}(X^2) - \mu^2
+\end{align*}
+
+\subsection*{Standard Deviation}
+The standard deviation of a variable is the square root of the variance.  It provides a measure of spread in the same units as $X$.
+
+\subsection*{Estimating Variance from Data}
+Variance is estimated as:
+\[\var(X) \approx \frac{1}{n} \sum_{i = 1}^n (X_i - \bar{X})^2\]
+where $\bar{X} = \frac{1}{n} \sum X_i$\\\\
+This is widely used in real-world statistics when true distribution is unknown.
+
+\section*{Properties of Expectation and Variance}
+\subsection*{Summation}
+For some set $X_1, X_2, \dots, X_n$ of independent random variables:
+\begin{align*}
+    \mathbb{E} \left[\sum_{i \in [n]} X_i\right] &= \sum_{i \in [n]} \mathbb{E}[X_i] \\
+    \var \left[\sum_{i \in [n]} X_i\right] &= \sum_{i \in [n]} \var[X_i]
+\end{align*}
+
+\subsection*{Linearity}
+For some random variable $X$ and constraints $a, b \in \mathbb{R}$
+\begin{align*}
+    \mathbb{E}[aX + b] &= a \mathbb{E}[X] + b \\
+    \var[aX + b] &= a^2 \var[X]
+\end{align*}
+
+\section*{Conditional Expectation and Variance}
+\textbf{Discrete:}
+\begin{align*}
+    \mathbb{E}[X | Y = y] &= \sum_x (x \cdot p(X = x | y = y))
+    \var[X | Y = y] &= \sum_x (x - \mathbb{E}[X | Y = y])^2 p(X = x | Y = y)
+\end{align*}
+\textbf{Contnuous:}
+\begin{align*}
+    \mathbb{E}[X | Y = y] &= \int_{-\infty}^\infty x \cdot f(x | y) \dd x
+    V[X | Y = y] &= \int_{-\infty}^\infty (x - \mathbb{E}[X | Y = y])^2 \cdot f(x | y) \dd x
+\end{align*}
+
+\section*{Covariance and Correlation}
+When we are interested in the joint distribution of two random variables, it is useful to have a summary of how much the two random variables \textbf{depend on each other}.\\\\
+The covariance and correlation are attempts to measure that dependence, but they only capture a particular type of dependence, namely \textbf{linear dependence}.\\\\
+\subsubsection*{Concept:}
+When we have two random variables $X$ and $Y$, we often want to understand how they \textbf{vary together}.\\
+\subsubsection*{Covariance Definition:} 
+Given two random variables $X$ and $Y$ with expectations $\mu_X = \mathbb{E}[X]$ and $\mu_y = \mathbb{E}[Y]$ respectively, the \textbf{covariance} between the two is defined as
+\[\text{Cov}(X, Y) = \mathbb{E}[(X - \mu_x)(Y - \mu_y)] = \mathbb{E}[XY] - \mathbb{E}[X] \mathbb{E}[Y]\]
+\subsubsection*{Standard Deviations:}
+\begin{itemize}
+	\item $\sigma_X$ (standard deviation of $X$)
+	\item $\sigma_Y$ (standard deviation of $Y$)
+\end{itemize}
+\subsubsection*{Correlation Definition:}
+\[\rho(X, Y) = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}\]
+You can think of correlation as a \textbf{normalized version of covariance}.
+
+\end{document}
