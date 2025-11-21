@@ -113,4 +113,7 @@ Proof: Suppose $x \in P$  There exists a polynomial alorithm $A_x(\cdot)$. To sh
 
 \subsection*{Problem Reductions}
 A reduction from problem $X$ to $Y$ (written as $X \leq_P Y$), it means for instance $I_X$ of $X$, create a new instance $(I_X)_Y$ in polynomial time, such that \{$(I_X)_Y$ is a yes instance $\longleftrightarrow$ $I_X$ is a YES-instance\}, and $Y$ is \textbf{at least as hard} as $X$.
+\begin{itemize}
+	\item This implies that if there exists no polynomial time solution for $X$, then there must also not exist a polynomial time solution for $Y$.
+\end{itemize}
 \end{document}
