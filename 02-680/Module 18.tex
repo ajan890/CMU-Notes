@@ -60,7 +60,37 @@ On the other side, we have a set of models - mathematical representations of how
 	\item to estimate or ``learn'' the parameters of the model
 	\item so that the model better matches the observed data
 \end{itemize}
-It's about bridging the gap between theory (models) and reality (data).
+It's about bridging the gap between theory (models) and reality (data).\\\\
+Assume you have a set $D = X_1, X_2, \dots, X_n$ of independent and identically distributed variables for some unknown distribution.  Let $F$ be a statistical model defined as a set of probability distributions.  We will focus on parametric models defined as 
+\[F\{f(x | \theta) \::\: \theta \in \Theta\}\]
+where $\theta = \{\theta_1, \theta_2, \dots, \theta_k\}$ are unknown parameters $\theta \in \Theta$.\\\\
+The task is to find a distribution $\hat{f} \in F$ that models the phenomenon well, which includes modeling the associated $\theta$.\\\\
+We want to do this in a way that has:
+\begin{itemize}
+	\item the ability to generalize well
+	\item the ability to incorporate prior knowledge and assumptions
+	\item the ability to scale.
+\end{itemize}
+
+\subsection*{Data Likelihood}
+Bayes theorem (written slightly differently) states:
+\[p(hypothesis | data) = \frac{p(data | hypothesis) p(hypothesis)}{p(data)}\]
+If we can figure out all the values on the right, we can get the probaiblity of interest on the left (how good our model parameters are given the data).\\\\
+Let's start by looking at the most complicated component of the right side: $p(data | hypothesis)$, or in our case $p(D | \theta)$.  Remember that the elements of $D$ are identically and independently distributed, thus we can rewrite it:
+\[p(\mathcal{D}|\theta) = p(X_1, X_2, \dots, X_n | \theta) = \prod_{i = 1}^n p(X_i | \theta)\]
+
+\subsection*{Log Likelihood}
+Taking products of probabilities of the values can get very small.  Therefore, we often take the log likelihood of the function.  This turns the product into a sum.
+\[\log(p(X_1, X_2, \dots, X_n | \theta)) = \sum_{i = 1}^n \log(p(X_i | \theta))\]
+
+\section*{Maximum Likelihood Estimation (MLE)}
+The maximum likelihood estimate (MLE) is a way to estimate the value of a parameter of interest $\theta$.  This is the most frequently used method for parameter estimation.\\\\
+Thinking about how we \textbf{maximize a function} (or really find the parameter that maximizes the function), we need to take its derivative and check the 0 points.
+\[\frac{\dd}{\dd \theta} p(\mathcal{D} | \theta) = 0\]
+(but we also need to ensure its a max and not a min or saddle.)
+If there is no critical point, then we will use the maximum allowable parameter value.
+
+
 
 
 

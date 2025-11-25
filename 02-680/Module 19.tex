@@ -1,0 +1,66 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx, multirow}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+\newcommand{\var}{\text{Var}}
+
+
+\graphicspath{{./assets/images/Module 19}}
+
+\title{02-680 Module 19 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Maximum a Posteriori Estimation}
+\subsection*{Frequentist vs. Bayesian Schools}
+The \textbf{Frequentist School} assumes that $H$ is fixed and not random.  It uses likelihood only:
+\[L(H | D) = p(D | H)\]
+Probabilities reflect long-run frequencies.  Relies only on observed data.\\\\
+The \textbf{Bayesian School} takes $H$ to be a hypothesis (parameter) and $D$ some data.  Different people will have different a priori beliefs, but we would still like to make useful inferences from the data.\\\\
+When $p(H)$ is known, there is no disagreement, we will all just follow Bayes' Rule as written.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{M19_1.png} 
+\end{center}
+In practice, there is no universally-accepted prior.  The main n philosophical difference concerns the \textbf{meaning of probability}.
+\begin{itemize}
+	\item The Frequentist school represents the idea that \textit{probabilities represent long-term frequencies of repeatable random experiments}
+	\begin{itemize}
+	    \item \textbf{Objective interpretation}
+	    \item Example: `A coin has 0.5 probability of tails' means that the relative frequency of tails goes to 0.5 as the number of flips goes to infinity.
+    \end{itemize}
+    \item The Bayesian school represents the idea that \textit{probability is an abstract concept that measures a state of knowledge or a degree of belief in a given population}
+    \begin{itemize}
+	    \item \textbf{Subjective interpretation}
+	    \item Example: `A coin has 0.5 probability of tails' means you "believe" that you will get tails $50\%$ of the time.
+	    \item That is, they consider a range of values each with its own probability of being true.
+    \end{itemize}
+\end{itemize}
+
+\end{document}

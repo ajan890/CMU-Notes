@@ -116,4 +116,39 @@ A reduction from problem $X$ to $Y$ (written as $X \leq_P Y$), it means for inst
 \begin{itemize}
 	\item This implies that if there exists no polynomial time solution for $X$, then there must also not exist a polynomial time solution for $Y$.
 \end{itemize}
+
+\subsection*{Cook-Levin Theorem (1971)}
+This theorem states that every problem in NP can be reduced to SAT, or the satisfyability problem.  The boolean satisfiability problem is NP-complete. \\\\
+In turn, SAT can be reduced to 3SAT, which can be reduced to Independent set, vertex cover, set cover, hamiltonian path, TSP, graph coloring, 3D matching, and more.
+
+\subsection*{The SAT problem}
+Suppose we have many boolean variables, $x_1, x_2, \dots$, and a series of terms $t_1, t_2, \dots$, where $t_i = x_i$ or $t_j = \bar{x_i}$.  To combine terms, we have the two boolean operators, AND ($\land$) and OR ($\lor$).  We write in conjunctive normal form, or CNF (AND-of-ORs, sum-of-products).\\\\
+The problem is, if given an expression, e.g.
+\[(x_1 \lor \bar{x_2}) \land (\bar{x_1} \lor \bar{x_3}) \land (x_2 \lor x_3)\]
+does there exist a truth assignment (choice of T/F for each variable) such that the entire expression returns true?  A \textbf{satisfying assignment} is a truth assignment that makes the formula true.\\\\
+This problem is NP-complete.
+
+\subsection*{The 3SAT problem}
+The 3SAT problem is a subset of SAT, where every OR clause contains exactly three terms.  We care about this specific subset because as it turns out, every SAT problem is reducable to 3SAT.  How is this possible?\\\\
+There are three cases in converting a SAT problem to a 3SAT problem.  Either the clause in SAT has less than 3 terms, exactly 3 terms, or more than 3 terms.
+\begin{itemize}
+    \item If there are exactly three terms, then nothing changes.  This case already meets the conditions for 3SAT.
+    \item If there are less than three terms, then duplicate a variable.  e.g., $(t_1 \lor t_2) = (t_1 \lor t_2 \lor t_2)$.
+    \item If there are more than three terms, this process is less trivial.  To do this case, we add variables in the following way:
+\end{itemize}
+\begin{align*}
+    &\hspace{0.5cm}(t_1 \lor t_2 \lor t_3 \lor t_4 \lor \cdots \lor t_k) \\
+    &= (t_1 \lor t_2 \lor \textcolor{red}{Y_1}) \land \\
+    &\hspace{1.9cm} (\textcolor{red}{\bar{Y_1}} \lor t_3 \lor \textcolor{red}{Y_2}) \land\\
+    &\hspace{3.4cm} (\textcolor{red}{\bar{Y_2}} \lor t_4 \lor \textcolor{red}{Y_3}) \land\\
+    &\hspace{4.2cm} \cdots \land\\
+    &\hspace{5.7cm} (\textcolor{red}{\bar{Y}_{k - 1}} \lor t_{k - 1} \lor t_k)
+\end{align*}
+Doing this reduction keeps the same statement as the original, but now every clause only contains three terms.
+
+\subsubsection*{Proving 3SAT NP-Hard}
+Now, we need to prove 3SAT is NP-Hard in order to be able to use it in other NP-Hard proofs.  What we can do is convert this problem into an independent set problem.  To do this, draw a graph.  Each clause of three terms OR'ed together is converted to 3 nodes on the graph connected with edges.  Furthermore, each node that reference the same term (e.g., if $t_1$ is in two different clauses), the two nodes are also connected with an edge.  Now, this is an independent set problem, where whichever nodes are set to true are possible values that would satisfy 3SAT.
+
+
+
 \end{document}
