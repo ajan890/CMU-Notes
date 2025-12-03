@@ -1,0 +1,90 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate, enumitem}
+\usepackage{tabularx, multirow}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+\newcommand{\var}{\text{Var}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/Module 20}}
+
+\title{02-680 Module 20 \\ \large{Essentials of Mathematics and Statistics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Hypothesis Testing}
+Hypothesis Testing is
+\begin{itemize}
+	\item A technique to evaluate if a model fit matches our assumptions about the data.
+	\item Allows us to assign a numerical value (e.g., $p$-value) to assess this match.
+\end{itemize}
+There are two main types of hypothesis:
+\begin{itemize}
+	\item \textbf{Null Hypothesis ($H_0$)}: The assumption that there is no effect or no difference.
+	\item \textbf{Alternate Hypothesis ($H_1$)}: The assumption that there is an effect or a difference.
+\end{itemize}
+
+\subsection*{Hypothesis Test Outcome}
+The test helps us decide to:
+\begin{itemize}
+	\item Reject $H_0$ \textrightarrow Evidence supports $H_1$.
+	\item Retain $H_0$ \textrightarrow Not enough evidence to support $H_1$.
+\end{itemize}
+Example context: Testing whether a drug impacts cholesterol:
+\begin{itemize}
+	\item $H_0$: Cholesterol stays the same.  (No effect.)
+	\item $H_1$: Cholesterol level changes.
+\end{itemize}
+
+
+\subsection*{Errors}
+\begin{itemize}
+	\item Type I Error (False Positive): Rejecting the null hypothesis when $H_0$ is actually true.
+	\item Type II Error (False Negative): Retaining the null hypothesis when $H_0$ is actually false.
+\end{itemize}
+\begin{center}
+\begin{tabular}{c|cc}
+ & \multicolumn{2}{c}{Hypothesis Test Result} \\
+Truth & Retain $H_0$ & Reject $H_0$ \\ \hline
+$H_0$ & Correct & Type I Error \\
+$H_1$ & Type II Error & Correct
+\end{tabular}
+\end{center}
+We say the Type I Errpr Rate is $p(\text{reject } H_0$ | $H_0 \text{ is true})$, and Type II Error Rate is $p(\text{retain } H_0, H_1 \text{ is true})$, and Statistical Power is $1 - \text{Type II Error Rate}$.  The last point means that the higher power tests have a stronger ability to detect signals for $H_1$.
+
+\subsubsection*{Example}
+Let's look at it visually, first for what we call a two-sided test, that is
+\[H_0 \::\: \mu = x \text{ and } H_1 \::\: \mu \neq x\]
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{M20_1.png} 
+\end{center}
+In the figure above, when we pick some boundary around our desired $x$ (the green lines) we will have some probability of Type I Error (blue shaded regions) and Type II Error (red shaded region).
+
+
+\end{document}

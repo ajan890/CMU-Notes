@@ -24,9 +24,9 @@
 
 \newcommand{\opt}{\texttt{OPT}}
 
-\graphicspath{{./assets/images/Week 12}}
+\graphicspath{{./assets/images/Week 13}}
 
-\title{02-613 Week 12 \\ \large{Algorithms and Advanced Data Structures}}
+\title{02-613 Week 13 \\ \large{Algorithms and Advanced Data Structures}}
  
 \author{Aidan Jan}
 
@@ -50,7 +50,19 @@ In our case, we need to do some rewriting.  First, we have a greater than sign, 
     - x_1 + 3x_2 &\leq 1 \\
     x_2 &\leq 3
 \end{align*}
-Now, we add slack variables $S1, S2, S3$.  The purpose of doing this is that 
+Now, we add slack variables $S1, S2, S3$.
+\begin{align*}
+    x_1 + x_2 + S1 &\leq 3 \\
+    - x_1 + 3x_2 + S2 &\leq 1 \\
+    x_2 + S3 &\leq 3
+\end{align*}
+and rearrange the equations to solve for them.
+\begin{align*}
+    S1 &\leq 3 - x_1 - x_2 \\
+    S2 &\leq 1 + x_1 - 3x_2\\
+    S3 &\leq 3 - x_2
+\end{align*}
+
 [FILL rest of example]
 
 \subsection*{The Simplex Algorithm}
@@ -144,11 +156,11 @@ There are three cases in converting a SAT problem to a 3SAT problem.  Either the
     &\hspace{4.2cm} \cdots \land\\
     &\hspace{5.7cm} (\textcolor{red}{\bar{Y}_{k - 1}} \lor t_{k - 1} \lor t_k)
 \end{align*}
-Doing this reduction keeps the same statement as the original, but now every clause only contains three terms.
-
-\subsubsection*{Proving 3SAT NP-Hard}
-Now, we need to prove 3SAT is NP-Hard in order to be able to use it in other NP-Hard proofs.  What we can do is convert this problem into an independent set problem.  To do this, draw a graph.  Each clause of three terms OR'ed together is converted to 3 nodes on the graph connected with edges.  Furthermore, each node that reference the same term (e.g., if $t_1$ is in two different clauses), the two nodes are also connected with an edge.  Now, this is an independent set problem, where whichever nodes are set to true are possible values that would satisfy 3SAT.
-
-
+Doing this reduction does not keep the same statement as the original, but it has the property that it is satisfiable if and only if the original is satisfiable.  Additionally, every clause only contains three terms.
+\begin{itemize}
+    \item If there is a way to satisfy the original, it means that at least one term from the original OR statement must be true.  
+    \item In 3-SAT, if we broke that OR clause into $k$ separate clauses, then we have $k - 1$ $Y$-variables.  Since at least one clause is true, then there is a way to pick the $k - 1$ $Y$-variables to satisfy the rest, making the statement true.
+    \item If the original cannot be satisfied, then we have $k - 1$ variables, but $k$ clauses, and therefore we cannot satisfy all of the clauses.
+\end{itemize}
 
 \end{document}
