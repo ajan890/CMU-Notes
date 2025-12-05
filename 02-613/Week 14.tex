@@ -96,6 +96,39 @@ If $G$ has a Hamiltonian Cycle, that is an ordering of the cities giving a tour 
 Suppose $D$ has a tour of length $\leq n$.  Then, the tour cannot use a distance-2 connection because with $n$ steps, that would be too long.  Therefore, it visits cities only on distance-1 edges which in $G$ are nodes with edges.\\\\
 Thus, Hamiltonian cycle reduces to TSP, and TSP is NP-hard.
 
+\section*{``Solving'' NP-Hard Problems}
+Once a problem is determined to be NP-Hard, chances are that we will not be finding a solution to it that runs in polynomial time.  In this case, we have two options:
+\begin{itemize}
+    \item \textbf{Heuristics:} (with something like A*).  Not guaranteed to be optimal, but usually polynomial.
+    \item \textbf{Approximation:} See below.
+\end{itemize}
+
+\subsection*{Approximation Algorithms}
+Let $A_p(I)$ be the approximation solution vector.
+\begin{itemize}
+    \item $A$ = algorithm
+    \item $p$ = problem
+    \item $I$ = instance
+\end{itemize}
+Let $\text{OPT}_p(I)$ be the theoretical optimal solution vector (which may normally take exponential time to find).\\\\
+Now, an approximation algorithm satisfies the following equation:
+\[A_p(I) \leq \alpha(|I|) \text{ OPT}_p(I)\]
+$\alpha$ is a bound, typically around $2$ or $\log(n)$.  This basically means, our approximate solution will be at worst some factor times the optimal solution.  For example, for TSP, generating an optimal solution is NP-Hard, but we can get a solution that is at worst twice as bad as the optimal.  We can also provide a lower bound function, $B_p(I) < \text{ OPT}_p(I)$, if $A(I) \leq \alpha B(I) \Rightarrow A(I) \leq \alpha \text{ OPT}(I)$
+
+\subsubsection*{Example: Approximation of TSP}
+Given $n$ cities in $\mathbb{R}^2$ and Euclidian metric, find the shortest path to visit all the cities once.\\\\
+One valid approximation algorithm would be
+\begin{itemize}
+    \item Construct MST
+    \item Use preorder traversal, and leave out repeated visits
+\end{itemize}
+How bad is this approximation?  Let $A$ be the edges visited on the tour by our algorithm, counting multiplicity.  Now, let $A^*$ be the edges visited in an optimal tour.  Let the function cost($S$) be the cost of a tour.\\\\
+\textbf{Theorem:} cost($A$) $\leq 2$ cost($A^*$)
+Let cost($T$) $\leq$ cost($A^*$).  A walk $w$ that traces the MST has length $2$cost($T$).  This is because every edge in the MST is visited twice.  Therefore, 
+\[\Rightarrow \text{cost}(w) = 2 \text{ cost}(T) \leq 2 \text{ cost}(A^*)\]
+$w$ is not a tour since it repeats cities.  However, by cutting out repetitions, we are guaranteed to reduce the walk distance because of the triangle inequality.  We then get
+\[\Rightarrow \text{cost}(A) \leq 2 \text{ cost}(T) \leq 2 \text{ cost}(A^*)\]
+Therefore, this MST approximation of the Traveling Salesman Problem is at worst twice as bad as the optimal.  Notice that we never actually found the cost of the optimal algorithm
 
 
 \end{document}
