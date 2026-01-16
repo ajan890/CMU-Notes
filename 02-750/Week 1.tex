@@ -1,0 +1,284 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/Week 1}}
+
+\title{02-750 Week 1 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Context}
+There are two types of automation.
+\begin{enumerate}
+	\item Systems for performing repetitive tasks 
+	\begin{itemize}
+	    \item E.g., milking cows, grinding and welding, liquid handling
+	    \item These systems operate in highly \textbf{controlled environments} 
+	    \item For the most part, these machines do not need to solve problems (i.e., handle novel situations)
+    \end{itemize}
+    \item Systems that can `think' and handle novel challenges
+    \begin{itemize}
+	    \item This is an emerging area of automation that leverages advances in \textbf{computing hardware, artificial intelligence}, and \textbf{machine learning}
+	    \item e.g., IBM Watson, NewsBot, Amazon Robots, Self-driving Cars
+	    \item These systems operate in largely \textbf{uncontrolled environments}
+	    \item They \textbf{do} encounter novel situations and solve problems
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{The Scientific Method}
+\begin{itemize}
+	\item Hypothesis generation leads to experiment selection and execution through \textbf{predictions}
+	\item Experiment selection and execution leads back to hypothesis generation through \textbf{observations}
+\end{itemize}
+We can automate this!
+\begin{itemize}
+    \item Hypothesis generation can be done via \textbf{machine learning}
+    \item Experiment selection can be done via \textbf{artificial intelligence}
+    \item Experiment execution can be done via \textbf{automated instruments (i.e., robots)}
+\end{itemize}
+But what next?  This course focuses on algorithms to perform the \textit{Experiment Selection with AI} step
+
+\subsection*{Why Should We Automate Scientific Research?}
+\begin{itemize}
+	\item To save money, time, and space
+	\item To increase quality, safety, and reproducibility
+	\item To manage the complexity of living systems (this objective requires the second kind of automation)
+\end{itemize}
+
+\subsubsection*{Biological Systems are Complex}
+For example, a hormone goes through many steps to generate a response.  You can make a hypothesis on what the steps are.  However, how do you test the hypothesis?
+\begin{itemize}
+	\item How do you predict the system's behavior under untested conditions?
+	\item How do you select the next experiment?
+	\item How do you generate an alternative hypothesis, if this one is invalidated?
+\end{itemize}
+Questions about biological systems are very hard to answer, even for small systems.  Things only get harder, if we have a really big system.  We will study techniques that let us
+\begin{itemize}
+	\item Turn observations into hypotheses
+	\item Make accurate predictions
+	\item Select informative experiment(s)
+\end{itemize}
+
+\subsection*{Automated Science for Drug Discovery}
+Drug discovery is expensive and takes a long time.
+\begin{itemize}
+	\item 5k - 10k compounds are tested to produce one FDA-approved drug.
+	\item Average cost of this one drug is \$1.3 - 1.8 Billion.
+\end{itemize}
+The cost of drug discovery is driven by late-stage failures.  The leading cause of failures is not a lack of efficacy, but side effects.
+\begin{itemize}
+	\item Drugs may have unwanted, off-target interactions
+	\item Thus, drug development is not just about finding compounds that hit a desired target; it is also about finding compounds that miss all other targets.
+\end{itemize}
+
+\subsubsection*{Active Learning}
+If we have unlimited money, we can measure each element of the (target, compound) matrix by running many experiments.  However, we don't have unlimited money.  \textbf{Active learning} will select a subset of elements that will help us learn a model of the entire matrix.\\\\
+Our model is the (drug, target, response) matrix.  Rows are drugs, columns are targets, and responses are the values of each cell.  We can use active learning to select experiments by:
+\begin{itemize}
+	\item Quantifying the uncertainty of the model's predictions for each unobserved combination
+	\item Running the experiment corresponding to the least certain prediction
+\end{itemize}
+With only 2.5\% of the matrix covered, scientists can identify 57\% of the active compounds!
+\begin{itemize}
+	\item Saves time and money over other methods, and improves the model faster.
+\end{itemize}
+
+\section*{Supervised Learning}
+Training data comes in pairs of inputs ($x, y$), where $x \in \mathbb{R}^d$ is the input instance and $y \in \mathfrak{C}$ its label.  The entire training data is denoted as
+\[D = \{(x_1, y_1), \cdots, (x_n, y_n)\} \subseteq \mathbb{R}^d \times \mathfrak{C}\]
+where
+\begin{itemize}
+	\item $\mathbb{R}^d$: d-dimensional feature space
+	\item $x_i$: input vector of the $i$-th sample
+	\item $y_i$: label of the $i$-th sample
+	\item $\mathfrak{C}$: label space
+\end{itemize}
+
+\subsubsection*{Typical scenarios of the label space $\mathfrak{C}$}
+\begin{center}
+\begin{tabular}{c|c}
+Scenario & Label Space \\\hline
+Binary Classification & $\mathfrak{C} = \{0, 1\}$ \\
+& $\mathfrak{C} = \{+1, -1\}$ \\\hline
+Multi-class Classification & $\mathfrak{C} = \{1, \cdots, k\}$ \\
+& $(K \geq 2)$ \\\hline
+Regression & $\mathfrak{C} = \mathbb{R}$
+\end{tabular}
+\end{center}
+The goal is to find a function $h\::\: \mathbb{R}^d \rightarrow \mathfrak{C}$, such that $h(x_i) \approx y_i \forall (x_i, y_i) \in D$.  Ideally, our function would also work for points not in $D$, e.g., not overfitting the training data.
+
+\subsection*{Machine Learning as Optimization}
+Machine learning algorithms use training data $D$ to guide a \textbf{search} for the `best' model in a particular hypothesis space, $\mathcal{H}$.  Each algorithm specifies:
+\begin{itemize}
+	\item The hypothesis space, $\mathcal{H}$
+	\begin{itemize}
+	    \item Ex. linear classifiers, decision trees, neural networks, policies, etc.
+    \end{itemize}
+    \item A \textbf{loss function} (aka. cost function or error function) that can be used to evaluate each $h \in \mathcal{H}$
+    \begin{itemize}
+	    \item  Ex. 0-1 loss, hinge loss, squared error, logistic loss, etc.
+    \end{itemize}
+    \item A \textbf{risk objective} (aka. decision rule) that defines that `best' means
+    \begin{itemize}
+	    \item Ex. Expected loss, minimax loss, maximum likelihood, etc.
+    \end{itemize}
+    \item A \textbf{search method} to find the $h$ that minimizes the risk
+    \begin{itemize}
+	    \item Ex. gradient descent
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Offline versus Online Learning}
+\begin{itemize}
+	\item \textbf{Offline Machine Learning:} The learning algorithm receives all the training data at the same time, and then learns a model
+	\item \textbf{Online Machine Learning:} The learning algorithm receives the data in a \textbf{sequenctial} fashion, and iteratively updates the model
+	\begin{itemize}
+	    \item Ex. for supervised learning: $D_i = D_{i - 1} \cup \{(x_i, y_i)\}$
+	    \item $D_{i - 1}$ are old data instances, and $\{x_i, y_i\}$ are new training instance(s).
+    \end{itemize}
+    \item We will assume that the training data $D = \{(x_1, y_1), \cdots, (x_T, y_T)\}$ are independent and identically distributed (iid).
+    \begin{itemize}
+	    \item \textbf{Independent}: the occurrence of one instance $(x_i, y_i) \in D$, does not affect the probability of occurrence of any other instance $(x_j, y_j) \in D$
+	    \item \textbf{Identically Distributed}: Each instance in $D$ is sampled from the same (typically unknown) probability distribution.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Regret}
+Here, $l$ will be the 0-1 loss function defined as
+\[l(h, x, y) := \begin{cases} 1 & \text{if } h(x) \neq y \\ 0 & \text{if } h(x) = y \end{cases}\]
+Basic framework for online machine learning
+\begin{itemize}
+	\item The model makes a prediction on the new instance: $h_{i - 1} (x_i) = \hat{y_i}$
+	\item We compare $\hat{y_i}$ to the true label, $y_i$, and calculate the loss, $l$
+	\item We update the model: $h_i$ using $D_i = D_{i - 1} \cup \{(x_i, y_i)\}$
+\end{itemize}
+In the online learning setting, we can ask the question: how well \textit{could} I have done (in terms of total errors), if I had all the data at the beginning (i.e., as in offline learning)?\\\\
+Informally, \textbf{regret} is the difference between the cumulative loss produced using online learning, versus the offline learning setting.\\\\
+More formally, given a loss function $l$, \textbf{regret} is defined as
+\[R^T = \sum_{t = 1}^T l(h_t, x_t, y_t) - \sum_{t = 1}^T l(h^*, x_t, y_t)\]
+where $T$ is the number of data points, $h_t$ is the model that was used to make the prediction for instance $x_t$ and
+\[h^* = \argmin_{h \in \mathcal{H}} \sum_{t = 1}^T l(h_t, x_t, y_t)\]
+
+\subsection*{No Regret Online Learning}
+A sequence of models is said to have \textbf{no regret} if $\lim_{T \rightarrow \infty} \frac{R^T}{T} = 0$.
+\begin{itemize}
+	\item This will be true if $R^T \in o(T)$
+	\begin{itemize}
+	    \item Informally, a function $f$ is $o(g)$ if function $g$ grows much faster than $f$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Aside: Big-O Notation vs. Little-O Notation}
+$f \in O(g)$ means $\exists c > 0$ and $x_0 \in \mathbb{R}$ such that $|f(x)| \leq cg(x) \forall x \geq x_0$
+\begin{itemize}
+	\item Ex. if $f \equiv 4x^3 - 2x^2$ and $g \equiv x^3$, then $f \in O(g)$ for $c = 6$ and $x_0 = 1$.
+\end{itemize}
+$f \in o(g)$ means $\forall \epsilon > 0 \exists N$ such that $|f(x)| \leq \epsilon g(x) \forall x \geq N$
+\begin{itemize}
+	\item Ex. if $f \equiv 2x$ and $g \equiv x^2$, then $f \in o(g)$.
+\end{itemize}
+
+\section*{Three Simple Online Algorithms for Learning Classifiers}
+\begin{itemize}
+	\item A toy algorithm (Halving)
+	\item Weighted Majority Algorithm
+	\item Hedge Algorithm
+\end{itemize}
+
+\subsection*{Toy Online Learning Algorithm (Halving)}
+This is a toy algorithm, but it is useful to study because it is easy to understand and to analyze.  Key assumptions:
+\begin{itemize}
+	\item $\mathcal{H}$ is a \textbf{finite} set of classifiers of the form: $h \::\: \mathbb{R}^d \rightarrow \mathfrak{C}$
+	\item $\mathcal{H}$ contains a perfect model $h^*$
+	\begin{itemize}
+	    \item Note that $\mathcal{L}(h^*, x, y) = \frac{1}{T} \sum_{t = 1}^T l(h^*, x_t, y_t) = 0$ (i.e., perfect model doesn't make any mistakes)
+	    \item Of course, we don't know \textit{which} model is perfect, \textit{a priori}
+    \end{itemize}
+    \item The goal is to find $h^* \in \mathcal{H}$ in an online fashion
+\end{itemize}
+Basic Strategy:
+\begin{itemize}
+	\item Assign a binary weight, $w_i \in \{0, 1\}$, to each model $h_i \in \mathcal{H}$
+	\begin{itemize}
+	    \item Each weight is initialized to 1, thus, $\sum_{h_i \in \mathcal{H}} w_i = |\mathcal{H}|$
+	    \item A weight of 1 means the model \textbf{might} be perfect
+    \end{itemize}
+    \item For each new training example, $(x_t, y_t)$
+    \begin{itemize}
+	    \item Output the \textbf{majority label} amongst the models with \textbf{weight 1}.
+        \begin{itemize}
+	        \item The majority might be right, or it might be wrong!
+            \item We will think of the majority label as having come from a virtual model $\hat{h_t}$
+        \end{itemize}
+        \item Update the weights as follows:
+        \begin{itemize}
+	        \item Set $w_i$ to $0$ for any model such that $h_i(x_t) \neq y_t$
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+For each new training instance, $(x_t, y_t)$
+\begin{enumerate}
+	\item Output the majority label rom model $\hat{h_t}$
+	\[\hat{y} = \argmax_{c \in \mathfrak{C}} \sum_{h_i \in \mathcal{H}} w_i \cdot \mathds{1}(h_i(x_t) = c)\]
+    \item Re-weight each model in $\mathcal{H}$ using the following rule:
+    \[w_i(t) = \min(w_i(t - 1), \mathds{1}(h_i(x_t) = y_t))\]
+\end{enumerate}
+Notice that at any given time $t$, the sum over all $W_t = \sum_{h_i \in \mathcal{H}} w_i(t)$ is a measure of the number of \textbf{potentially perfect} models in $\mathcal{H}$ (i.e., those with weight of 1).  This number decreases monotonically over time.
+
+\subsubsection*{Halving Example}
+Suppose we have a collection of models for predicting whether two molecules bind
+\begin{center}
+\begin{tabular}{ccc|ccc|c|c}
+\multicolumn{3}{c|}{Models} & \multicolumn{3}{c|}{Weights} & \begin{tabular}[c]{@{}c@{}}Majority \\ Label\end{tabular} & \begin{tabular}[c]{@{}c@{}}True\\ Label\end{tabular} \\ \hline
+$h_1$ & $h_2$ & $h_3$ & $w_1$ & $w_2$ & $w_3$ & $\hat{h_i}(x_t) = \hat{y}$ & $y_t$ \\ \hline
+1 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\
+0 & {\color[HTML]{9B9B9B} 1} & 1 & 1 & 0 & 1 & Tie & 1 \\
+{\color[HTML]{9B9B9B} 1} & {\color[HTML]{9B9B9B} 0} & 1 & 0 & 0 & 1 & 1 & 1 \\
+{\color[HTML]{9B9B9B} 0} & {\color[HTML]{9B9B9B} 1} & 1 & 0 & 0 & 1 & 1 & 1 \\
+{\color[HTML]{9B9B9B} 1} & {\color[HTML]{9B9B9B} 0} & 1 & 0 & 0 & 1 & 1 & 1
+\end{tabular}
+\end{center}
+Each iteration we only fill one row, and the weights at each iteration are determined by the results of the previous rows.  Since we know there is a perfect model, we set a weight to zero once a model is wrong (e.g., we know that one must not be the perfect model).\\\\
+If we run a regret analysis:
+\begin{itemize}
+	\item We assume that there is a perfect model (i.e., zero loss), so regret is
+	\[R^T = \sum_{t = 1}^T l(\hat{h_t}, x_t, y_t) - \sum_{t = 1}^T l(h^*, x_t, y_t) = \sum_{t = 1}^T l(\hat{h_t}, x_t, y_t)\]
+    \begin{itemize}
+        \item the second sum goes to zero
+        \item Notice that once the weights of all the imperfect models have been set to zero, the majority will always be right for any subsequent input.
+    \end{itemize}
+    \item Thus, the regret for this simple algorithm corresponds to the number of mistakes made by $\hat{h_1}, \cdots, \hat{h_t}$
+    \item Let's compute an upper bound on the number of mistakes\dots
+\end{itemize}
+
+
+
+\end{document}

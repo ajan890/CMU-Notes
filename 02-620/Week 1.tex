@@ -1,0 +1,291 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 1 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction} 
+Machine learning has many uses, including
+\begin{itemize}
+	\item Visual: image segmentation, object recognition, classification
+	\item Auditory and Textual: speech recognition, web scraping, chat bots
+	\item Robotics: self driving cars, movement imitation
+\end{itemize}
+Modern biology needs machine learning.
+\begin{itemize}
+	\item Traditional biology: one locus at a time
+	\begin{itemize}
+	    \item Huntington disease and mutations in the \textit{HTT} gene [MacDonald 1993 \textit{Cell}]
+	    \item Cystic fibrosis and mutations in the \textit{CFTR} gene [Riordan 1989 \textit{Science}]
+    \end{itemize}
+    \item Modern high-throughput biology: genome wide analysis
+    \begin{itemize}
+	    \item Use \textbf{all genetic variants} to predict risk complex traits (e.g., type II diabetes) [Weissbrod 2022 \textit{Nat Genet}]
+	    \item Aims to identify \textbf{all causal genes} for diseases such as Alzheimer's disease [Kunkle 2019 \textit{Nat Genet}]
+    \end{itemize}
+\end{itemize}
+Some direct examples of machine learning used in biological contexts include
+\begin{itemize}
+	\item finding genes on the human genome with hidden Markov models
+	\item inferring genetic ancestry (finding SNPs) with principal component analysis
+	\item predicting cancer subtypes from gene expression data
+	\item learning gene regulatory networks
+\end{itemize}
+
+\section*{General Machine Learning Formulation}
+\textbf{Data} is represented as $N$ data points with $D$ features.  This is represented in a matrix of form $X \in \mathbb{R}^{N \times D}$.  Or,
+\[x_1, \dots, x_n \in \mathbb{R}^D\]
+Optionally, the data points can have labels (for reinforcement/supervised learning).  Labels are represented as a vector of form $y \in \mathbb{R}^N$.  Or,
+\[y_1, \dots, y_n \in \mathbb{R}\]
+A \textbf{Model} is a parametric function, $f(\cdot; \theta)\::\: \mathbb{R}^D \rightarrow \mathbb{R}$ with learnable parameters $\theta$.  Finally, \textbf{learning} is the process of estimating parameters $\hat{\theta}$ from the data ($X, y$) by optimizing an objective function.  An example of an objective function is letting
+\[y_i \approx f(x_i; \hat{\theta})\]
+\textbf{Inference} is the useful case of machine learning; for a new data point $x_{i'}$, predict $\hat{y}_{i'} = f(x_{i'}; \hat{\theta})$.
+
+\subsection*{Example: Univariate Linear Regression}
+\begin{itemize}
+    \item \textbf{Data:}
+    \begin{itemize}
+	    \item $N$ data points with $D = 1$ features: $x_i \in \mathbb{R}$
+	    \item Labels: $y_i \in \mathbb{R}$
+    \end{itemize}
+    \item \textbf{Model:}
+    \begin{itemize}
+	    \item Parametric function: $f(x_i; \theta) = \theta_1 x_1 + \theta_0$
+	    \item Parameters: $\theta = (\theta_0, \theta_1)$
+    \end{itemize}
+    \item \textbf{Learning:}
+    \begin{itemize}
+	    \item Estimate parameters $\hat{\theta} = (\hat{\theta}_0, \hat{\theta}_1)$ from data ($X, y$) by letting $y_i \approx \hat{\theta}_1 x_i + \hat{\theta}_0$
+    \end{itemize}
+    \item \textbf{Inference:}
+    \begin{itemize}
+    	\item For a \textbf{new} data point $x_{i'}$, predict $\hat{y}_{i'} = \hat{\theta}_1 x_{i'} + \hat{\theta}_0$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Taxonomy of Machine Learning Models}
+\textbf{Supervised Learning:} learning to predict label $y_i$ from features $x_i$ using labeled data ($X, y$)
+\begin{itemize}
+	\item \textbf{Regression:} $y_i \in \mathbb{R}$. E.g., linear regression, etc.
+	\item \textbf{Classification:} $y_i \in \{0, 1\}$.  E.g., Na\text{\"i}ve bayes classifier, logistic regression, decision tree, etc.
+	\item Models: deterministic $y_i = f(x_i; \theta)$ or probabilistic $P(Y_i | X_i = x_i; \theta)$
+\end{itemize}
+\textbf{Unsupervised Learning:} learning structure or patterns from unlabeled data $X$.  e.g., clustering, dimensionality reduction, etc.
+\begin{itemize}
+	\item Models: deterministic $f(x_i; \theta)$ or probabilistic $P(X_i; \theta)$.
+\end{itemize}
+
+\subsection*{Examples of Supervised Learning}
+Learn to perform the task ``Given input $x_i$, decide output $y_i$''
+\begin{itemize}
+	\item Given blood test results $x_i$, decide diagnosis $y_i$.  ($y_i = 0$ for healthy, $y_i = 1$ for heart disease)
+	\item Given image $x_i$, decide whether an object is present $y_i$.  ($y_i = 0$ for no, $y_i = 1$ for yes)
+	\item Given image $x_i$, decide whether an object is a cat $y_i$.  ($y_i = 0$ for no, $y_i = 1$ for yes)
+\end{itemize}
+
+\subsection*{Examples of Unsupervised Learning}
+Learn to perform the task ``Find interesting patterns in $X$''
+\begin{itemize}
+    \item Given a set of images $X$, find groups of related images.  (e.g., cluster images of animals into horses, cats, dogs, humans, etc.)
+    \item Given a set of documents $X$, find groups of documents with related topics.  (for example, cluster NYTimes articles according to topics, e.g., politics, business, entertainment)
+\end{itemize}
+
+\subsection*{Supervised vs. Unsupervised Learning}
+\begin{center}
+    \begin{tabular}{c||c|c}
+        & Supervised Learning & Unsupervised Learning \\\hline
+        Data Format & Input $X$, Output $y$ & Input $X$ \\
+        Model & $y_i = f(x_i; \theta)$ or $P(Y_i | X_i = x_i)$ & $f(x_i; \theta)$ or $P(X_i; \theta)$ \\
+        Learning & With a teacher & Without a teacher
+    \end{tabular}
+\end{center}
+
+\subsection*{Taxonomy of Learning Methods}
+\begin{itemize}
+	\item \textbf{Learning: Estimating Parameters $\theta$}
+	\begin{itemize}
+	    \item $\mathcal{D}$: data or evidence (e.g., ($X, y$))
+    \end{itemize}   
+    \item \textbf{Empirical Risk Minimization (ERM)} (general principle)
+    \begin{itemize}
+        \item Minimize a predefined loss function (e.g., squared error loss):
+        \[\hat{\theta} = \argmin_{\theta} \sum_{i = 1}^N \left(y_i - f(x_i; \theta)\right)^2\]
+    \end{itemize}
+    \item \textbf{Maximum Likelihood Estimation (MLE)}
+    \begin{itemize}
+	    \item \textit{Probabilistic instantiation of ERM with \textbf{deterministic $\theta$}}
+	    \[\hat{\theta} = \argmax_{\theta} P(\mathcal{D}; \theta)\]
+    \end{itemize}
+    \item \textbf{Maximum a Posteriori (MAP)}
+    \begin{itemize}
+	    \item \textit{Probabilistic instantiation of ERM with \textbf{random $\Theta$}}
+	    \[\hat{\theta} = \argmax_{\theta} P(\Theta = \theta | \mathcal{D})\]
+    \end{itemize}
+\end{itemize}
+
+\section*{Solving Maximum Likelihood Estimation}
+Probabilistic instantiation of ERM with deterministic $\theta$
+\begin{align*}
+    \hat{\theta} = \argmax_{\theta} P(\mathcal{D}; \theta) &= \argmax_{\theta} P(X, y; \theta) \\
+    &= \argmax_\theta \prod_{i = 1}^N P(X_i = x_i, Y_i = y_i; \theta) \\
+    &= \argmax_\theta \log \prod_{i = 1}^N P(X_i = x_i, Y_i = y_i; \theta) \\
+    &= \argmax_\theta \sum_{i = 1}^N \log P(X_i = x_i, Y_i = y_i; \theta)
+\end{align*}
+The resulting equation is the log likelihood of the data point $i$.
+\begin{itemize}
+	\item We are able to apply the log to convert the product into a sum since (1) it makes the derivative much easier, and (2), log is a monotonically increasing function.
+\end{itemize}
+To solve this optimization problem, we have a few options.
+\[\hat{\theta} = \argmax_{\theta} P(\mathcal{D}; \theta)\]
+\begin{itemize}
+	\item Closed-form solution (when available): solve $\frac{\partial P(\mathcal{D}; \theta)}{\partial \theta} = 0$
+	\item Numerical optimization (general case): gradient descent, Newton-Raphson, etc.
+\end{itemize}
+
+\subsection*{Bayes Rule in Machine Learning}
+\begin{itemize}
+	\item $\mathcal{D}$: data / evidence (e.g., $(X, y)$)
+	\item $\Theta$: unknown parameters (random variables)
+\end{itemize}
+\[P(\Theta | \mathcal{D}) = \frac{P(\mathcal{D} | \Theta) P(\Theta)}{P(\mathcal{D})}\]
+\begin{itemize}
+	\item The \textbf{posterior} is the belief on the unknown quantity \textbf{after} you see data $\mathcal{D}$, and is represented by $P(\Theta | \mathcal{D})$
+	\item \textbf{Likelihood} is how likely the observed data is under the particular unknown quantity $\Theta$, and is represented by $P(\mathcal{D} | \Theta)$
+	\item The \textbf{prior} is the belief on the unknown quantity \textbf{before} seeing data $\mathcal{D}$, and is represented by $P(\Theta)$
+\end{itemize}
+
+\subsection*{Maximum a Posteriori (MAP) Estimation}
+Probabilistic instantiation of ERM with random $\Theta$
+\begin{align*}
+    \hat{\theta} = \argmax_\theta P(\Theta | \mathcal{D}) &= \argmax_\theta \frac{P(\mathcal{D} | \theta) P(\Theta)}{P(\mathcal{D})} \\
+    &= \argmax_\theta P(\mathcal{D} | \theta) P(\Theta) \\
+    &= \argmax_\theta P(\Theta) \prod_{i = 1}^N P(X_i = x_i, Y_i = y_i | \Theta) \\
+    &= \argmax_\theta \left[\log P(\Theta = \theta) + \sum_{i = 1}^N \log P(Y_i = y_i, X_i = x_i | \Theta = \theta)\right]
+\end{align*}
+In this case, the first log term ($\log P(\Theta = \theta)$) is the log prior, and the second term (the sum) is the log likelihood of data point $i$.  In essence, MAP is the same as MLE except with a nonzero prior term.  In a similar way to MLE, we can solve this optimization problem in two ways:
+\[\argmax_\theta P(\Theta | \mathcal{D})\]
+\begin{itemize}
+	\item Closed-form solution (when available): solve $\frac{\partial P(\Theta | \mathcal{D})}{\partial \theta} = 0$
+	\item Numerical optimization (general case): gradient descent, Newton-Raphson, etc.
+\end{itemize}
+
+\subsection*{Avoid Overfitting For Model Performance Assessment}
+Data used for assessing performance should be independent of data used for learning parameters (training)
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W1_1.png} 
+\end{center}
+
+\subsection*{Common Machine Learning Questions}
+\textbf{Data}
+\begin{itemize}
+	\item $N$ data points with $D$ features
+	\[x_1, \cdots, x_N \in \mathbb{R}^D\]
+    \item (Optional) labels
+    \[y_1, \cdots, y_N \in \mathbb{R}\]
+    \item What are features and labels?
+    \item Are the labels binary or continuous?
+    \item Are data points independent?
+    \item Are the feature/labels accurate or noisy?
+    \item How many features relative to the number of samples?
+\end{itemize}
+\textbf{Model}
+\begin{itemize}
+	\item Parametric function $f(\cdot; \theta)\::\: \mathbb{R}^D \rightarrow \mathbb{R}$ with learnable parameters $\theta$
+\end{itemize}
+\textbf{Learning}
+\begin{itemize}
+	\item Estimate parameters $\hat{\theta}$ from data $(X, y)$ by optimizing an objective function.  E.g., letting $y_i \approx f(x_i; \hat{\theta})$
+\end{itemize}
+\textbf{Inference}
+\begin{itemize}
+	\item For a new data point $x_{i'}$, predict $\hat{y}_{i'} = f(x_{i'}; \hat{\theta})$
+	\item Do model assumptions match the data?  Linear or non-linear?  Dense or sparse?  Noise distribution?
+	\item How should the parameters be learned?  MLE or MAP?
+	\item How can the optimization be computed efficiently?  Closed-form solution or numerical optimization?
+	\item How can inference be performed efficiently?
+\end{itemize}
+
+\subsection*{Summary}
+\begin{itemize}
+	\item General machine learning formulation: data + model + learning + inference
+	\item Supervised learning (with labels) versus unsupervised learning (without labels)
+	\item Regression (continuous labels) vs. classification (binary labels) 
+	\item Learning methods: MLE vs. MAP
+	\item Optimization methods: close-form vs. numerical methods.
+	\item Model performance should be assessing using independent data
+\end{itemize}
+
+\section*{Regression}
+Beginning with an example, genome-wide association studies (GWASs) aim to find genetic variants (SNPs) associated with disease.  A Single Nucleotide Polymorphism (SNP) is a letter of the genome that differs in different individuals.  (e.g., G/T).
+\subsection*{GWAS as Linear Regression}
+\begin{itemize}
+	\item Profile genotype and phenotype across a large cohort
+	\item Correlation each SNP with phenotype to find associated SNPs
+\end{itemize}
+\[X = \begin{bmatrix} x_{11} & \cdots & x_{1D} \\ \vdots & \ddots & \vdots \\ x_{N1} & \cdots & x_{ND} \end{bmatrix} \hspace{2cm} y = \begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix}\]
+\begin{itemize}
+	\item $X$ is a matrix containing $N$ individuals (rows) and $D$ SNPs (columns)
+	\item $x_{ij}$ is the number of mutations (alternative allele) at individual $i$ and SNP $j$.  E.g., when reference/alternative alleles are A/T, $0$ if AA; $1$ if AT; $2$ if TT.
+	\item $y$ is a $N \times 1$ matrix that represent the phenotype, or labels.  In this case, they are trait values or disease status.  E.g., BRCA gene expression level, blood pressure, insulin level, if having breast cancer, etc.
+\end{itemize}
+A SNP is associated if it is strongly correlated with the phenotype.
+
+\subsection*{Other Examples of Regression}
+\begin{itemize}
+	\item Predict weight from gender, height, age, etc.
+	\item Predict Google stock price today from Google, Yahoo, MSFT prices yesterday
+	\item Predict each pixel intensity in a robot's current camera image, from previous image and previous action.
+\end{itemize}
+
+\subsection*{Univariate Linear Regression}
+\textbf{Data}
+\begin{itemize}
+	\item $N$ data points with $D = 1$ features: $x_i \in \mathbb{R}$
+	\item Labels: $y_i \in \mathbb{R}$
+\end{itemize}
+\textbf{Model}
+\begin{itemize}
+	\item Parametric function: $f(x_i; \theta) = \theta_1 x_i + \theta_0$
+	\item Parameters: $\theta = (\theta_0, \theta_1)$
+\end{itemize}
+\textbf{Learning}
+\begin{itemize}
+	\item Estimate parameters $\hat{\theta} = (\hat{\theta}_0, \hat{\theta}_1)$ from data ($X, y$) by letting $y_i \approx \hat{\theta}_1 x_i + \hat{\theta}_0$
+\end{itemize}
+\textbf{Inference}
+\begin{itemize}
+	\item For a new data point $x_{i'}$, predict $\hat{y}_{i'} = \hat{\theta}_1 x_{i'} + \hat{\theta}_0$
+\end{itemize}
+
+
+\end{document}
