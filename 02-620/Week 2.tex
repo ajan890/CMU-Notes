@@ -1,0 +1,329 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 2 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Univariate Linear Regression (continued)}
+\subsection*{Data}
+Data for univariate linear regression is
+\begin{itemize}
+	\item $N$ data points with $D = 1$ features: $x_i \in \mathbb{R}$ (or vector $x \in \mathbb{R}^N$)
+	\item Labels: $y_i \in \mathbb{R}$ (or vector $y \in \mathbb{R}^N$)
+\end{itemize}
+\subsubsection*{Example: GWAS}
+\begin{itemize}
+	\item Analyze one SNP at a time.
+	\item Is the SNP associated with the phenotype?
+\end{itemize}
+Genotype / features is a $N \times D$ matrix.  $N$ individuals and $D$ SNPs.
+\[X = \begin{bmatrix} x_{11} & \cdots & x_{1D} \\ \vdots & \ddots & \vdots \\ x_{N1} & \cdots & x_{ND} \end{bmatrix}\]
+Phenotype / labels
+\[y = \begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix}\]
+\begin{itemize}
+	\item $x_{ij}$ is the number of mutations (alternative allele) at individual $i$ and SNP $j$.  E.g., when reference/alternative alleles are A/T, then 0 if AA, 1 if AT, 2 if TT.
+	\item Phenotypes are trait values or disease status.  E.g., BRCA gene expression level, blood pressure, insulin level, if having breast cancer, etc.
+\end{itemize}
+
+\subsection*{Model}
+\begin{itemize}
+	\item Linear model:
+	\[Y_i = \theta_1 x_i + \theta_0 + \epsilon_i, \quad i = 1, \cdots, N\]
+    \item Assumptions:
+    \begin{itemize}
+	    \item $\theta, x_i$ are fixed (deterministic)
+	    \item $\epsilon_i \sim N(0, \sigma^2)$, IID across samples / individuals
+    \end{itemize}
+    \item Parameters of interest: $\theta = (\theta_0, \theta_1)$
+    \item Additional parameter: $\sigma^2$
+\end{itemize}
+Remark:
+\begin{itemize}
+	\item $Y_i$ is random due to $\epsilon_i$, which represents random noise.
+	\item $Y_i \sim N(\theta_1 x_i + \theta_0, \sigma^2)$, IID across samples / individuals
+\end{itemize}
+Terminology:
+\begin{itemize}
+	\item $Y_i$: Dependent variable / output
+	\item $x_i$: Explanatory variable / predictor / covariate / input
+	\item $\theta_0$: Intercept
+	\item $\theta_1$: Regression coefficient / slope
+	\item $\epsilon_i$: Noise
+\end{itemize}
+Our goal is to find values for $\theta_0$ and $\theta_1$ such that the line
+\[Y_i = \theta_1 x_{ij} + \theta_0 + \epsilon_i\]
+describes our data points the best.\\\\
+In our GWAS example, we can decide the effect SNP $j$ has on the phenotype based on the slope.  If
+\begin{itemize}
+	\item $\theta_1 = 0$, the line of best fit is flat, and therefore SNP $j$ has no effect on phenotype.
+	\item $\theta_1 > 0$, SNP $j$ has positive effect on the phenotype.
+	\item $\theta_1 < 0$, SNP $j$ has negative effect on the phenotype.
+\end{itemize}
+Note that for regression, $Y_i$ must be a continuous metric, meanwhile $x_i$ can be continuous or discrete.
+
+\subsection*{Learning}
+Estimate parameters $\hat{\theta} = (\hat{\theta}_0, \hat{\theta}_1)$ from data ($x, y$).
+
+\subsection*{Taxonomy of Learning Methods}
+\textbf{Learning: Estimating Parameters $\theta$}
+\begin{itemize}
+	\item $\mathcal{D}$: data / evidence (e.g., $(X, y)$)
+\end{itemize}
+\textbf{Empirical Risk Minimization (ERM) (supervised)}
+Minimize a predefined loss function (e.g., squared error loss):
+\[\hat{\theta} = \argmin_\theta \sum_{i = 1}^N \left(y_i - f(x_i; \theta)\right)^2\]
+\textbf{Maximum Likelihood Estimation (MLE).}  $\theta$ is deterministic
+\[\hat{\theta} = \argmax_\theta P(\mathcal{D}; \theta) = \argmax_\theta \sum_{i = 1}^N \log P(X_i = x_i, Y_i = y_i; \theta)\]
+\textbf{Maximum a Posteriori (MAP).}  $\Theta$ is random
+\begin{align*}
+    \hat{\theta} &= \argmax_\theta P(\Theta | \mathcal{D}) \\
+    &= \argmax_\theta \left[\log P(\Theta = \theta) + \sum_{i = 1}^N \log P(Y_i = y_i, X_i = x_i | \Theta = \theta)\right]
+\end{align*}
+The question is, which strategy do we use?
+\begin{itemize}
+	\item For regression, we use ERM and MLE, since $\theta$ needs to be deterministic.
+\end{itemize}
+
+\subsection*{Learning via ERM}
+First, we define the objective: $g(\theta) = \sum_{i = 1}^N (y_i - \theta_1 x_i - \theta_0)^2$.  Then, we take the derivatives and set to 0.
+\begin{align*}
+    \frac{\partial g(\theta)}{\partial \theta_0} &= \sum_{i = 1}^N 2(y_i - \theta_1 x_i - \theta_0) = 0 \\
+    \frac{\partial g(\theta)}{\partial \theta_1} &= -\sum_{i = 1}^N 2x_i(y_i - \theta_1 x_i - \theta_0) = 0
+\end{align*}
+Solving yields:
+\[\hat{\theta}_1 = \frac{\frac{1}{N} \sum_i x_i y_i - \bar{x} \bar{y}}{\frac{1}{N} \sum_i x_i^2 - \bar{x}^2}, \quad \hat{\theta}_0 = \bar{y} - \hat{\theta}_1 \bar{x}\]
+where $\bar{x} = \frac{1}{N} \sum_i x_i$ and $\bar{y} = \frac{1}{N} \sum_i y_i$
+
+\subsection*{Learning via MLE}
+In univariate linear regression:
+\begin{itemize}
+	\item $\theta, x_i$ are fixed (deterministic)
+	\item $\epsilon_i \sim N(0, \sigma^2)$ is IID (independently and identically distributed) across samples / individuals.
+\end{itemize}
+Since $Y_i \sim N(\theta_1 x_i + \theta_0, \sigma^2)$, we get
+\[f(y_i) = \frac{1}{\sqrt{2\pi \sigma^2}} \exp \left(-\frac{(y_i - \theta_1 x_i - \theta_0)^2}{2\sigma^2}\right)\]
+We get this by plugging in the gaussian density function.  From here, we can solve for $\hat{\theta}$.
+\begin{align*}
+    \hat{\theta} = \argmax_\theta \sum_{i = 1}^N \left(-\frac{1}{2} \log(2\pi \sigma^2) - \frac{(y_1 - \theta_1 x_i - \theta_0)^2}{2\sigma^2}\right) \\
+    &= \argmin_\theta \sum_{i = 1}^N (y_i - \theta_1 x_i - \theta_0)^2
+\end{align*}
+Same optimization problem as the ERM before!  Therefore, we also have the same solution for $\hat{\theta}_1$ and $\hat{\theta}_0$.  See above.
+
+\section*{Multivariate Linear Regression}
+The main difference between multivariate linear regression is that we have more than one feature.\\\\
+\textbf{Data}
+\begin{itemize}
+	\item $N$ data points with $D > 1$ features: $x_i \in \mathbb{R}$ (or vector $x \in \mathbb{R}^N$)
+	\item Labels: $y_i \in \mathbb{R}$ (or vector $y \in \mathbb{R}^N$)
+\end{itemize}
+\[X = \begin{bmatrix} x_{11} & \cdots & x_{1D} \\ \vdots & \ddots & \vdots \\ x_{N1} & \cdots & x_{ND} \end{bmatrix} \quad y = \begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix}\]
+In our GWAS example, the data is in the same format, except we \textbf{analyze all SNPs at once}.  We ask, is the SNP associated with the phenotype \textbf{given} other SNPs?
+
+\subsection*{Model}
+Linear model:
+\[Y_i = \sum_{j = 1}^D \theta_j x_{ij} + \theta_0 + \epsilon_i, \quad i = 1, \cdots, N\]
+In this case, our equation is in matrix form: $Y_i = \theta^T \tilde{x}_i + \epsilon_i$, where $\tilde{x}_i = \begin{bmatrix} 1 \\ x_i \end{bmatrix} \in \mathbb{R}^{D + 1}$\\\\
+Assumptions:
+\begin{itemize}
+	\item $\theta, x_i$ are fixed (deterministic)
+	\item $\epsilon_i \sim N(0, \sigma^2)$, IID across samples / individuals
+\end{itemize}
+The rest is the same as the univariate model.
+
+\subsection*{Learning via ERM}
+In multivariate linear regression:
+\begin{itemize}
+	\item $f(x_i; \theta) = \theta^T \tilde{x}_i$  (recall that $\tilde{x}_i = \begin{bmatrix} 1 \\ x_i \end{bmatrix}$)
+	\item No assumptions on $\epsilon_i$
+\end{itemize}
+Define the objective: $g(\theta) = \sum_{i = 1}^N (y_i - \theta^T \tilde{x}_i)^2 = (y - \tilde{X} \theta)^T (y - \tilde{X} \theta)$, where
+\[\tilde{X} = \begin{bmatrix} \tilde{x}_1^T \\ \vdots \\ \tilde{x}_N^T \end{bmatrix} \in \mathbb{R}^{N \times (D + 1)}\]
+Take derivatives and set to $0$:
+\[\frac{\partial g(\theta)}{\partial \theta} = -2 \tilde{X}^T (y - \tilde{X} \theta) = 0\]
+Solving yields: $\hat{\theta}_1 = \left(\tilde{X}^T \tilde{X}\right)^{-1} \tilde{X}^T y$
+
+\subsection*{Learning via MLE}
+In multivariate linear regression:
+\begin{itemize}
+	\item $\theta, x_i$ are fixed (deterministic)
+	\item $\epsilon_i \sim N(0, \sigma^2)$, IID across samples / individuals
+\end{itemize}
+Since $Y_i \sim N(\theta^T \tilde{x}_i, \sigma^2)$, $f(y_i) = \frac{1}{\sqrt{2\pi \sigma^2}} \exp \left(-\frac{(y_i - \theta^T \tilde{x}_i)^2}{2\sigma^2}\right)$.  Again, we get this by plugging in the gaussian density formula.
+Solving,
+\begin{align*}
+    \hat{\theta} &= \argmax_\theta \sum_{i = 1}^N \left(-\frac{1}{2} \log(2\pi \sigma^2) - \frac{(y_i - \theta^T \tilde{x}_i)^2}{2\sigma^2}\right) \\
+    &= \argmin_\theta \sum_{i = 1}^N (y_i - \theta^T \tilde{x}_i)^2
+\end{align*}
+It also turns out that the ERM and MLE solutions are the same: 
+\[\hat{\theta}_1 = \left(\tilde{X}^T \tilde{X}\right)^{-1} \tilde{X}^T y\]
+
+\subsection*{Sanity check: Is the Solution Consistent with the Univariate Case?}
+Solution for univariate regression: 
+\[\hat{\theta}_1 = \frac{\frac{1}{N} \sum_i x_i y_i - \bar{x} \bar{y}}{\frac{1}{N} \sum_i x_i^2 - \bar{x}^2}, \quad \hat{\theta}_0 = \bar{y} - \hat{\theta}_1 \bar{x}\]
+Solution for multivariate regression:
+\[\hat{\theta}_1 = \left(\tilde{X}^T \tilde{X}\right)^{-1} \tilde{X}^T y\]
+\begin{itemize}
+	\item Approach 1: prove they are the same theoretically (not covered in this class)
+	\item Approach 2: check via a small numerical example.  (Write some code.)
+\end{itemize}
+
+\subsection*{Sample Size $N$ vs. Feature Number $D$}
+Solution for multivariate regression: 
+\[\hat{\theta}_1 = \left(\tilde{X}^T \tilde{X}\right)^{-1} \tilde{X}^T y\]
+Given $D$, what's the smallest $N$ such that the solution above is possible?\\\\
+To make $\tilde{X}^T \tilde{X}$ invertible, we need $N \geq D + 1$ and the columns of $\tilde{X}$ be linearly independent.
+
+\subsection*{Limitations of Multivariate Linear Regression}
+Multivariate linear regression (ERM / MLE)
+\[\hat{\theta} = \argmin_\theta \sum_{i = 1}^N (y_i - \theta^T \tilde{x}_i)^2\]
+\textbf{Issue:} when $N \leq D + 1$, the solution is not unique.  See above section relating $N$ and $D$.\\\\
+\textbf{Solution:} add regularization to encode a preference (or a ``prior'') over $\theta$.
+
+\section*{Regularized Regression}
+These methods add a regularization term to fix the problem described above.
+\begin{itemize}
+	\item \textbf{Ridge regression:} $\hat{\theta} = \argmin_\theta \sum_{i = 1}^N (y_i - \theta^T \tilde{x}_i)^2 + \lambda \Vert \beta \Vert_2^2, \quad \lambda > 0$
+	\item \textbf{LASSO regression:} $\hat{\theta} = \argmin_\theta \sum_{i = 1}^N (y_i - \theta^T \tilde{x}_i)^2 + \lambda \Vert \beta \Vert_1, \quad \lambda > 0$
+\end{itemize}
+where $\beta = (\theta_1, \cdots, \theta_D)$ (and recall $\theta = (\theta_0, \theta_1, \cdots, \theta_D)$)\\\\
+Note: Both regularization terms favor smaller $\beta$.  Additionally, there is no regularization on $\theta_0$, since we can eliminate that by centering the data.
+
+\subsection*{Removing the Intercept via Data Centering}
+Center the data:
+\[x_j \leftarrow x_i - \bar{x}_j,\quad \text{for }j = 1, \dots, D, \text{ and } y \leftarrow y - \bar{y}\]
+After centering, the intercept is zero ($\theta_0 = 0$) and can be omitted.\\\\
+Regularized regression after centering:
+\begin{itemize}
+	\item Ridge regression: $\hat{\beta} = \argmin_\beta \sum_{i = 1}^N (y_i - \beta^T x_i)^2 + \lambda \Vert \beta \Vert_2^2$
+	\item LASSO regression: $\hat{\beta} = \argmin_\beta \sum_{i = 1}^N (y_i - \beta^T x_i)^2 + \lambda \Vert \beta \Vert_1$
+\end{itemize}
+where $\beta = (\theta_1, \cdots, \theta_D)$
+
+\section*{Ridge Regression}
+\subsection*{Model}
+\textbf{Frequentist Model:} $(\theta_1, \cdots, \theta_D)$ deterministic; $\beta = (\theta_1, \cdots, \theta_D)$
+\[\hat{\beta} = \argmin_\beta \sum_{i = 1}^N (y_i - \beta^T x_i)^2 + \lambda \Vert \beta \Vert_2^2\]
+\textbf{Bayesian model:} $(\Theta_1, \cdots, \Theta_D)$ random
+\[Y_i = \Theta_{(1:)}^T x_i + \epsilon_i, \quad i = 1, \cdots, N\]
+\begin{itemize}
+	\item Assumptions:
+	\begin{itemize}
+	    \item $x_i$ are fixed (deterministic)
+	    \item $\Theta_{(1:)} = (\Theta_1, \cdots, \Theta_D) \sim N(0, \sigma_0^2 I_D)$
+	    \item $\epsilon_i \sim N(0, \sigma^2)$, IID
+    \end{itemize}
+    \item Hyperparameters: $\sigma^2, \sigma_0^2$
+\end{itemize}
+Remark:
+\begin{itemize}
+	\item Marginally, $Y_i$ is random due to both $\Theta_{(1:)}$ and $\epsilon_i$
+	\item $Y_i | \Theta_{(1:)} = \theta_{(1:)} \sim N(\theta_{(1:)}^T x_i, \sigma^2)$, IID
+\end{itemize}
+
+\subsection*{Learning via ERM for the Frequentist Model}
+\textbf{Empirical Risk Minimization (ERM)}
+\[\hat{\theta} = \argmin_\theta \sum_{i = 1}^N (y_i - \theta^T \tilde{x}_i)^2 + \lambda \Vert \beta \Vert_2^2, \quad \lambda > 0\]
+Define the objective:
+\[g(\beta) = (y - X\beta)^T (y - X\beta) + \lambda \beta^T \beta\]
+Take derivatives and set to 0:
+\[\frac{\partial g(\beta)}{\partial \beta} = -2X^T(y - X\beta) + 2\lambda \beta = 0\]
+Solving yields: $\hat{\beta} = (X^T X + \lambda I_D)^{-1} X^T y$, where $I_D$ is a $D$ by $D$ identity matrix.\\\\
+\textbf{Note:} $X^T X + \lambda I_D$ is always invertible for $\lambda > 0$ (positive definite)
+
+\subsection*{Learning via MAP for the Bayesian Model}
+\textbf{Maximum a Posteriori (MAP)}
+\[\hat{\beta} = \argmax_\beta \left[\log P\left(\Theta_{(1:)} = \beta\right) + \sum_{i = 1}^N \log P(Y_i = y_i | \Theta_{(1:)} = \beta)\right]\]
+\begin{itemize}
+	\item $x_i$ are fixed (deterministic); $\beta = (\theta_1, \cdots, \theta_D)$
+    \item $\Theta_{(1:)} = (\Theta_1, \cdots, \Theta_D) \sim N(0, \sigma_0^2 I_D); \epsilon_i \sim N(0, \sigma^2)$, IID
+\end{itemize}
+Since 
+\[\Theta_{(1:)} \sim N(0, \sigma_0^2 I_D), f\left(\Theta_{(1:)} = \beta\right) = (2\pi \sigma_0^2)^{-\frac{D}{2}} \exp \left(-\frac{\beta^T \beta}{2\sigma_0^2}\right)\]
+Since
+\[\left[Y_i | \Theta_{(1:)} = \beta\right] \sim N(\beta^T x_i, \sigma^2), f\left(y_i | \Theta_{(1:)} = \beta\right) = \frac{1}{\sqrt{2\pi \sigma^2}} \exp \left(-\frac{(y_i - \beta^T x_i)^2}{2\sigma^2}\right)\]
+We get these from plugging in the Gaussian density and Multivariate Gaussian density functions.\\\\
+Then, 
+\begin{align*}
+    \hat{\beta} &= \argmax_\beta - \frac{D}{2} \log(2\pi \sigma_0^2) - \frac{\beta^T \beta}{2\sigma_0^2} - \sum_{i = 1}^N \left(\frac{1}{2} \log(2\pi \sigma^2) + \frac{(y_i - \beta^T x_i)^2}{2\sigma^2}\right) \\
+    &= \argmin_\beta \frac{\sigma^2}{\sigma_0^2} \beta^T \beta + \sum_{i = 1}^N (y_i - \beta^T x_i)^2 \quad \text{(Dropping terms independent of $\beta$)} \\
+    &= \argmin_\beta \lambda \beta^T \beta + \sum_{i = 1}^N (y_i - \beta^T _i)^2 \quad \text{(Letting $\lambda = \frac{\sigma^2}{\sigma_0^2}$)}
+\end{align*}
+Same optimization problem as the ERM before, giving $\hat{\beta} = (X^T X + \lambda I_D)^{-1} X^T y$
+
+\subsection*{Learning Summary}
+\begin{enumerate}
+	\item Compute mean and center data:
+	\begin{itemize}
+	    \item Means: $\hat{y}, \hat{x}_i, \dots, \hat{x}_D$
+	    \item Centering: $x_j \leftarrow x_i - \bar{x}_j,\quad \text{for }j = 1, \dots, D, \text{ and } y \leftarrow y - \bar{y}$
+    \end{itemize}
+    \item Learning (no intercept) ($\lambda = \frac{\sigma^2}{\sigma_0^2}$):
+    \[\hat{\beta} = (X^T X + \lambda I_D)^{-1} X^T y\]
+    \item Recover the original model with intercept
+    \[Y_i = \hat{\theta}_0 + \sum_{j = 1}^D \hat{\theta}_j x_{ij}\]
+    where $\hat{\theta}_j = \hat{\beta}_j$ and $\hat{\theta}_0 = \bar{y} - \sum_{j = 1}^D \bar{x}_j \hat{\theta}_j$
+\end{enumerate}
+\textbf{Note:} Small $\sigma_0^2$ or large $\lambda$ mean strong pull of the estimates towards zero.
+
+\section*{LASSO Regression}
+\subsection*{Model}
+Similar to Ridge regression, except we are regularizing using the L1 norm instead of the L2 norm.\\\\
+\textbf{Frequentist model:} ($\theta_1, \cdots, \theta_D$ deterministic; $\beta = (\theta_1, \cdots, \theta_D)$)
+\[\hat{\beta} = \argmin_\beta \sum_{i = 1}^N (y_i - \beta^T x_i)^2 + \lambda \Vert \beta \Vert_1,\quad \lambda > 0\]
+\textbf{(Not covered in this class) Bayesian model ($\Theta_1, \cdots, \Theta_D$ random)}
+\[Y_i = \Theta_{(1:)}^T x_i + \epsilon_i,\quad i = 1, \cdots, N\]
+\begin{itemize}
+	\item Assumptions:
+	\begin{itemize}
+	    \item $x_i$ are fixed (deterministic)
+	    \item $\Theta_{(1:)} \sim Laplace(0, b)$ (double exponential prior)
+	    \item $\epsilon_i \sim N(0, \sigma^2)$, IID
+    \end{itemize}   
+    \item Hyperparameters: $\sigma^2, b$
+\end{itemize}
+
+\subsection*{L1 vs. L2 Regularization}
+\begin{itemize}
+	\item L1 (LASSO) favors sparse solutions
+	\item L2 (ridge) favors dense solutions with small overall magnitude
+\end{itemize}
+
+\subsection*{L1 Norm Regularization Introduces Sparsity}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W2_1.png} 
+\end{center}
+The loss contours hit the $L1$ constraint at corners, where one coefficient is exactly zero.
+
+
+
+\end{document}

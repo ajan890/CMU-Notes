@@ -1,0 +1,174 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 2}}
+
+\title{03-621 Week 2 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Analysis of Genetic Variation}
+\subsection*{What causes genetic variation in our genome?}
+\begin{itemize}
+	\item Base substitutions
+	\begin{enumerate}
+	    \item Errors during DNA replication
+	    \item Endogenous chemical damage to DNA
+    \end{enumerate}
+	\item Deletions, insertions, and duplications (indels)
+	\begin{enumerate}
+	    \item Errors during DNA replication
+	    \item Errors during crossing over
+	    \item Transposable elements
+    \end{enumerate}
+\end{itemize}
+
+\subsection*{In Germline Cells}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W2_1.png} 
+\end{center}
+
+\subsection*{Causes of Base Substitutions}
+\begin{enumerate}
+	\item Errors during DNA replication
+	\begin{itemize}
+	    \item Nucleotide mis-incorporation by DNA polymerase
+	    \item Frequency ~ $10^{-3}$ (6000000 mistakes per genome replication)
+	    \item A mis-incorporated nucleotide becomes a heritable mutation after a subsequent replication without repair, as in this case.
+    \end{itemize}
+    \item Endogenous Chemical Damage to DNA
+    \begin{itemize}
+	    \item 20000 - 100000 events per day in \underline{each} of our cells.
+	    \item E.g., \textbf{Hydrolysis} Deamination of Cytosine.  (Cytosine hydrolyzes into Uracil)
+	    \item E.g., \textbf{Oxidation} Guanine oxidizes into 8-oxoguanine, which results in a Hoogsteen base pair with Adenosine.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Causes of Deletions, Insertions, and Duplications}
+\begin{enumerate}
+	\item Errors during DNA replication
+	\begin{itemize}
+	    \item Slippage causes insertion or deletion
+    \end{itemize}
+    \item Errors during crossing over
+    \begin{itemize}
+	    \item \textbf{Inter}chromosomal.  If crossing over happens right after the promotor of a gene and right before the terminator, then one chromosome inherits zero copies and the other inherits two copies of the gene.
+	    \item \textbf{Intra}chromosomal.  If a section in one chromosome crosses over with itself in the same direction, an entire gene may be cleaved from the DNA, resulting in a deletion.
+	    \item \textbf{Intra}chromosomal, inversion.  If a section in one chromosome crosses over with itself in the opposite direction, an entire gene may be inverted.
+    \end{itemize}
+    \begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W2_2.png} 
+    \end{center}
+    \item Transposable Elements
+    \begin{itemize}
+	    \item Can jump into and disrupt genes (large insertions)
+	    \item Can mediate exon shuffling
+	    \item Can serve as homologous sequences
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Summary: Where do Mutations Come From?}
+Great majority arise from \textit{endogenous} sources:
+\begin{itemize}
+	\item Errors in normal cellular processes
+	\begin{itemize}
+	    \item DNA replication
+	    \item Crossing over
+	    \item Chromosome segregation
+	    \item DNA damage repair
+    \end{itemize}   
+    \item Spontaneous chemical changes in DNA
+    \item Movement of transposable elements
+\end{itemize}
+Occasionally from \textit{external} sources
+\begin{itemize}
+	\item UV light
+	\item Ionizing radiation
+	\item Chemicals
+\end{itemize}
+
+\subsection*{Mutations and Polymorphisms}
+\begin{itemize}
+	\item \textbf{Mutations} are heritable changes in DNA sequences (new variants, i.e., alleles)
+	\item \textbf{Naturally occurring alleles in populations:}
+	\begin{itemize}
+	    \item \textbf{Common} sequence variants ($> 1\%$ frequency) are called \textbf{polymorphisms} (probably ancient mutations and either selected for or neutral).
+	    \item \textbf{Rare} sequence variants ($<1\%$ frequency) that are clearly different from a normal, functional allele (considered the ``wild type'') are often called \textbf{mutations} (probably recent origin and selected against)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{How do we Study Human Genetic Variation}
+Approaches:
+\begin{enumerate}
+	\item Classical studies of Mendelian traits and diseases
+	\item Personal and Population-Based Genomic Sequencing
+	\begin{itemize}
+	    \item Obtain and compared genome sequence from thousands of individuals made possible by post-genome next generation sequencing (NGS)
+    \end{itemize}   
+\end{enumerate}
+Goals:
+\begin{enumerate}
+	\item Comprehensive catalog of normal human DNA variation
+	\item Catalog genomes in tumors and individuals with genetic disorders
+	\item Correlate DNA variation with phenotype to identify disease markers
+\end{enumerate}
+The 1000 genomes project focused on whole-genome sequencing to catalog $>99\%$ of common variation.
+\begin{itemize}
+	\item 26 populations, 2504 individuals, and $88 \times 10^6$ variants.
+	\item Millions of variant sites per individual genome
+	\item Average ``Singleton'' variants per individual in the thousands.
+\end{itemize}
+The Wellcome Trust UK10K Project focuses on exome sequencing (just exons)
+\begin{itemize}
+	\item 10000 people in the UK with closely monitored phenotypes including trios and twins
+	\item 4000 non-disease controls
+	\item 6000 cases of severe conditions
+\end{itemize}
+
+\subsection*{SNPs}
+Single nucleotide variants and polymorphisms (SNPs) are the most common type of genetic variation in the human genome.
+\begin{itemize}
+	\item A SNP is a change in one nucleotide.  (e.g., substitution, insertion, deletion)
+\end{itemize}
+DNA is transcribed into proteins through codons (groups of three DNA base pairs), where every DNA sequence of length three represents a different protein.
+\begin{itemize}
+	\item Therefore, a substitution mutates one amino acid.
+	\item An insertion or deletion changes the \textit{reading frame} during transcription, and results in every amino acid after the mutation being different.  This is much more devastating than a substitution.
+\end{itemize}
+
+\subsection*{Types of Point Mutations}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W2_3.png} 
+\end{center}
+
+\subsection*{How Mutations Affect Gene Function}
+
+
+\end{document}

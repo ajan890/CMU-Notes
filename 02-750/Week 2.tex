@@ -1,0 +1,226 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\definecolor{green}{RGB}{50, 203, 0}
+
+\graphicspath{{./assets/images/Week 2}}
+
+\title{02-750 Week 2 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Toy Online Learning Algorithm, Halving (Continued)}
+\subsection*{Regret Analysis}
+\begin{itemize}
+	\item Let $W_t = \sum_{h_i \in \mathcal{H}} w_i(t)$ be the total weight at step $t$ (after re-weighting)
+	\item Case analysis summary:
+	\begin{itemize}
+	    \item If $\hat{y} = y_t$, then $W_t \leq W_{t - 1}$ and $R^t = R^{t - 1}$.  i.e., total weight \textit{may} decrease, but the regret stays the same
+	    \item If $\hat{y} \neq y_t$, then $W_t \leq \frac{W_{t - 1}}{2}$ and $R^t = 1 + R^{t - 1}$.  i.e., the total weight \textit{must} decrease by a factor of at least 2, because we took the \textbf{majority}, and they were wrong, and the total regret increases.
+    \end{itemize}
+\end{itemize}
+Best case analysis at each iteration:
+\begin{itemize}
+	\item $t = 0$, $W_0 = |\mathcal{H}|$ and $R^0 = 0$
+	\item $t = 1$, (Best case) if $\hat{y} = y_t$, then $W_1 \leq W_0$ and $R^1 = R^0 + 0 = 0$
+	\item $t = 2$, (Best case) if $\hat{y} = y_t$, then $W_2 \leq W_1$ and $R^2 = R^1 + 0 = 0$
+	\item $t = i$, (Best case) if $\hat{y} = y_t$, then $W_i \leq W_{i - 1}$ and $R^i = R^{i - 1} + 0 = 0$
+\end{itemize}
+Worst case analysis at each iteration:
+\begin{itemize}
+	\item $t = 0$, $W_0 = |\mathcal{H}|$ and $R^0 = 0$
+	\item $t = 1$, (Worst case) if $\hat{y} \neq y_t$, then $1 \leq W_1 \leq \frac{W_0 = |\mathcal{H}|}{2}$ and $R^1 = R^0 + 1 = 1$
+	\item $t = 2$, (Worst case) if $\hat{y} \neq y_t$, then $1 \leq W_2 \leq \frac{W_0 = |\mathcal{H}|}{2^2}$ and $R^2 = R^1 + 1 = 2$
+	\item $t = i$, (Worst case) if $\hat{y} \neq y_t$, then $1 \leq W_i \leq \frac{W_0 = |\mathcal{H}|}{2^i}$ and $R^i = R^{i - 1} + 1 = i$
+\end{itemize}
+We know that each time the majority is wrong, $W_t \leq \frac{W_{t - 1}}{2}$.  Thus, $W_t \leq \frac{|\mathcal{H}|}{2^{M_t}}$, where $M_t$ is the number of mistakes made by the majority up to time $t$ (proof by induction)\\\\
+We also know that $W_t \geq 1$ because there \textit{is} a perfect model, and so at least one model always has weight $1$.  Thus, $1 \leq W_t \leq \frac{|\mathcal{H}|}{2^{M_t}}$ which implies that $M_t \leq \log_2 |\mathcal{H}| \in o(T)$.  In summary, the number of mistakes is $o(T)$.  Under our assumptions, the number of mistakes is the same as the regret, so the toy algorithm is no regret.
+
+\section*{Weighted Majority Algorithm}
+Of course, the toy algorithm is not very useful in practice, because it assumes that $\mathcal{H}$ contains a perfect model.  The Weighted Majority Algorithm (WMA) does not make that assumption.
+\begin{itemize}
+	\item The two key differences between the toy algorithm and WMA are:
+	\begin{itemize}
+	    \item The weights are real-valued in the semi-closed interval, $(0, 1]$
+	    \item The weights are updated using a different rule:
+	    \[w_i(t) = \begin{cases} w_i(t - 1) & \text{if } h_i(x_t) = y_t \\ \frac{w_i(t - 1)}{2} & \text{if } h_i(x_t) \neq y_t \end{cases}\]
+        \item That is, half the model's weight, each time it makes a mistake.
+    \end{itemize}
+\end{itemize}
+
+Like the toy algorithm, predictions are made via \textbf{weighted majority}, but now these weights are real-valued.  That is, for each new training instance, $(x_t, y_t)$
+\begin{enumerate}
+	\item Output the majority label from model $\hat{h}_t (x_t)$
+	\[\hat{y} = \argmax_{c \in \mathfrak{C}} \sum_{h_i \in \mathcal{H}} w_i \cdot \mathds{1}(h_i (x_t) = c)\]
+    \item Re-weight each model in $\mathcal{H}$ using the following rule:
+    \[w_i(t) = \begin{cases}w_i(t - 1) & \text{if } h_i(x_t) = y_t \\ \frac{w_i (t - 1)}{2} & \text{if } h_i(x_t) \neq y_t \end{cases}\]
+\end{enumerate}
+
+\subsection*{Example}
+Suppose we have a collection of models for predicting whether two molecules bind.
+
+\begin{center}
+\begin{tabular}{ccc|ccc|cc|c|c}
+$h_1$ & $h_2$ & $h_3$ & $w_1$ & $w_2$ & $w_3$ & \begin{tabular}[c]{@{}c@{}}Weighted\\ vote for\\ $y_t = 0$\end{tabular} & \begin{tabular}[c]{@{}c@{}}Weighted\\ vote for\\ $y_t = 1$\end{tabular} & $\hat{h}_i (x_t) = \hat{y}$ & $y_t$ \\ \hline
+1 & 0 & 1 & 1 & 1 & 1 & 1 & 2 & 1 & 1 \\
+0 & 1 & 0 & 1 & 0.5 & 1 & 2 & 0.5 & 0 & 1 \\
+1 & 0 & 1 & 0.5 & 0.5 & 0.5 & 0.5 & 1 & 1 & 1 \\
+0 & 1 & 1 & 0.5 & 0.25 & 0.5 & 0.5 & 0.75 & 1 & 1 \\
+1 & 0 & 1 & 0.25 & 0.25 & 0.5 & 0.25 & 0.75 & 1 & 1
+\end{tabular}
+\end{center} 
+
+\subsection*{Regret Analysis (after $T$ steps)}
+\begin{itemize}
+	\item Let $m$ be the number of mistakes by the best model $h^* \in \mathcal{H}$.  (offline learning)
+	\item Let $M$ be the number of mistakes by the WMA weighted majority.  (online learning)
+	\item Let $W_t = \sum_{h_i \in \mathcal{H}} w_i(t)$ be the total weight after $t$ steps, where
+	\begin{itemize}
+	    \item $w_i(t) = \left(\frac{1}{2}\right)^{m_i(t)}$ is the weight of the $i$-th model after the first $t$ steps, and $m_i(t)$ is the number of mistakes made by the $i$-th model during the first $t$ steps.
+    \end{itemize}
+    \item $W_0 = |\mathcal{H}|$ because we initialized each weight to $1$.
+\end{itemize}
+Claim: A mistake on step $t$ implies that $W_t \leq \left(\frac{3}{4}\right) W_{t - 1}$\\\\
+\textbf{Proof:}
+\begin{itemize}
+	\item The mass associated with the majority is \textbf{at least} $\left(\frac{1}{2}\right) W_{t - 1}$
+	\item The majority was wrong, so we reduce the combined weight of the majority by half (thus, the reduction is \textit{at least} $\left(\frac{1}{2}\right)\left(\frac{1}{2}\right) W_{t - 1} = \left(\frac{1}{4}\right) W_{t - 1}$)
+	\item Therefore, $W_t \leq \left(\frac{3}{4}\right) W_{t - 1}$
+\end{itemize}
+Therefore,
+\begin{itemize}
+	\item After $T$ steps, the total weight is \textit{at most} $W_t \leq |\mathcal{H}| \left(\frac{3}{4}\right)^M$
+	\item After $T$ steps, the best model will have weight $w^* = \left(\frac{1}{2}\right)^m$
+	\item Thus, $\left(\frac{1}{2}\right)^m \leq W_t \leq |\mathcal{H}| \left(\frac{3}{4}\right)^M$
+	\item Solve for $M$, we get
+	\begin{align*}
+        m \log_2 0.5 &\leq \log_2 |\mathcal{H}| + M \log_2(0.75)
+        M \leq 2.38 \log_2 |\mathcal{H}| + 2.38m
+    \end{align*}
+    \item Since $M$ is bounded by the above equation, the worst case= regret for WMA is
+    \[R^T = (2.38 \log_2 |\mathcal{H}| + 2.38m) - m = 2.38 \log_2 |\mathcal{H}| + 1.38m\]
+    \item This presents a theoretical problem, because $m$ \textbf{could be} $O(T)$, thus
+    \[\lim_{T \rightarrow \infty} \frac{R^T}{T} = \frac{O(T)}{T} > 0\]
+    \item WMA is \textbf{not} a no-regret algorithm.
+\end{itemize}
+
+\subsection*{Interesting Theoretical Result}
+If $\mathcal{H}$ does \textbf{not} contain a perfect model, then one can show that \textbf{no deterministic algorithm can achieve $R^T \in o(T)$} using a 0-1 loss function
+\begin{itemize}
+	\item That is, there are no deterministic online algorithms that achieve no-regret, unless $\mathcal{H}$ contains a perfect model (like our \textit{Toy algorithm})
+	\item Proof sketch for any deterministic learning algorithm
+	\begin{itemize}
+	    \item (Online Learning) Let $L^T = \sum_{t = 1}^T \mathcal{L}(h_t, x_t, y_t)$ be the loss for the online algorithm over $T$ instances
+	    \item An adversary can always select instances such that $L^T = T$
+	    \item (Offline Learning) Over the same set of $T$ instances, the best model $h^* \in \mathcal{H}$ (offline) can be wrong no more than $50\%$ of the time, otherwise we could create a better model by simply outputting the opposite prediction.  Thus, $L^* = \sum_{t = 1}^T \mathcal{L}(h^*, x_t, y_t) \leq \frac{T}{2}$
+	    \item Hence, $R^T = L^ - L^* \geq \frac{T}{2} = O(T) \rightarrow \lim_{t \rightarrow \infty} \frac{R^T}{T} = \frac{O(T)}{T} > 0$
+    \end{itemize}
+\end{itemize}
+The next algorithm addresses this challenge by using randomization.
+
+\section*{Hedge Algorithm (aka. Randomized WMA)}
+\begin{itemize}
+	\item The Hedge algorithm is basically a \textbf{randomized} version of WMA
+	\begin{itemize}
+	    \item Rather than outputting the weighted majority class, Hedge selects a model at random
+	    \item The probability that any particular model is selected is proportional to its relative weight
+    \end{itemize}
+    \item This seemingly simple change has a profound effect, in terms of regret
+    \begin{itemize}
+	    \item Specifically, Hedge is a no regret algorithm
+    \end{itemize}
+\end{itemize}
+
+\subsection*{The Algorithm}
+\begin{itemize}
+	\item Let $(1 - \epsilon)$ be the \textbf{learning rate}.  Note: the effective learning rate of WMA was 0.5.
+	\item Initialize all weights to 1
+	\item For each new training instance, $(x_t, y_t)$
+	\begin{enumerate}
+	    \item Select model \textbf{at random} from the \underline{multinomial distribution}
+	    \[h_t \sim Multinomial_t (p_1, \cdot, p_n)\]
+        where $p_i = \frac{w_i(t)}{W_t}$ and $n = |\mathcal{H}|$
+        \item Output $h_t$'s prediction: $\hat{y}_t = h_t (x_t)$
+        \item Reweight \textit{all} models $h_t \in \mathcal{H}$ as follows:
+        \[w_i(t) = w_i(t - 1)(1 - \epsilon)^{l(h_i, x_t, y_t)}\]
+        \begin{itemize}
+	        \item Assume 0-1 loss.
+        \end{itemize}
+    \end{enumerate}
+\end{itemize}
+
+\subsection*{Example}
+Suppose we have a collection of models for predicting whether two molecules bind.  ($\epsilon = 0.5$)
+\begin{center}
+\begin{tabular}{ccc|ccc|c|c|c}
+$h_1$ & $h_2$ & $h_3$ & $w_1$ & $w_2$ & $w_3$ & \begin{tabular}[c]{@{}c@{}}$\alpha$ = Random \\ selection at \\ step $t$\end{tabular} & $\hat{h}_\alpha (x_t) = \hat{y}$ & $y_t$ \\ \hline
+1 & {\color[HTML]{32CB00} 0} & 1 & 1 & 1 & 1 & 2 & 0 & 1 \\
+0 & 1 & {\color[HTML]{32CB00} 0} & 1 & 0.5 & 1 & 3 & 0 & 1 \\
+{\color[HTML]{32CB00} 1} & 0 & 1 & 0.5 & 0.5 & 0.5 & 1 & 1 & 1 \\
+0 & 1 & {\color[HTML]{32CB00} 1} & 0.5 & 0.25 & 0.5 & 3 & 1 & 1 \\
+1 & 0 & {\color[HTML]{32CB00} 1} & 0.25 & 0.25 & 0.5 & 3 & 1 & 1
+\end{tabular}
+\end{center}
+\textcolor{green}{Green} identifies the model randomly selected in round $t$
+
+\subsection*{Regret Analysis (after $T$ steps)}
+\begin{itemize}
+	\item Let $m$ be the number of mistakes by the best model $h^* \in \mathcal{H}$ (Offline learning)
+	\item Let $M$ be the number of mistakes by the Hedge algorithm (Online learning)
+	\item Let $W_t = \sum_{h_i \in \mathcal{H}} w_i(t)$ be the total weight after $t$ steps, where
+	\begin{itemize}
+	    \item $w_i(t) = (1 - \epsilon)^{m_i(t)}$ is the weight of the $i$-th model after the first $t$ steps, and $m_i(t)$ is the number of mistakes made by the $i$-th model during the first $t$ steps.
+    \end{itemize}
+    \item $W_0 = |\mathcal{H}|$ because we initialized each weight to $1$
+    \item Let $l_i(t) = \mathcal{L}(h_i, x_t, y_t)$ (i.e., the 0-1 loss of the $i$-th model on sample $t$)
+\end{itemize}
+
+\subsection*{Summary}
+\begin{itemize}
+	\item Online learning gives rise to the concept of \textbf{regret}
+	\item Some online learning algorithms can achieve no regret
+	\begin{itemize}
+	    \item That is, there is no significant penalty associated with such algorithms, relative to offline learning
+    \end{itemize}
+    \item Examples:
+    \begin{itemize}
+	    \item The toy algorithm was no regret, but assumes that there is a perfect model
+	    \item WMA \textbf{is not} a no regret algorithm.  Indeed, no deterministic algorithm can achieve no regret for the 0-1 loss, if the hypothesis space doesn't have a perfect model
+    \end{itemize}
+    \item The Hedge algorithm is a relatively minor modification to WMA that employs randomization and restores the no regret guarantee.
+\end{itemize}
+
+
+
+
+
+
+
+\end{document}

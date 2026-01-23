@@ -16,6 +16,7 @@
 % images
 \usepackage{graphicx} % for images
 \usepackage{tikz}
+\usetikzlibrary{matrix}
 
 % code blocks
 \usepackage{minted, listings} 
@@ -272,6 +273,98 @@ Human genetic diseases with the \textbf{same phenotype} very often arise from mu
 \end{itemize}
 \begin{center} 
 	\includegraphics*[width=0.6\textwidth]{W1_9.png} 
+\end{center}
+
+\subsection*{Using a Complementation Test Grid}
+
+Suppose we are cross-breeding flies.  1, 2, 3 are strains of white-eyed flies.  WT is the wild type, red eyed fly.
+\begin{itemize}
+	\item The grid represents strains being cross-bred.  (e.g., (1, 2) represents strain 1 being bred with strain 2.)
+	\item In this case, all three mutant strains are true-breeding, since they retain white eyes when bred with themselves.
+	\item Meanwhile, when 1 is bred with 2 or 3, the red eyes emerge.
+	\item When 2 and 3 are bred together, the eyes stay white. 
+	\item For this reason, we can put strains 2 and 3 in their own \textbf{complementation group}, since crossing them preserves the trait the same.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+    \matrix (m) [matrix of nodes,
+                nodes in empty cells,
+                nodes={draw, minimum width=1cm, minimum height=1cm},
+                row sep=-\pgflinewidth,
+                column sep=-\pgflinewidth] {
+    W & \phantom{W} & \phantom{W} \\
+    |[text=red]| R & W & \phantom{W} \\
+    |[text=red]| R & W & W \\
+    |[text=red]| R & |[text=red]| R & |[text=red]| R \\
+    };
+
+    \foreach \j in {1,2,3} {
+    \node[above=5pt] at (m-1-\j.north) {\j};
+    }
+
+    \node[left=5pt] at (m-1-1.west) {1};
+    \node[left=5pt] at (m-2-1.west) {2};
+    \node[left=5pt] at (m-3-1.west) {3};
+    \node[left=5pt] at (m-4-1.west) {WT};
+
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Terminology: Complementation and Allelism}
+\begin{itemize}
+	\item If two recessive variants fail to complement, we say that they are \textbf{allelic} to each other (they are alleles of the same complementation group)
+	\begin{itemize}
+	    \item In this case, breeding two strains with recessive alleles results in the recessive phenotype being observed.
+    \end{itemize}
+	\item If two variants complement, we say that they are \textbf{non-allelic} (they are alleles of different complementation groups)
+	\begin{itemize}
+	    \item In this case, breeding two strains with recessive phenotype (e.g., AAbb and aaBB), results in the dominant phenotype being observed. (AaBb)
+    \end{itemize}
+\end{itemize}
+Alleles of the \textbf{same complementation group} should be very close together (so they should rarely recombine)
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W1_10.png} 
+\end{center}
+Alleles of \textbf{different complementation groups} may be sufficiently far apart to recombine frequently.
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W1_11.png} 
+\end{center}
+\textbf{But} alleles of \textbf{different complementation groups} may also be very close together (so they rarely recombine)
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W1_12.png} 
+\end{center}
+
+\subsection*{Epistasis}
+Epistasis is the non-additive phenotypes resulting from gene interactions.  For example:
+\begin{itemize}
+	\item CCBB = black hair
+	\item CCbb = chocolate hair
+	\item ccBB = albino
+	\item ccbb = albino
+\end{itemize}
+In this example, the C allele may code for pigment being present, while cc codes for no pigment.  Meanwhile, the B/b gene codes for pigment color.
+\begin{itemize}
+	\item The pigment color does not matter if there is no pigment, so both ccBB and ccbb are albino.
+\end{itemize}
+We consider white to be \textbf{epistatic} to chocolate, or, c/c is \textbf{epistatic} to B gene alleles.
+\begin{itemize}
+	\item The overriding mutation is \textit{epistatic} (``stands on top'')
+	\item The overridden  mutation is \textit{hypostatic} (``stands below'')
+\end{itemize}
+
+\subsection*{Summary}
+\begin{itemize}
+	\item \textbf{Epistasis tests} are used to test the effect of one gene on another.  We use them to see how an allele of one gene affects another gene.
+	\item \textbf{Complementation tests} are used to see whether two alleles that cause similar phenotypes lie in the same gene or in two different genes.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+\textbf{Interaction} & \textbf{Scientific Question} & \textbf{\begin{tabular}[c]{@{}c@{}}Types of\\ Alleles\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Types of \\ Phenotypes\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Number of \\ Genes Involved\end{tabular}} \\ \hline
+Complementation & \begin{tabular}[c]{@{}c@{}}Do two alleles lie in the \\ same gene or different \\ genes?\end{tabular} & Recessive & Similar & 1 or 2 \\ \hline
+Epistasis & \begin{tabular}[c]{@{}c@{}}How does one gene affect\\ expression or activity of\\ another gene?\end{tabular} & \begin{tabular}[c]{@{}c@{}}Dominant\\ or\\ Recessive\end{tabular} & Different & 2
+\end{tabular}
 \end{center}
 
 \end{document}

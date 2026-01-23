@@ -186,6 +186,7 @@ More formally, given a loss function $l$, \textbf{regret} is defined as
 \[R^T = \sum_{t = 1}^T l(h_t, x_t, y_t) - \sum_{t = 1}^T l(h^*, x_t, y_t)\]
 where $T$ is the number of data points, $h_t$ is the model that was used to make the prediction for instance $x_t$ and
 \[h^* = \argmin_{h \in \mathcal{H}} \sum_{t = 1}^T l(h_t, x_t, y_t)\]
+Additionally, note that regret being zero does \textbf{not} imply that loss is zero.
 
 \subsection*{No Regret Online Learning}
 A sequence of models is said to have \textbf{no regret} if $\lim_{T \rightarrow \infty} \frac{R^T}{T} = 0$.
