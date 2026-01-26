@@ -1,0 +1,136 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 3 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Classification}
+The goal of classification is to find a functional mapping $f \::\: X \rightarrow Y$, where $Y$ is discrete-valued.
+\begin{itemize}
+	\item SNPs for $X$ and disease/healthy status for $Y$
+	\item Gene expression for $X$ and disease/healthy status for $Y$
+	\item Pathology images for $X$ and tumor/healthy for $Y$
+	\item Electronic medical records for $X$ and diagnosis for $Y$
+	\item Genome sequence features for $X$ and transcription factor binding site or not for $Y$
+\end{itemize}
+
+\subsection*{Training vs. Testing}
+\begin{itemize}
+	\item In training, the goal is to improve the model using input data and output pairs.
+	\item In testing, the goal is to classify unseen new input data and provide the output.
+\end{itemize}
+
+\subsection*{Different Types of Classifiers}
+\begin{itemize}
+	\item K-nearest neighbor
+	\begin{itemize}
+        \item Non-parametric method: no model, no parameters, no learning (lazy)
+    \end{itemize}
+	\item Naive Bayes
+	\begin{itemize}
+        \item Parametric method, generative model: model $P(Y, X|\theta)$ to obtain $P(Y|X, \theta)$
+    \end{itemize}
+	\item Logistic Regression
+	\begin{itemize}
+        \item Parametric method, discriminative model: model $P(Y|X, \theta)$
+    \end{itemize}
+\end{itemize}
+
+\section*{K-nearest neighbors (KNN) classifier}
+\begin{itemize}
+	\item Given $N$ training data points $(x_1, y_1), \cdots, (x_N, y_N)$, kNN performs no explicit learning (i.e., no learnable parameters)
+	\item \textbf{Inference:} A new data point $x_i$, is classified by majority vote among its $k$-nearest neighbors, defined as the $k$ training points with the smallest Euclidean ($l2$) distances $\Vert x_{i'} - x_i \Vert_2^2$
+\end{itemize}
+
+\subsection*{How to select $k$}
+\begin{itemize}
+	\item Small $k$: classification is sensitive to noise
+	\item Large $k$: too much smoothing.  (If $k = N$, sample size, all test inputs will receive the same classification.)
+	\item Select $k$ that is not too small and not too large
+\end{itemize}
+
+\subsection*{Computation Time}
+\begin{itemize}
+	\item \textbf{Learning:} No training or parameter learning - cheap!
+	\item \textbf{Inference:} When a new data point $x_{i'}$ arrives, kNN must compute the distance between $x_{i'}$ and all $N$ training samples, incurring an O($ND$) computational cost - expensive!
+\end{itemize}
+
+\section*{Naive Bayes Classifier}
+\subsubsection*{Example: Predicting Cancer from genotype}
+\begin{center}
+    \begin{tabular}{c|c|c|c|c}
+        Individual & {\color[HTML]{3166FF} \begin{tabular}[c]{@{}c@{}}Locus 1\\ $X_1$\end{tabular}} & {\color[HTML]{3166FF} \begin{tabular}[c]{@{}c@{}}Locus 2\\ $X_2$\end{tabular}} & {\color[HTML]{3166FF} \begin{tabular}[c]{@{}c@{}}Locus 3\\ $X_3$\end{tabular}} & {\color[HTML]{6200C9} \begin{tabular}[c]{@{}c@{}}Healthy/Cancer\\ $Y$\end{tabular}} \\ \hline
+        1 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 1} & {\color[HTML]{6200C9} 1} \\
+        2 & {\color[HTML]{3166FF} 1} & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 2} & {\color[HTML]{6200C9} 1} \\
+        3 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 2} & {\color[HTML]{3166FF} 0} & {\color[HTML]{6200C9} 1} \\
+        4 & {\color[HTML]{3166FF} 2} & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 0} & {\color[HTML]{6200C9} 0} \\
+        5 & {\color[HTML]{3166FF} 2} & {\color[HTML]{3166FF} 1} & {\color[HTML]{3166FF} 2} & {\color[HTML]{6200C9} 0} \\
+        6 & {\color[HTML]{3166FF} 1} & {\color[HTML]{3166FF} 2} & {\color[HTML]{3166FF} 1} & {\color[HTML]{6200C9} 0}
+        \end{tabular}
+\end{center}
+Here, the input $X$ represents the allele.  0 = AA (minor allele homozygous), 1 = AT (heterozygous), 2 = TT (major allele homozygous).  $Y$ represents healthy (0) or cancer (1).
+We want to 
+\begin{itemize}
+	\item learn a classifier, $f \::\: (X_1, X_2, X_3) \rightarrow Y$
+	\item learn a probabilistic model for $P(Y|X)$, where $Y$ is discrete
+\end{itemize}
+$P(Y|X)$ is given as
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c}
+    Combination & {\color[HTML]{3166FF} $X_1$} & {\color[HTML]{3166FF} $X_2$} & {\color[HTML]{3166FF} $X_3$} & {\color[HTML]{6200C9} $P(Y = 1 | X_1, X_2, X_3)$} & {\color[HTML]{6200C9} $P(Y = 0 | X_1, X_2, X_3)$} \\ \hline
+    1 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 0} & {\color[HTML]{6200C9} 0.01} & {\color[HTML]{6200C9} 0.99} \\
+    2 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 1} & {\color[HTML]{6200C9} 0.50} & {\color[HTML]{6200C9} 0.50} \\
+    3 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 2} & {\color[HTML]{6200C9} 0.30} & {\color[HTML]{6200C9} 0.70} \\
+    4 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 1} & {\color[HTML]{3166FF} 0} & {\color[HTML]{6200C9} 0.25} & {\color[HTML]{6200C9} 0.75} \\
+    5 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 1} & {\color[HTML]{3166FF} 1} & {\color[HTML]{6200C9} 0.70} & {\color[HTML]{6200C9} 0.30} \\
+    6 & {\color[HTML]{3166FF} 0} & {\color[HTML]{3166FF} 1} & {\color[HTML]{3166FF} 2} & {\color[HTML]{6200C9} 0.05} & {\color[HTML]{6200C9} 0.95} \\
+    7 & {\color[HTML]{3166FF} \dots} & {\color[HTML]{3166FF} \dots} & {\color[HTML]{3166FF} \dots} & {\color[HTML]{6200C9} \dots} & {\color[HTML]{6200C9} \dots}
+\end{tabular}
+\end{center}
+\begin{itemize}
+	\item How many probability parameters must be specified?
+	\item How can this distribution be learned from data?
+	\item Note that $P(Y = 0 | X_1, X_2, X_3) = 1 - P(Y = 1 | X_1, X_2, X_3)$
+\end{itemize}
+\textbf{How many parameters are needed?}
+\begin{itemize}
+	\item Suppose $X = [X_1, \dots, X_D]$ for $D$ SNPs
+	\begin{itemize}
+        \item $X_j'$s: random variables taking values from $\{0, 1, 2\}$
+        \item $Y$: binary random variables
+    \end{itemize}
+    \item To estimate $P(Y | X_1, X_2, \dots, X_D)$
+    \item If we have 30 SNPs in $X$: $P(Y | X_1, X_2, \dots, X_{30})$
+\end{itemize}
+
+\end{document}

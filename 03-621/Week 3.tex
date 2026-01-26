@@ -1,0 +1,82 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 3}}
+
+\title{03-621 Week 3 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Mutations (Continued)}
+\begin{itemize}
+	\item Synonymous Substitutions Can Alter Phenotypes
+	\begin{center} 
+        \includegraphics*[width=0.7\textwidth]{W3_1.png} 
+    \end{center}
+    \item Single-gene disorders can also be caused by mutations in \textbf{non-coding} RNA genes
+    \item Large Copy Number Variations (CNVs) are common in the human genome
+    \begin{itemize}
+        \item One section of DNA is duplicated many times
+        \item About 10-15\% of the genome displays copy number variation
+        \item 1000 bp - 5 mbp in length
+        \item Most are in non-coding regions, but some contain genes
+        \item Too large for PCR analysis, can be detected using a microarray
+    \end{itemize}
+    \item Variable nucleotide tandem repeats (VNTR) and short tandem repeats (STR) are inherited repeating stretches of DNA
+    \begin{itemize}
+        \item Different individuals may have different numbers of repeats at a given locus.
+        \item If the number of base pairs in a repeated section is not a multiple of three, tandem repeats may cause frameshift errors.
+    \end{itemize}
+    \item Some mutations that cause disease do not change the sequence of a gene product but alter the amount of gene product
+    \begin{itemize}
+        \item For example, mutations in promotors or enhancers
+        \item Mutations in transfactors (e.g., histones)
+        \item Gene duplication or deletion
+    \end{itemize}
+    \begin{center} 
+        \includegraphics*[width=0.8\textwidth]{W3_2.png} 
+    \end{center}
+    \item Gene dosage changes via Meiotic Non-disjunction
+    \begin{itemize}
+        \item Frequency: in all recognized pregnancies
+        \item 8\% of \textit{recognized} pregnancies have major chromosomal abnormalities.  $>94\%$ of this $8\%$ undergo spontaneous abortion.
+        \item Aneuplodies change the amount of gene product expressed ("gene dosage"), across many genes.
+        \item Among the fetuses in 100000 recognized pregnancies, about 8000 have major chromosomal abnormalities, 7500 of these undergo spontaneous abortion, and 500 are born alive.
+    \end{itemize}
+    \begin{center} 
+        \includegraphics*[width=0.8\textwidth]{W3_3.png} 
+    \end{center}
+\end{itemize}
+
+
+
+
+
+\end{document}

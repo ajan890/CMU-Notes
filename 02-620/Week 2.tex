@@ -324,6 +324,77 @@ Similar to Ridge regression, except we are regularizing using the L1 norm instea
 \end{center}
 The loss contours hit the $L1$ constraint at corners, where one coefficient is exactly zero.
 
+\subsection*{Sparsity}
+\begin{itemize}
+	\item One common assumption to make is \textbf{sparsity}
+	\item \textbf{Makes statistical sense:} Learning a few non-zero regression weights is an easier problem than learning a large number of non-zero regression weights
+	\item \textbf{Makes biological sense:} each phenotype is likely to be associated with a small number of SNPs, rather than all the SNPs
+\end{itemize}
+In a mathematical sense,
+\begin{itemize}
+	\item Consider least squares linear regression problem
+	\item Sparsity means most of the regression coefficients are zero.
+	\item $\hat{\beta} = \argmin_\beta \Vert Y - X\beta \Vert^2$ subject to $\sum_{j = 1}^p \mathbb{I}[|\beta_j| > 0] \leq C$
+	\begin{itemize}
+        \item $\mathbb{I}[A]$ is an indicator function, $1$ if the condition $A$ is satisfied, $0$ otherwise.
+    \end{itemize}
+    \item But solving this problem is computationally intractable.
+\end{itemize}
+
+\subsection*{L1 Regularization (LASSO)}
+An alternative problem,
+\[\hat{\beta} = \argmin_\beta \Vert Y - X\beta \Vert^2 + \lambda \Vert \beta \Vert_1\]
+where $\Vert \beta_j \Vert_1 = \sum |\beta_j|$, is a form of the problem that is easier to solve!
+\begin{itemize}
+	\item Unlike the constrained form above, this problem is not intractable.
+\end{itemize}
+
+\subsection*{LASSO Regression: Learning via ERM for the frequentist model}
+\textbf{Empirical Risk Minimization (ERM)}
+\[\hat{\beta} = \argmin_\beta \sum_{i = 1}^N (y_i - \beta^T x_i)^2 + \lambda \Vert \beta \Vert_1, \quad \lambda > 0\]
+\textbf{No closed-form solution.}\\
+LASSO regularization is typically solved using numerical optimization methods, such as coordinate descent or proximal gradient methods.
+\begin{itemize}
+	\item Pathwise coordinate descent [Friedman 2007 \textit{Ann Appl Stat}]
+	\begin{itemize}
+        \item In each iteration, update each $\beta_j$, and iterate until convergence
+    \end{itemize}
+\end{itemize}
+
+\subsection*{LASSO Regression: Learning Summary}
+\begin{enumerate}
+    \item Compute means and center data:
+    \begin{itemize}
+        \item Means: $\bar{y}, \bar{x}_1, \bar{x}_D$
+        \item Centering: $y \leftarrow y - \bar{y}$, and $x_j \leftarrow x_j - \bar{x}_j$, for $j = 1, \dots, D$
+    \end{itemize}
+    \item Learning (no intercept):
+    \begin{itemize}
+        \item Solve the following problem using numerical methods:
+        \[\argmin_\beta \sum_{i = 1}^N (y_i - \beta^T x_i)^2 + \lambda \Vert \beta \Vert_1\]
+    \end{itemize}
+    \item Recover the original model with intercept
+    \[Y_i = \hat{\theta}_0 + \sum_{j = 1}^D \hat{\theta}_j x_{ij}\]
+    where $\hat{\theta}_j = \hat{\beta}_j$ and $\hat{\theta}_0 = \bar{y} - \sum_{j = 1}^D \bar{x_j} \hat{\theta}_j$
+\end{enumerate}
+Larger $\lambda$ enforces stronger sparsity.
+
+\subsection*{Summary}
+\begin{itemize}
+	\item Univariate linear regression ($D = 1$)
+	\begin{itemize}
+        \item ERM or MLE (Gaussian Noise)
+    \end{itemize}
+    \item Multivariate linear regression ($D > 1$, $X$ full column rank)
+    \begin{itemize}
+        \item ERM or MLE
+    \end{itemize}
+    \item Regularized regression (high-dimensional or ill-conditioned settings)
+    \begin{itemize}
+        \item Ridge regression: L2 penalty encourages small overall magnitude; ERM or MAP (Gaussian prior)
+        \item LASSO regression: L1 penalty encourages sparse solutions; ERM or MAP (Laplace prior)
+    \end{itemize}
+\end{itemize}
 
 
 \end{document}
