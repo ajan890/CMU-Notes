@@ -1,0 +1,193 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{fit}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-750 Week 4 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\subsection*{Quantifying Committee Disagreement (continuued)}
+Let $\mathcal{M} = \{h_1, \cdots, h_p\}$ be a diverse set of models (i.e., committee members)
+\subsubsection*{Soft Vote Entropy}
+\begin{itemize}
+	\item Method 2: \textbf{Soft Vote Entropy} (for classification)
+	\[x^*_{SVE} = \argmax_{x \in \mathcal{U}} - \sum_{y \in \mathfrak{C}} P_\mathcal{M} (y | x) \log P_\mathcal{M} (y | x)\]
+    where $P_\mathcal{M} (y | x) = \frac{1}{|\mathcal{M}|} \sum_{h \in \mathcal{M}} P_h (y | x)$ is the consensus probability that the true label is $y \in \mathfrak{C}$ and $P_h(y | x)$ is the probability that model $h$ assigns label $y$ for point $x \in \mathcal{U}$
+    \item Soft vote entropy takes the confidence of each committee member into consideration.    
+\end{itemize}
+\subsubsection*{KL Divergence}
+\begin{itemize}
+    \item Method 3: \textbf{Kullback-Leibler (KL) Divergence}
+    \[x^*_{KL} = \argmax_{x \in \mathcal{U}} \frac{1}{|\mathcal{M}|} \sum_{h \in \mathcal{M}} D(P_h (y | x) || P_{\mathcal{M}} (y | x))\]
+    where $D(P_h (y | x) || P_\mathcal{M}(y | x)) = \sum_{y' \in \mathfrak{C}} P_h (y' | x) \log \frac{P_h (y' | x)}{P_\mathcal{M} (y' | x)}$ and $P_\mathcal{M} (y | x) = \frac{1}{|\mathcal{M}|} \sum_{h \in \mathcal{M}} P_h (y | x)$ is the ``consensus'' probability that the true label is $y \in \mathfrak{C}$ (as defined in the Soft Vote Entropy approach) for point $x \in \mathcal{U}$.
+\end{itemize}
+\textbf{KL Divergence} measures the \textbf{average divergence} of each committee member's prediction(s) from the consensus distribution.
+
+\subsubsection*{Comparing Soft Vote Entropy vs. KL Divergence}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_1.png} 
+\end{center}
+\begin{itemize}
+	\item Blue pie charts represent label probabilities for each of three committee members.  Red pie charts are the consensus probabilities.
+	\item Soft vote entropy cannot distinguish between these two scenarios, but the KL Divergence method can.
+\end{itemize}
+Example using logistic regression:
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_2.png} 
+\end{center}
+For regression, disagreement is typically measured as the variance among the predictions of the committee members
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_3.png} 
+\end{center}
+
+\subsection*{Expected Model Change}
+Given $D_L = \{(x_1, y_1), \cdots, (x_n, y_n)\}$, many learning algorithms optimize parameters by iteratively following the gradient of an objective function: $\theta_{t + 1} = \theta_t - \mu \nabla \mathcal{L}_\theta (D_L)$, where $\mu$ is the learning rate and $\nabla \mathcal{L}_\theta (D_L)$ is the gradient of the loss function.  For example, mean squared error for linear regression:
+\begin{itemize}
+	\item Model: $y = b_0 + b_1 x; \theta = (b_0, b_1)$
+	\item Mean squared error: $\mathcal{L}_{\theta = (b_0, b_1)} (D_L) = \frac{1}{n} \sum_{i = 1}^n [y_i - (b_0 + b_1 x_i)]^2$
+	\item Gradient: $\nabla \mathcal{L}_\theta (D_L) = \left(\frac{\partial \mathcal{L}}{\partial b_0}, \frac{\partial \mathcal{L}}{\partial b_1}\right)$
+	\begin{align*}
+        \frac{\partial \mathcal{L}}{\partial b_0} &= -\frac{2}{n} \sum_{i = 1}^n (y_i - (b_0 + b_1 x_i)) \\
+        \frac{\partial \mathcal{L}}{\partial b_1} &= -\frac{2}{n} \sum_{i = 1}^n x_i(y_i - (b_0 + b_1 x_i)) \\
+    \end{align*}
+    \item The \textbf{magnitude of the gradient} is proportional to the change in the model parameters during each iterative step, thus, we can \textit{also} use it to select points.
+    \item This approach selects instances that are more likely to significantly change the parameters.
+\end{itemize}
+Let $\nabla \mathcal{L}_\theta (D_\mathcal{L} \cup \{(x, \hat{y})\})$ be the gradient of the loss function if we were to add the ``labeled'' point $(x, \hat{y})$ to $D_\mathcal{L}$, where $\hat{y}$ is a predicted label.
+\begin{itemize}
+	\item Since we don't know $x$'s true label, we compute the \textbf{expected magnitude}.
+	\[x^*_{EGL} = \argmax_{x \in \mathcal{U}} - \sum_{y \in \mathfrak{C}} P_\theta (y | x) \Vert \nabla \mathcal{L}_\theta (D_\mathcal{L} \cup \{(x, y)\}) \Vert\]
+    where $\Vert \cdot \Vert$ is some norm function.
+    \begin{itemize}
+	    \item $P_\theta (y | x)$ is a class label prediction for the current $x \in \mathcal{U}$
+	    \item $\nabla \mathcal{L}_\theta (D_\mathcal{L} \cup \{(x, y)\})$ is the new gradient that would be obtained by adding the current instance, $(x, y)$ to $D_\mathcal{L}$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Disadvantages}
+\begin{itemize}
+	\item Expected model change can be expensive, computationally, because the algorithm needs to compute the gradient for each (instance, label) pair
+	\begin{itemize}
+	    \item If the objective function is differentiable, the cost of computing the gradient is proportional to the dimensionality of the data.
+	    \item If the objective function is not differentiable, you can use a derivative-free approach for estimating and following the gradient (ex. Nelder-Mead) but those tend to be expensive.
+    \end{itemize}
+    \item That said, in the context of scientific research, the cost of performing these calculations may be much smaller than performing the experiments themselves.
+\end{itemize}
+
+\subsection*{Minimizing Expected Risk (in Machine Learning)}
+In machine learning, a \textbf{risk objective} (aka \textbf{decision rule}) defines what 'best' means.  For example, expected loss, minimax loss, maximum likelihood, etc.
+\begin{itemize}
+	\item Risk refers to the idea of expected generalization error
+	\begin{itemize}
+	    \item i.e., the model's error on data it \textbf{was not} trained on
+    \end{itemize}
+	\item Notice that none of the previous query selection strategies consider risk
+	\begin{itemize}
+	    \item Uncertainty sampling only considers the confidence of the current model
+	    \item QBC only considers the degree of disagreement amongst the committee members
+	    \item Expected model change only considers the size of change in parameters
+    \end{itemize}
+	\item This is odd because generalization error is the only thing that matters
+	\begin{itemize}
+	    \item The next method attempts to selected points that are predicted to reduce risk.
+	    \item It does this by explicitly learning separate models, \textbf{each conditioned on one of the possible labels for each unlabeled instance}
+    \end{itemize}   
+\end{itemize}
+For example, consider the \textbf{Expected 0-1 loss} (i.e., classification error).  Here, we are assuming an unlabeled pool $\mathcal{U}$
+\[x^*_{ER} = \argmin_{x \in \mathcal{U}} \sum_{y \in \mathfrak{C}} P_\theta (y | x) \left(\sum_{x' \in \mathcal{U}} 1 - P_{\theta + (x, y)} (\hat{y} | x')\right)\]
+\begin{itemize}
+	\item $P_\theta (y | x)$ is the class label prediction for the current $x \in \mathcal{U}$.
+	\item $\hat{y}$ is the most likely label for $x'$ under a new model trained on $D_\mathcal{L} \cup \{(x, y)\}$
+	\item $P_{\theta + (x, y)} (\hat{y} | x')$ is the conditional probability of under the new label
+	\item $1 - P_{\theta + (x, y)} (\hat{y} | x')$ is the expected 0-1 error for current instance $(x', \hat{y})_{x' \neq x}$
+	\item The term in the parenthesis in the expected 0-1 loss over $\mathcal{U}$ for a new model trained on $D_\mathcal{L} \cup \{(x, y)\}$
+\end{itemize}
+Note: like expected model change, we do not know the true label for each query instance ($x \in \mathcal{U}$), so we approximate using expectation over all possible labels $(y \in \mathfrak{C})$ under the current model $\theta$.  The objective here is to reduce the expected total number of incorrect predictions.\\\\
+Minimizing the expected risk is \textbf{much more expensive} than any of the other query selection methods we have seen, because you need to train many models on each iteration
+\begin{itemize}
+	\item A binary logistic regression model would require O($UNG$) time-complexity simply to choose the next query.
+	\begin{itemize}
+	    \item $U$ - size of unlabeled pool (i.e., $|\mathcal{U}|$)
+	    \item $N$ - size of the current training set (i.e., $|D_\mathcal{L}$)
+	    \item $G$ - number of gradient computations required by the optimization procedure until convergence
+    \end{itemize}
+    \item Once again, in the context of scientific research, the cost of performing these calculations may be much smaller than performing the experiments themselves.
+\end{itemize}
+
+\subsection*{Density-based Sampling}
+\begin{itemize}
+	\item The query selection strategies we have studied so far are \textbf{myopic}, in the sense that they select instances without considering the relationships between the points in the domain/pool
+    \item This could potentially lead to problems.  For example, suppose a far outlier point that happens to be on the decision boundary between two labels.  Is it really worth getting the label for that point if it is not representative of any other points (e.g., an outlier)?
+\end{itemize}
+For example, consider the information density framework, which is a general weighting technique.  Here, we are assuming an unlabeled pool $\mathcal{U}$.
+\[x^*_{ID}= \argmax_{x \in \mathcal{U}} \phi_A (x) \left(\frac{1}{|\mathcal{U}|} \sum_{x' \in \mathcal{U}} sim(x, x')\right)^\beta\]
+\begin{itemize}
+	\item Here, $\phi_A(x)$ is a function that returns the utility of the point $x \in \mathcal{U}$.
+	\item $\phi$ can be any query strategy that we have covered (e.g., uncertainty sampling, query by committee)
+	\item Function $sim(x, x')$ returns some measure of similarity between point $x$ and $x'$.
+	\begin{itemize}
+	    \item The term in the parenthesis in the \textbf{average similarity} of $x$ to all other instances in $\mathcal{U}$, which is a measure of the local density around $x$.
+	    \item $\beta$ is a parameter that controls the relative importance of the density term.
+    \end{itemize}
+    \item A variant of this approah might first cluster $\mathcal{U}$ and compute average similarity to instances in the same cluster.
+\end{itemize}
+
+\subsubsection*{Exploiting Structure in the Data}
+\begin{itemize}
+	\item Density based sampling is an example of a query selection method that exploits the \textbf{structure} in an (unlabeled) data pool
+	\item Later in the semester, we will study active learning algorithms that cluster the unlabeled samples, and then use the clusters to guide query selection.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_4.png} 
+\end{center}
+
+\subsection*{Summary: Heuristic Query Selection Strategies}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Advantages} & \textbf{Disadvantages} \\ \hline
+Uncertainty Sampling & Fast and easy to implement & \begin{tabular}[c]{@{}c@{}}Myopic and may become\\ overconfident\end{tabular} \\ \hline
+Query by Committee & East to implement & \begin{tabular}[c]{@{}c@{}}Myopic and requires multiple\\ models\end{tabular} \\ \hline
+Expected Change & \begin{tabular}[c]{@{}c@{}}May accelerate convergence to best \\ model\end{tabular} & Multiple gradient calculations \\ \hline
+Risk Minimization & \begin{tabular}[c]{@{}c@{}}Optimizes the objective we actually\\ care about\end{tabular} & Can be very expensive \\ \hline
+Density-based & Not myopic & \begin{tabular}[c]{@{}c@{}}Requires $\Omega(n^2)$ work to compute\\ ${n \choose 2}$ pairwise similarities\end{tabular} \\ \hline
+\end{tabular}
+\end{center}
+There are many different query selection methods
+\begin{itemize}
+	\item The ones we studied this week are merely heuristics
+	\item We can't prove anything about them, with respect to statistical consistency or efficiency
+\end{itemize}
+Later, we will see several query selection methods that come with formal guarantees
+
+\end{document}

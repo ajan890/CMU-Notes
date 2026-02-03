@@ -75,8 +75,292 @@
     \end{center}
 \end{itemize}
 
+\subsection*{Analyzing Sequence Variation}
+What methods are used for analysis of sequence variation?
+\begin{enumerate}
+	\item For \textbf{genotyping} large numbers of individuals:
+	\begin{itemize}
+	    \item DNA microarray hybridization
+	    \item PCR (and gel electrophoresis)
+	    \item Sequencing targeted regions
+    \end{itemize}
+    \item For variant \textbf{discovery}
+    \begin{itemize}
+	    \item Whole genome sequencing (WGS)
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection*{Detection of SNPs using microarray hybridization}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W3_4.png} 
+\end{center}
+
+\subsubsection*{Microarrays can also be used to detect CNVs}
+The fluorescence intensity of the microarray hybridization signal increases with copy number
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W3_5.png} 
+\end{center}
 
 
+\subsubsection*{VNTRs and STRs can be genotyped easily by PCR}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W3_6.png} 
+\end{center}
+
+
+\subsubsection*{Size differences of the PCR products reveal repeat polymorphism genotypes}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_7.png} 
+\end{center}
+
+\subsection*{Some Current Sequencing Technologies}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_8.png} 
+\end{center}
+No method can sequence an entire genome in one reaction!
+
+\subsubsection*{Shotgun Sequencing Approach}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_9.png} 
+\end{center}
+
+\subsubsection*{Adding \textit{known} sequence adapters for high-throughput sequencing by transposon insertion}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_10.png} 
+\end{center}
+
+\subsection*{Sequencing the Genomes of Trios}
+We can detect new mutations by sequencing a child plus both parents, and comparing their genomes.
+\begin{itemize}
+	\item How do we tell whether a mutation arose in the germline of the father or mother?
+	\item We can look at linked genes.  We try to find another SNP nearby, and see if we can match one of the strands to one of the parents.
+	\item There tend to be a lot more mutations (10x) in the open reading frame (ORF), and even more in mitochondria.
+	\item Mutation rates differ among genes.  Some genes mutate orders of magnitude more than others.
+\end{itemize}
+
+\subsubsection*{The Human \underline{pathogenic} allelic load is not well known yet}
+Estimates from the 1000 genomes project:
+\begin{itemize}
+	\item ~400 damaging DNA variants per individual
+	\item ~100 severe loss-of-function mutations
+	\begin{itemize}
+	    \item ~20 genes homozygous for inactivated allele (null)
+	    \item ~60 missense variants that damage protein structure
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Databases}
+Genomewide databases:
+\begin{itemize}
+	\item Human Gene Mutation Database: comprehensive data on germline mutations in nuclear genes associated with human inherited disease.  (http://www.hgmd.org)
+	\item COSMIC: comprehensive catalog of somatic mutations in cancer.  (http://www.sanger.ac.uk/genetics/CGP/cosmic/)
+	\item MITOMAP: mitochondrial genome database with prominent sections devoted to disease-associated mutations in mt-tRNA, mt-rRNA, and mitochondrial coding and regulatory sequences.  (http://www.mitomap.org/)
+\end{itemize}
+Locus-specific databases:
+\begin{itemize}
+	\item Phenylalanine Hydroxylase Locus Knowledgebase: a list of mutations at the \textit{PAH} locus, mostly centered on mutations causing phenylketonuria.  (http://www.pahdb.mcgill.ca)
+\end{itemize}
+Databases by mutation category:
+\begin{itemize}
+	\item SpliceDisease Database: disease-associated splicing mutations.  (http://cmbi.bjmu.edu.cn/sdisease)
+\end{itemize}
+Databases of human genetic variation
+\begin{itemize}
+	\item dbSNP: SNPs and other short genetic variations.  (http://www.ncbi.nlm.nih.gov/SNP/index.html)
+	\item dbVar: genomic structural variation.  (http://www.ncbi.nlm.nih.gov/dbvar/)
+	\item DGV: genome structural variation.  (http://dgv.tcag.ca/)
+	\item ALFRED: allele frequencies in human populations.  (http://alfred.med.yale.edu/alfred/index.asp)
+\end{itemize}
+
+\subsection*{Summary}
+\begin{itemize}
+	\item Whole genome sequencing is becoming cheaper and faster: practical for large numbers of individuals
+	\item Targeted sequencing of specific regions
+	\item Other high throughput methods for detection of molecular markers
+\end{itemize}
+Methods besides sequencing:
+\begin{itemize}
+	\item Single nucleotide polymorphisms (SNPs) \textleftarrow Microarray hybridization
+	\item Variable number of tandem repeats (VNTPs) \textleftarrow PCR + gel electrophoresis
+	\item Copy number variation (CNV) \textleftarrow Microarray hybridization
+\end{itemize}
+
+\section*{Making Sense of the Human Genome}
+``Annotation'' to describe the genome contents
+\begin{enumerate}
+	\item Computational gene prediction
+	\item Functional assays:
+	\begin{itemize}
+	    \item RNA sequencing to identify transcribed regions
+	    \item Many other experimental approaches (details later)
+    \end{itemize}
+    \item Comparative Genomics:
+    \begin{itemize}
+	    \item Evolutionary conservation of function regions
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{1. Computational Gene Prediction}
+Goal: find protein coding and RNA genes in the genome.  What do we look for?
+\begin{itemize}
+	\item e.g., for protein-coding genes:
+	\begin{itemize}
+	    \item search for open reading frames (``ORFs'')
+	    \item search for matches to models of regulatory elements
+    \end{itemize}
+    \item Shortcomings: high error rates, missed genes or exons, incorrect gene models
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_11.png} 
+\end{center}
+
+\subsection*{2. Functional assays: ENCODE project}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_12.png} 
+\end{center}
+Still incomplete - ongoing, but lots of data already.
+
+\subsection*{Example: mRNA-sequencing (mRNA-seq) to map exons}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_13.png} \\
+    \includegraphics*[width=0.8\textwidth]{W3_14.png} 
+\end{center}
+
+\subsection*{ENCODE project current outcomes}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Gene Class} & \textbf{Number} \\\hline
+Protein-coding genes & 19379 \\
+RNA genes & 27599 \\
+~~~Long non-coding RNA genes & 19993 \\
+~~~Small non-coding RNA genes & 7566 \\
+Pseudogenes & 14737 \\
+~~~Processed pseudogenes & 10633 \\
+~~~Unprocessed pseudogenes & 3571 \\
+~~~Other pseudogenes & 367 \\\hline
+\end{tabular}
+\end{center}
+\textbf{What have we learned?}
+\begin{itemize}
+	\item An average protein coding gene produces on average:
+	\begin{itemize}
+	    \item 6 different RNA transcripts
+	    \item Out of the 6, 4 contain protein coding sequences
+	    \item The other 2 are non-coding transcripts
+    \end{itemize}
+    \item How are different transcripts produced?
+    \begin{itemize}
+	    \item Alternative splicing
+	    \item Alternative transcription start sites
+	    \item Alternative polyadenylation sites
+    \end{itemize}
+    \item 75\% of genome is transcribed in at least one cell type
+    \begin{itemize}
+	    \item But only 1.2\% of genome is protein-coding!
+	    \item Not all 75\% transcribed in a single cell
+    \end{itemize}
+    \item RNA transcripts from \textbf{both} strands are common
+    \begin{itemize}
+	    \item Within genes
+	    \item Within intergenic regions
+    \end{itemize}
+    \item Caveat: Much of this RNA is produced at very low levels that may just be background noise or a result of sloppy transcription regulation.
+    \item Functional Biochemical signals analyzed so far:
+    \begin{itemize}
+	    \item Binding sites for 119 of 1800 known transcription factors
+	    \item 20\% of chemical modifications of DNA or histones (epigenetic markers)
+	    \item Positions occupied by histone variants
+	    \item Patterns of chromatin 3D structure
+	    \item 95\% of genome lies within 8kb of a DNA-protein interaction!
+    \end{itemize}
+\end{itemize}
+
+\subsection*{3. Comparative genomics (Evolutionary Conservation)}
+Identifying genes and other functionally important DNA elements through evolutionary conservation.
+\begin{itemize}
+	\item What's the rationale?
+	\item Functional sequences should be constrained and thus conserved over evolution due to \textbf{purifying selection} (aka. negative selection)
+\end{itemize}
+This allows us to:
+\begin{itemize}
+	\item Confirm/refine gene models
+	\item Discover missed genes and elements
+	\item Evaluate functional significance
+\end{itemize}
+
+\subsubsection*{Comparative Genomics Tools}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{\begin{tabular}[c]{@{}l@{}}Program /\\ Database\end{tabular}} & \textbf{Internet Address} & \textbf{Description} \\ \hline
+BLAST programs & http://blast.ncbi.nlm.nih.gov & \begin{tabular}[c]{@{}l@{}}suite of programs for comparing query\\ nucleotide sequences or amino acid\\ sequences against each other or against\\ databases of recorded sequences\end{tabular} \\ \hline
+BLAT & http://genome.ucsc.edu & \begin{tabular}[c]{@{}l@{}}for rapid matching of a query sequence to a\\ genome; available through the University of\\ Santa Cruz genome server\end{tabular} \\ \hline
+HomoloGene & \begin{tabular}[c]{@{}l@{}}http://www.ncbi.nlm.nih.gov/\\ homologene\end{tabular} & \begin{tabular}[c]{@{}l@{}}for a gene of interest, lists homologs found \\ in other species\end{tabular}
+\\\hline
+\end{tabular}
+\end{center}
+
+\subsection*{Differences in Sequence Conservation can Predict Type of Sequence Function}
+What is the consequence of these four different mutations in a coding sequence?
+\begin{verbatim}
+GCTTGCGGTGGGAGGAGGCGGCTGAGGCGGAAGGACACACGAGGC
+||| ||||||| |   |||||||||||||||||  ||||||||||
+GCTCGCGGTGGAA---GGCGGCTGAGGCGGAAG--CACACGAGGC
+   ^^^   ^^^
+\end{verbatim}
+From here, we can look at the following aligned sequences from different organisms.  Which one is likely to have come from a protein coding sequence?  Why?
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_15.png} 
+\end{center}
+In this case, $A$ is more likely to have come from a protein coding sequence since most of the mutations are synonymous or conservative.  Changing amino acids would cause damage to the organism, and choice $B$ has too many non-synonymous substitutions that it is unlikely to come from a protein-coding sequence.  If $B$ was a protein coding sequence, organisms with that many mutations would probably die.
+
+\subsection*{Compensatory Variation in Structural RNAs}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_16.png} 
+\end{center}
+\textbf{Base-pairing is conserved}, but specific sequence is not.
+
+\subsection*{Structure and Sequence Conservation in Regulatory RNAs}
+For example, micro-RNAs (miRNAs)
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_17.png} 
+\end{center}
+
+\subsection*{Predicting Sequence Function using Differences}
+Differences in sequence conservation can help predict sequence function in a \textbf{coding element} in LMBR1.  For example, data from UCSC Human Genome Browser (1/3/21)
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_18.png} \\
+    \includegraphics*[width=0.7\textwidth]{W3_19.png} \\
+\end{center}
+Differences in sequence conservation can also help predict sequence function in a \textbf{non-coding element} in LMBR1.
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_20.png} \\
+    \includegraphics*[width=0.9\textwidth]{W3_21.png}
+\end{center}
+Unlike the coding region, this set has no exon detected by RNA sequencing.  Additionally, there is no periodicity in the substitutions (implying mutations happen everywhere).  Also, reading frames are not preserved; deletions or insertions are not necessarily in multiples of 3.
+\begin{itemize}
+	\item The conserved element within an intron of LMBR1 gene is a limb-specific enhancer for transcription of the \textit{Sonic hedgehog} gene.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_22.png} 
+\end{center}
+Deleting or mutation of the enhancer alters \textit{Shh} expression and affects limb development.
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_23.png} 
+\end{center}
+
+\pagebreak
+\subsection*{Overview of Comparative Genomic Results}
+Only 5\% of genome shows strong conservation with other mammals!  \textbf{Does this mean most of the genome is NOT functionally important?}\\\\
+What else is in there?
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_24.png} 
+\end{center}
+Barbara McClintock won the Nobel Prize in Physiology or Medicine in 1983: ``for her discovery of mobile genetic elements.''
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_25.png} 
+\end{center}
 
 
 \end{document}

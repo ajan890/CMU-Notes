@@ -129,8 +129,209 @@ $P(Y|X)$ is given as
         \item $X_j'$s: random variables taking values from $\{0, 1, 2\}$
         \item $Y$: binary random variables
     \end{itemize}
-    \item To estimate $P(Y | X_1, X_2, \dots, X_D)$
-    \item If we have 30 SNPs in $X$: $P(Y | X_1, X_2, \dots, X_{30})$
+    \item To estimate $P(Y | X_1, X_2, \dots, X_D)$, $3^n$ quantities need to be estimated!
+    \item If we have 30 SNPs in $X$: $P(Y | X_1, X_2, \dots, X_{30})$, then we have $3^30 \sim 2 \times 10^{14}$.  Too many!
+    \item We need a more compact representation of $P(Y | X_1, X_2, \dots, X_D)$
 \end{itemize}
+
+\subsection*{General Bayesian Inference}
+\begin{itemize}
+	\item Suppose $X = [X_1, \dots, X_D]$ for genotypes at $D$ loci and binary health outcome $Y$.  Using Bayes rule,
+	\[P(Y | X) = \frac{P(X | Y) P(Y)}{P(X)}\]
+    \item How many parameters for $P(X|Y) = P(X_1, \dots, X_D | Y)$?
+    \begin{align*}
+        P(X_1, \cdots, X_D | Y = 1) &= 3^D - 1 \\
+        P(X_1, \cdots, X_D | Y = 0) &= 3^D - 1 \\
+        \therefore P(X_1, \cdots, X_D | Y) &= 2 (3^D - 1)
+    \end{align*}
+    \item How many parameters for $P(Y)$?  One.
+\end{itemize}
+
+\subsection*{Reducing Parameters via Conditional Independence}
+\begin{itemize}
+	\item Suppose $X = [X_1, \dots, X_D]$ for genotypes at $D$ loci and binary health outcome $Y$.  Using Bayes rule,
+	\[P(Y | X) = \frac{P(X|Y) P(Y)}{P(X)}\]
+    \item Naive Bayes assumes conditional independence
+    \[P(X_1, \cdots, X_D | Y) = \prod_{j = 1}^D P(X_j | Y)\]
+    i.e., $X_j$ and $X_{j'}$ conditionally independent given $Y$, for all $j \neq j'$\\
+    Now, we have $2 \cdot 2D$ parameters.
+\end{itemize}
+
+\subsection*{Naive Bayes Model for Previous Example}
+Model: Specify $P(Y|X; \theta)$ for discrete output $Y$.
+\[P(Y | X_1, \cdots, X_D) = \frac{P(Y) \prod_{j = 1}^D P(X_j | Y)}{P(X_1, \cdots, X_D)}\]
+\begin{itemize}
+	\item Bernoulli distribution: $P(Y) = \pi^Y (1 - \pi)^{(1 - Y)}$
+	\item Multinoulli distribution: $P(X_j | Y = k) = \prod_{l = 0}^2 \theta_{jkl}^{I(X_j = l)}$\\
+	where indicator function $I(A) = \begin{cases} 1 & \text{ if $A$ is true} \\ 0 & \text{otherwise} \end{cases}$
+\end{itemize}
+The numerator of our model is:
+\begin{align*}
+    P(X_j = 0 | Y = k) &= \theta_{jk0}^{I(X_j = 0)}\theta_{jk1}^{I(X_j = 1)}\theta_{jk2}^{I(X_j = 2)} = \theta_{jk0}
+    P(X_j = 1 | Y = k) &= \theta_{jk0}^{I(X_j = 0)}\theta_{jk1}^{I(X_j = 1)}\theta_{jk2}^{I(X_j = 2)} = \theta_{jk1}
+    P(X_j = 2 | Y = k) &= \theta_{jk0}^{I(X_j = 0)}\theta_{jk1}^{I(X_j = 1)}\theta_{jk2}^{I(X_j = 2)} = \theta_{jk2}
+\end{align*}
+The denominator, expanded, is
+\[P(X_1, \cdots, X_D) = P(Y = 0) \prod_{j = 1}^D P(X_j | Y) + P(Y = 1) \prod_{j = 1}^D P(X_j | Y)\]
+in other words, evaluate the numerator for $Y = 1$ and $Y = 0$ and sum the results.\\\\
+In this example, our learnable parameters are
+\begin{itemize}
+	\item $\pi = P(Y = 1)$
+	\item $\theta_{jkl} = P(X_j = l | Y = k)$, for $j = 1, \dots, D$, $I = 0, 1, 2$ and $k = 0, 1$
+\end{itemize}
+
+\subsection*{Naive Bayes Model Summary}
+Without conditional independence (general case)
+\begin{itemize}
+	\item Total number of parameters: $2(3^D - 1) + 1$
+	\item $1$ parameter for $P(Y)$
+	\item $2(3^D - 1)$ parameters for $P(X_1, \cdots, X_D | Y)$
+\end{itemize}
+With conditional independence (Naive Bayes)
+\begin{itemize}
+	\item Total number of parameters: $4D + 1$
+	\item $1$ parameter for $P(Y)$
+	\item $4D$ parameters for $\prod_{j = 1}^D P(X_j | Y)$
+\end{itemize}
+
+\subsection*{Naive Bayes Inference}
+Given the classifier
+\[P(Y | X_1, \cdots, X_D) = \frac{P(Y) \prod_{j = 1}^D P(X_j | Y)}{P(X_1, \cdots, X_D)}\]
+Classify a new data point $X_{i'} \in \mathbb{R}^D$
+\begin{itemize}
+	\item Step 1: Compute $P(Y = 1 | X_1, \cdots, X_D) = P(Y = 1) \prod_{j = 1}^D P(X_j | Y = 1) = \pi \prod_{j = 1}^D \theta_{j1X_{i'j}}$
+	\item Step 2: Compute $P(Y = 0 | X_1, \cdots, X_D) = P(Y = 0) \prod_{j = 1}^D P(X_j | Y = 0) = (1 - \pi) \prod_{j = 1}^D \theta_{j0X_{i'j}}$
+	\item Step 3: Predict the value of $Y$ with the larger posterior probability (value from steps 1-2).
+\end{itemize}
+
+\subsection*{Naive Bayes Learning}
+Given data
+\[\mathcal{D} \::\: x_1, \cdots, x_N \in \mathbb{R}^D, y_1, \cdots, y_N \in \{0, 1\}\]
+Estimate parameters from data
+\begin{itemize}
+	\item $\pi \::\: P(Y = 1)$
+	\item $\theta_{jkl} \::\: P(X_j = l | Y = k)$ for $j = 1, \dots, D, l = 0, 1, 2,$ and $k = 0, 1$.
+\end{itemize}
+
+\subsection*{Taxonomy of Learning Methods}
+\textbf{Learning: Estimating Parameters $\theta$}
+\begin{itemize}
+	\item $\mathcal{D}$: data / evidence (e.g., $(X, y)$)
+\end{itemize}
+\textbf{Maximum Likelihood Estimation (MLE)}
+Probabilistic instantiation of ERM with deterministic $\theta$
+\[\hat{\theta} = \argmax_\theta P(\mathcal{D}; \theta)\]
+\textbf{Maximum a Posteriori (MAP)}
+$\Theta$ is random.
+\begin{align*}
+    \hat{\theta} &= \argmax_\theta P(\Theta | \mathcal{D}) \\
+    &= \argmax_\theta \left[\log P(\Theta = \theta) + \sum_{i = 1}^N \log P(Y_i = y_i, X_i = x_i | \Theta = \theta)\right]
+\end{align*}
+
+\subsubsection*{Naive Bayes Classifier: Learning via MLE}
+\begin{align*}
+    \argmax_{\pi, \theta} P(\mathcal{D}; \theta) &= \argmax_{\pi, \theta} \log \prod_{i = 1}^N P(Y_i, X_i) \\
+    &= \argmax_{\pi, \theta} \log \prod_{i = 1}^N P(Y_i) P(X_i | Y_i) \\
+    &= \argmax_{\pi, \theta} \log \prod_{i = 1}^N P(Y_i) P(X_{i1}, \cdots, X_{iD} | Y_i) \\
+    &= \argmax_{\pi, \theta} \sum_{i = 1}^N \log \left[P(Y_i) \prod_{j = 1}^D P(X_{ij} | Y_i)\right] \\
+    &= \argmax_{\pi, \theta} \sum_{i = 1}^N \log P(Y_i) + \sum_{i = 1}^N \log P(X_{i1} | Y_i) + \cdots + \sum_{i = 1}^N \log P(X_{iD} | Y_i)
+    \intertext{Notice that the first summation in the series is only related to $\pi$.}
+    \therefore \hat{\pi} &= \argmax_\pi \sum_{i = 1}^N \log P(Y_i) \\
+    &= \argmax_\pi \sum_{i = 1}^N \log(\pi^{Y_i} (1 - \pi)^{1 - Y_i})
+    \intertext{Additionally, notice that each summation term after the first is only related to one $\theta$.  $P(X_{ij} | Y_i)$ is only related to $\theta_j$.}
+    \therefore \hat{\theta}_j &= \argmax_{\theta_j} \sum_{i = 1}^N \log P(X_{ij} | Y_i) \\
+    &= \argmax_{\theta_j} \sum_{i = 1}^N \log \prod_{l = 0}^2 \theta_{jY_i l}^{I(X_{ij} = l)}
+\end{align*}
+where $\theta_j = \{\theta_{jkl}\}_{k = 0, 1, l = 0, 1, 2}$
+
+\subsubsection*{Naive Bayes Classifier: Learning}
+\[\hat{\pi} = \argmax_\pi \sum_{i = 1}^N \log P(Y_i) = \argmax_\pi \sum_{i = 1}^N \log(\pi^{Y_i} (1 - \pi)^{1 - Y_i})\]
+\begin{itemize}
+	\item $\hat{\pi}$ is the MLE of the Bernoulli mean $\pi = P(Y = 1)$
+	\item Thus, $\hat{\pi} = \frac{1}{N} \sum_{i = 1}^N Y_i$
+\end{itemize}
+\[\hat{\theta_j} = \argmax_{\theta_j} \sum_{i = 1}^N \log P(X_{ij} | Y_i) = \argmax_{\theta_j} \sum_{i = 1}^N \log \prod_{l = 0}^2 \theta_{jY_i l}^{I(X_{ij} = l)}\]
+\begin{itemize}
+	\item $\hat{\theta}_{jkl}$ is the MLE of the multinoulli parameter $\theta_{jkl} = P(X_j = l | Y = k)$
+	\item $\hat{\theta}_{jkl} = \frac{\sum_{i = 1}^N I(Y_i = k) I(X_{ij} = l)}{\sum_{i = 1}^N I(Y_i = k)}$
+\end{itemize}
+
+\subsection*{Naive Bayes Subtlety 1}
+\begin{itemize}
+	\item If unlucky, our MLE estimate for $P(X_j | Y)$ might be zero.
+	\begin{itemize}
+	    \item e.g., no ddata points has $X_1 = 1$ and $Y = 0$, then $P(X_1 = 1 | Y = 0) = 0$
+    \end{itemize}
+    \item Why worry about just one parameter out of many?
+    \[P(Y | X_1, \cdots, X_D) = \frac{P(Y) \prod_{j = 1}^D P(X_j | Y)}{P(X_1, \cdots, X_D)}\]
+    \item If one of the terms are zero, the entire probability is zero since the terms are multiplied together.
+    \item What can be done to avoid this?
+\end{itemize}
+Remember that the maximum likelihood estimates are:
+\begin{itemize}
+	\item $\hat{\pi} = P(Y = 1) = \frac{1}{N} \sum_{i = 1}^N Y_i$ 
+	\item $\hat{\theta}_{jkl} = P(X_j = l | Y = k) = \frac{\sum_{i = 1}^N I(Y_i = k) I(X_{ij} = l)}{\sum_{i = 1}^N I(Y_i = k)}$
+\end{itemize}
+MAP estimates (Beta, Dirichlet priors):
+\begin{itemize}
+	\item $\hat{\pi} = P(Y = 1) = \frac{\textcolor{red}{\alpha_0} + \sum_{i = 1}^N Y_i}{\textcolor{red}{\alpha_0 + \beta_0} + N}$
+	\item $\hat{\theta}_{jkl} = P(X_j = l | Y = k) = \frac{\textcolor{red}{\alpha_{jkl0}} + \sum_{i = 1}^N I(Y_i = k) I(X_{ij} = l)}{\textcolor{red}{\alpha_{jkl0} + \beta_{jkl0}} + \sum_{i = 1}^N I(Y_i = k)}$
+    \item The only difference here is ``imaginary'' examples.
+\end{itemize}
+
+\subsection*{Naive Bayes Subtlety 2}
+\begin{itemize}
+	\item Often $X_j$'s are not actually conditionally independent given $Y$
+	\item We use Naive Bayes in many cases anyways, and it often works pretty well.
+	\begin{itemize}
+	    \item Often the right classification, even when not the right probability (see [Domingos and Pazzani, 1996])
+    \end{itemize}
+    \item What is the effect on estimated $P(Y | X)$?
+    \begin{itemize}
+	    \item Special case: what if we add two copies: $X_j = X_{j'}$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{What if we have continuous $X_j$?}
+For example, image classification: $X_j$ is real-valued $j$-th pixel.\\\\
+Given input images $X$:
+\begin{itemize}
+	\item Classify whether this is from a normal or schizophrenic brain
+	\item Classify which tasks he/she is performing?
+	\item Classify which word he/she is reading?
+\end{itemize}
+Naive Bayes requires $P(X_j | Y = k)$, but $X_j$ is real (continuous).
+\[P(Y | X_1, \cdots, X_D) = \frac{P(Y) \prod_{j = 1}^D P(X_j | Y)}{P(X_1, \cdots, X_D)}\]
+Common approach: assume that $P(X_j | Y_k)$ follows a continuous distribution (e.g., Normal).
+
+\subsection*{Questions for thought}
+\begin{itemize}
+	\item Can you use Naive Bayes for a combination of discrete and real-valued $X_j$
+	\item How can we easily model just $2$ of $D$ features as dependent?
+	\[P(X_j, X_{j'} | Y)\]
+    \item How many parameters must we estimate for Gaussian Naive Bayes if $Y$ has $K$ possible values, $X = [X_1, \dots, X_D]$?
+    \begin{itemize}
+	    \item $P(Y)$: $K - 1$ parameters
+	    \item $P(X_j | Y = k)$: 2 parameters, $2KD$ in total for $k = 1, \dots, K$ and $j = 1, \dots, D$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Naive Bayes Classifier Summary}
+\begin{itemize}
+	\item Model: $P(Y | X_1, \cdots, X_D) = \frac{P(Y) \prod_{j = 1}^D P(X_j | Y)}{P(X_1, \cdots, X_D)}$
+	\item Learning
+	\begin{itemize}
+	    \item $\hat{\pi} = P(Y = 1) = \frac{1}{N} \sum_{i = 1}^N Y_i$
+	    \item $\hat{\theta}_{jkl} = P(X_j = l | Y = k) = \frac{\sum_{i = 1}^N I(Y_i = k) I(X_{ij} = l)}{\sum_{i = 1}^N I(Y_i = k)}$
+    \end{itemize}
+    \item Inference:
+    \begin{itemize}
+	    \item Step 1: Compute $P(Y = 1) \prod_{j = 1}^D P(X_j | Y = 1) = \pi \prod_{j = 1}^D \theta_{j1X_{i' j}}$
+	    \item Step 2: Compute $P(Y = 0) \prod_{j = 1}^D P(X_j | Y = 1) = (1 - \pi) \prod_{j = 1}^D \theta_{j0X_{i' j}}$
+	    \item Step 3: Predict the value of $Y$ with the larger value from steps 1-2.
+    \end{itemize}
+\end{itemize}
+
+
 
 \end{document}

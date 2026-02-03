@@ -1,0 +1,157 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 4 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Logistic Regression}
+Logistic regression aims to fit a logistic curve to data.
+\[P(Y_i = 1 | x_i; \theta) = \frac{1}{1 + e^{-(\theta_0 + \theta_1 x_i)}}\]
+The linear part in the exponent is the equation for the decision boundary.
+
+\subsection*{Logistic Regression: Data}
+\begin{itemize}
+	\item $N$ data points with $D$ features: $x_i \in \mathbb{R}^D$
+	\item Labels: $y_i \in \{0, 1\}$
+\end{itemize}
+\subsection*{Logistic Regression: Model}
+\begin{itemize}
+	\item Parameters: $\theta = (\theta_0, \theta_1, \cdots, \theta_D)$
+	\item Linear predictor: $\mu(x) = \theta_0 + \sum_{j = 1}^D \theta_j x_j$
+	\item Sigmoid: $\sigma(t) = \frac{1}{1 + e^{-t}}$
+	\item Parametric function:
+	\[P(Y = 1 | x; \theta) = \frac{1}{1 + \exp\left(-\left(\theta_0 + \sum_{j = 1}^D \theta_j x_j\right)\right)} = \sigma(\mu(x)) = \frac{1}{1 + e^{-\mu(x)}}\]
+\end{itemize}
+We can find $P(Y = 0 | x; \theta)$ by subtracting the $Y = 1$ case from 1 since the probabilities must sum to 1.
+\[P(Y = 0 | x; \theta) = 1 - \sigma(\mu(x)) = \frac{e^{-\mu(x)}}{1 + e^{-\mu(x)}}\]
+
+\subsubsection*{Logistic Function (Sigmoid)}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W3_1.png} 
+\end{center}
+\begin{itemize}
+	\item When $t = 0$, $\sigma(t) = 0.5$
+	\item When $t \rightarrow \infty$, $\sigma(t) = 1$
+	\item When $t \rightarrow -\infty$, $\sigma(t) = 0$
+\end{itemize}
+
+\subsection*{Simple Classifier vs. Logistic Classifier}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_2.png} 
+\end{center}
+Typically, when the logistic function is used for classification, we round the value to the nearest integer.  However, the logistics curve is useful because the curve is differentiable, which makes gradient descent possible.
+
+\subsection*{Decision Boundary in Logistic Regression}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W3_3.png} 
+\end{center}
+We know that the probability of the class label $Y = 1$ and $Y = 0$ are:
+\begin{align*}
+P(Y = 1 | x; \theta) &= \frac{1}{1 + e^{-\mu(x)}}
+P(Y = 0 | x; \theta) &= 1 - \sigma(\mu(x)) = \frac{e^{-\mu(x)}}{1 + e^{-\mu(x)}}
+\end{align*}
+Therefore, 
+\[\frac{P(Y = 1 | x; \theta)}{(Y = 0 | x; \theta)} = e^{\mu(x)}\]
+We can log both sides to get
+\[\mu(x) = \log \left(\frac{P(Y = 1 | x; \theta)}{(Y = 0 | x; \theta)}\right)\]
+Notice that $\mu(x)$ is a linear model!  $\mu(x) = \theta_0 + \sum_{j = 1}^D \theta_j x_j = 0$
+
+\subsection*{Logistic Regression: Beyond Binary Classification}
+\textbf{Data}
+\begin{itemize}
+	\item $N$ data points with $D$ features: $x_i \in \mathbb{R}^D$
+	\item Labels: $y_i \in \{1, \cdots, K\}$
+\end{itemize}
+\textbf{Model}
+\begin{itemize}
+	\item Parameters: $\theta = (\theta_{k0}, \theta_{k1}, \cdots, \theta_{kD})$, for $k = 1, \dots, K - 1$
+	\item Linear predictor: $\mu_k(x) = \theta_{k0} + \sum_{j = 1}^D \theta_{kj} x_j$, for $k = 1, \dots, K - 1$
+	\item Sigmoid: $\sigma(t) = \frac{1}{1 + e^{-t}}$
+	\item Parametric function:
+	\begin{itemize}
+	    \item For $k = 1, \dots, K - 1$, $P(Y = k | x; \theta) = \sigma(\mu_k (x)) = \frac{e^{-\mu_k(x)}}{1 + \sum_{k = 1}^{K - 1} e^{-\mu_k(x)}}$
+	    \item $P(Y = K | x; \theta) = \frac{1}{1 + \sum_{k = 1}^{K - 1} e^{-\mu_k(x)}}$
+	    \item Note that $\sum_{k = 1}^K P(Y = k | x; \theta) = 1$.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Logistic Regression: Inference}
+For a new data point $x_{i'}$, predict $\hat{y}_{i'} = f(x_{i'}; \hat{\theta})$\\
+Compute and classify accordingly:
+\begin{itemize}
+	\item $P(Y = 1 | x; \theta) = \sigma(\mu(x))$
+	\item $P(Y = 0 | x; \theta) = 1 - \sigma(\mu(x))$
+\end{itemize}
+
+\subsection*{Logistic Regression: Learning via MLE}
+\begin{itemize}
+	\item \textbf{Data:} $\mathcal{D} \::\: x_1, \cdots, x_N \in \mathbb{R}^D$, $y_1, \cdots, y_N \in \{0, 1\}$
+	\item \textbf{Estimate parameters:} $\theta = (\theta_0, \theta_1, \cdots, \theta_D)$
+	\item \textbf{MLE estimate:} $\hat{\theta} = \argmax_\theta \sum_{i = 1}^N \log P(Y_i | x_i; \theta) = \argmax_\theta l(\theta)$
+\end{itemize}
+\begin{align*}
+    l(\theta) &= \sum_{i = 1}^N [Y_i \log P(Y_i = 1 | x_i; \theta) + (1 - Y_i) \log P(Y_i = 0 | x_i; \theta)] \\
+    &= \sum_{i = 1}^N \left[Y_i \log \frac{P(Y_i = 1 | x_i;\theta)}{P(Y_i = 0 | x_i; \theta)} + \log P(Y_i = 0 | x_i; \theta)\right] \\
+    &= \sum_{i = 1}^N \left[Y_i \left(\theta_0 + \sum_{j = 1}^D \theta_j x_{ij}\right) - \log\left(1 + \exp \left(\theta_0 + \sum_{j = 1}^D \theta_j x_{ij}\right)\right)\right]
+\end{align*}
+Note that
+\begin{itemize}
+	\item $l(\theta)$ is concave
+	\item Gradient ascent/descent gives the optimal solution.
+\end{itemize}
+
+\subsubsection*{Aside: Gradient Ascent}
+To find $x$ that maximizes a function $f(x)$:
+\begin{itemize}
+	\item Start with random initialization $x_0$
+	\item For $t = 1, \dots$
+	\begin{itemize}
+	    \item $x_{t + 1} = x_t + \lambda f'(x_t)$ with step size $\lambda$
+    \end{itemize}
+    \item $\lambda$
+    \begin{itemize}
+	    \item $\lambda \uparrow$: overshoot
+	    \item $\lambda \downarrow$: too many iterations.
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_4.png} 
+\end{center}
+Log-likelihood of the logistic regression is concave.  Gradient descent/ascent will:
+\begin{itemize}
+	\item reach the maximum of the log likelihood
+	\item find the optimal estimate of the parameters
+\end{itemize}
+
+
+\end{document}
