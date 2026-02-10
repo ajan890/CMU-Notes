@@ -1,0 +1,186 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 4}}
+
+\title{03-621 Week 4 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Analysis of Single Gene Traits}
+Every human chromosome contains \textbf{at least} one gene that is defective in a monogenic disorder.
+\begin{itemize}
+	\item Although single-gene disorders \textit{individually} are relatively rare, \textit{collectively} they are important contributors to human disease.
+\end{itemize}
+Single gene traits are also known as ``Monogenic Traits / Disorders''.  Traits for which different alleles at a single gene are sufficient to specify different phenotypes.
+\begin{itemize}
+	\item There may be more than two phenotypes
+	\item There may be more than two alleles
+	\item Dominance may be complete or incomplete, or there may be co-dominance.
+\end{itemize}
+Note: there may be \textit{more than one gene} that affects the trait and whose alleles can produce similar or related phenotypes.\\\\
+Some of the most common single gene disorders in humans include:
+\begin{itemize}
+	\item Thalassemia (Chromosome 16/11), reduced amounts of hemoglobin; anemia, bone and spleen enlargement.  Affects 10\% of Italy.
+	\item Sickle-cell anemia (Chromosome 11), abnormal hemoglobin; sickle-shaped red cells, anemia, blocked circulation, increased resistance to malaria.  Affects $1/625$ African-Americans
+	\item Hypercholesterolemia (Chromosome 19), missing protein that removes cholesterol from the blood, heart attack by age 50.  Affects $1/122$ of French Canadians.
+\end{itemize}
+To calculate progeny risk, we need to know (or estimate) the genotypes of the parents
+\begin{itemize}
+	\item Even if relevant gene(s) are known, not all the possible disease-causing alleles (which individually may be rare or new mutations) are identified, so molecular diagnostics are not always helpful.
+	\item We can't do intentional test crosses to figure out the genotypes of individuals with dominant phenotypes\dots but sometimes they appear in pedirees.
+\end{itemize}
+
+\subsection*{Mendelian Traits}
+\begin{itemize}
+	\item Discrete binary phenotypes
+	\item Two alleles at a single gene
+	\item Complete dominance
+	\item No effect of environment
+	\item Full penetrance and expressivity
+	\item No sex-linkage
+	\item Not sex-limited
+	\item No parent-of-origin effect.
+\end{itemize}
+These traits are described completely by Mendel's Law of Equal Segregation, and can be drawn into Punnett squares with expected ratios.\\\\
+\textbf{If mating is random} and there are \textbf{two alleles} at a given locus with frequencies $p$ and $q$, the distribution of genotype frequencies \textit{in the population} is given by the binomial expression:
+\[1 = (p + q)^2 = p^2 + 2pq + q^2\]
+This is known as the \textbf{Hardy Weinberg Principle}.
+
+\subsection*{A Problem in Human Genetics}
+Human genetics have the issue of small progeny numbers.
+\begin{itemize}
+	\item In Mendel's Pea Experiment, he crossed round x wrinkled peas, and counted the F1 and F2 progeny.  There were 5474 round peas and 1850 wrinkled peas in F2.  (nearly perfectly 3:1 ratio)
+	\item Suppose we have two humans heterozygous for Cystic fibrosis (for reference, Cystic fibrosis occurs with two recessive alleles.)  We only get 4 children.  There's a $0.75^4 \approx 0.32$ chance that none of them will exhibit the disease at all.
+\end{itemize}
+
+\subsection*{Analysis of Single Gene Traits using Human Pedigrees}
+\begin{enumerate}
+	\item Infer the mode of inheritance from pedigree patterns
+	\begin{itemize}
+	    \item Dominant/Recessive
+	    \item Autosomal/Sex chromosome-linked
+	    \begin{itemize}
+	        \item Map chromosomal location, identify gene, and run diagnostic tests/treatments
+        \end{itemize}
+    \end{itemize}
+    \item Genetic counseling: How to estimate risk
+    \begin{itemize}
+	    \item Probability of carrier status in parent
+	    \item Risk of disease in progeny
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Reading Human Pedigrees}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_1.png} 
+\end{center}
+Consider these human pedigrees for congenital deafness (an autosomal recessive trait):
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_2.png} 
+\end{center}
+How do we know the trait is recessive?
+\begin{itemize}
+	\item If the trait were dominant, then the parents in generation I must have the trait!
+\end{itemize}
+How come the children on generation III do not have the trait, if both parents do?
+\begin{itemize}
+	\item The parents must be in different complementation groups!
+	\item The offspring of generation III are all double heterozygotes.
+\end{itemize}
+
+\subsection*{How to Analyze Pedigrees}
+\begin{itemize}
+	\item Identify the mode of inheritance from patterns in the pedigree:
+	\begin{itemize}
+	    \item Recessive autosomal traits
+	    \item Dominant autosomal traits
+	    \item Recessive X-linked traits
+	    \item Dominant X-linked traits (few known)
+	    \item Y-linked traits (very few known)
+    \end{itemize}
+    \item It is easier to \textbf{rule out} a mode than to prove one conclusively
+    \item When two or more modes cannot be ruled out, we must assess their \textbf{relative probabilities}
+\end{itemize}
+
+\subsection*{Frequent Features}
+\subsubsection*{Autosomal Recessive Disorders}
+\begin{enumerate}
+	\item Affected progeny can have two unaffected parents (frequent for rare traits)
+	\item Males and females are affected in equal proportion
+	\item Male-to-male transmission can occur
+	\item Recessive traits are more commonly expressed in \textbf{inbred} familes or populations
+\end{enumerate}
+Recessive traits are more commonly expressed in \textbf{inbred} familes or populations.
+\begin{itemize}
+	\item If one common ancestor carries a recessive allele, then at least some of the children in II would be heterozygotes.
+	\item If inbreeding occurs in any future generation with two heterozygotes, their children would have a chance of expressing the recessive trait.
+\end{itemize}
+
+\subsubsection*{Autosomal Dominant Disorders}
+\begin{enumerate}
+	\item Affected individuals always have an affected parent (mother or father, except when a mutation first arises)
+	\item Phenotype frequently appears in every generation (recessives can skip)
+	\item On average 50\% of progeny are affected
+    \item Trait can be transmitted from both males and females to both sons and daughters
+\end{enumerate}
+Some \textbf{dominant lethal} traits can be transmitted because the phenotype does not manifest before reproductive age.
+
+\subsubsection*{X-linked Recessive Disorders}
+\begin{enumerate}
+	\item Phenotype appears much more frequently in males than females
+	\item All daughters of an affected male are ``carriers'' (unaffected heterozygotes)
+	\item In the next generation, half the sons of these carriers show the phenotype
+	\item An affected female always has an affected father
+	\item Reciprocal crosses (switched sexes) give different results
+\end{enumerate}
+For example, red-green colorblindness.
+
+\subsubsection*{X-linked Dominant Disorders}
+\begin{enumerate}
+	\item Affected individuals always have an affected parent
+	\item Affected males pass the condition to ALL their daughters, but not their sons
+	\item Affected heterozygous females pass the condition to HALF their daughters AND sons
+	\item On average, more affected females than males (consequence of (2) and (3))
+\end{enumerate}
+(2, 3, 4 are unique, but can only be assessed via probabilities of pedigrees).  There are few known examples, one of which is brown tooth enamel.
+
+\subsubsection*{Y-linked Disorders}
+Y-linked disorders are transmitted exclusively from fathers to sons.  For example, hairy ear rims.
+
+\subsection*{Calculating Risks in Pedigree Analysis}
+What is the probability that a child has X disease?
+\begin{itemize}
+	\item Usually, the type of disease (e.g., autosomal recessive) will be given.
+	\item If the disease is ``rare'', then it can be assumed that people sampled from the population would be homozygous for the allele without the disease.
+	\item We may have to write probabilities of genotypes for multiple generations before the child we care about, since we might not know their genotypes either.
+\end{itemize}
+
+\end{document}

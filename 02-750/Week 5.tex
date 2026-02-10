@@ -1,0 +1,114 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{fit}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-750 Week 5 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Linear Classifiers}
+\begin{itemize}
+	\item Let $x \in \mathbb{R}^n$ be a point in an $n$-dimensional space
+	\item Let $w \in \mathbb{R}^n$ be a weight vector
+	\item Let $b \in \mathbb{R}$ be a bias term
+	\item The set of points satisfying $w \cdot x + b = 0$ form a \textbf{hyperplane}
+	\item A hyperplane can be used as a binary classifier for instance $x$ by simply determining whether $w \cdot x + b < 0$ or $w \cdot x + b \geq 0$
+\end{itemize}
+There are many different algorithms for learning linear classifiers
+\begin{itemize}
+	\item Ex. Naive Bayes; LDA; Logistic Regression; SVMs
+\end{itemize}
+
+\subsection*{Support Vector Machines (SVMs)}
+\begin{itemize}
+	\item SVM learning algorithms find the hyperplane that maximizes the \textbf{margin} between the two classes (aka structural risk minimization)
+	\begin{itemize}
+	    \item The margin is distance between hyperplane and the nearest training points
+	    \item The points achieving this distance are called the support vectors
+    \end{itemize}
+\end{itemize}
+For SVMs,
+\begin{itemize}
+	\item Hypothesis class $\mathcal{H}$: linear classifiers
+	\item Loss function: \textbf{Hinge Loss}
+	\[\mathcal{l}(x_i; w, b) = \max(0, 1 - y \cdot (w \cdot x_i - b))\]
+    \item Risk objective: structural risk minimization
+    \[argmin_{w, b} = \frac{!}{n} \sum \mathcal{l}(x_i; w, b) + \lambda \Vert w \Vert^2\]
+    \item Search function: quadratic programming
+\end{itemize}
+\begin{center}
+    \includegraphics*[width=0.7\textwidth]{W5_1.png}
+\end{center}
+\begin{itemize}
+	\item Given the hyperplane, the \textbf{signed distance} between point $x$ to the plane is:
+	\[\frac{w \cdot x + b}{\Vert w \Vert_2}\]
+    \item The \textbf{unsigned distance} is:
+    \[\left| \frac{w \cdot x + b}{\Vert w \Vert_2}\right|\]
+\end{itemize}
+
+\subsection*{Experimental Set-up}
+\begin{itemize}
+	\item Source data: DuPont Thrombin data from KDD 2001
+	\begin{itemize}
+	    \item Binary features: $x \in \{0, 1\}^d$, where $d = 139,351$
+    \end{itemize}
+    \item Initialization: random batches until the 1st active compound is found
+    \item Batch query selection
+    \begin{itemize}
+	    \item Batch size: 5\% of the unlabeled samples
+	    \item 4 query selection strategies were used (see next slide)
+    \end{itemize}
+    \item Two rounds of experiments were performed (Rounds 0 and 1)
+    \begin{itemize}
+	    \item Pool size: \textit{Round 0}: 1316 (40 active); \textit{Round 1}: 643 (150 active)
+    \end{itemize}   
+    \item Experiments are repeated 10 times to compute average performance
+\end{itemize}
+
+\subsection*{Query Selection Strategies}
+\begin{itemize}
+	\item Random Sampling
+	\item Proximity-Based
+	\begin{itemize}
+	    \item i.e., points closest to known active compounds
+    \end{itemize}
+    \item Select points with the largest positive distance from hyperplane
+    \begin{itemize}
+	    \item Assuming positive distance means active
+    \end{itemize}
+    \item Near boundary selection (i.e., margin sampling). 
+\end{itemize}
+
+
+
+\end{document}

@@ -190,4 +190,142 @@ There are many different query selection methods
 \end{itemize}
 Later, we will see several query selection methods that come with formal guarantees
 
+\section*{Batch Mode Active Learning}
+\begin{itemize}
+	\item \textbf{Intuition:} Select a set of $k$ unlabeled instances that maximize (or minimize) some criterion (e.g., Fisher information)
+	\begin{itemize}
+	    \item A simple strategy: Select the top $k$ most informative instances
+	    \item Some of the selected instances could be similar to each other, and therefore do not provide additional information for model updating
+    \end{itemize}
+    \item \textbf{Goal:} Select instances that are informative such that each selected instances is different from the others and provides unique information
+    \item \textbf{Challenge:} How to efficiently identify the subset of unlabeled instances under specified criterion?
+    \begin{itemize}
+	    \item Computationally complex to consider all combinations of potential instances
+	    \item Do not know labels
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Optimal Design of Experiments}
+\begin{itemize}
+	\item Batch - choose multiple instances in one group for experimentation (One or two batches for DOE.)
+\end{itemize}
+
+\subsection*{Is Active Learning an Appropriate Strategy?}
+Experiment execution time takes much, much longer than modeling and instance selection time.
+\begin{itemize}
+	\item We have already improved efficiency of running experiments
+	\item Miniaturization leads to more experimentation.  (e.g., Use a 1536 well plate instead of a 384 well plate)
+	\item Combining miniaturization with instance selection allows for lower per compound test time even if the total time spent is still lengthy!
+	\item Need to choose compounds in batches to maximize efficiency!
+\end{itemize}
+
+\subsection*{High-Level Query Selection Criteria: Exploration vs. Exploitation}
+\textbf{Exploration}
+\begin{itemize}
+	\item Select designs that are from unexplored regions of the design space, $\mathcal{X}$
+	\begin{itemize}
+	    \item \textbf{Strength:} We gain knowledge that might help us build a better model (i.e., one that is better at directing us towards optimal designs)
+	    \item \textbf{Weakness:} We may waste effort (opportunity loss)
+    \end{itemize}
+\end{itemize}
+\textbf{Exploitation}
+\begin{itemize}
+	\item Select designs that are predicted to be optimal under the current model, $h$
+	\begin{itemize}
+	    \item \textbf{Strength:} Leverage the information we have
+	    \item \textbf{Weakness:} We may get stuck in a local optimum (opportunity loss)
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_5.png} 
+\end{center}
+\begin{itemize}
+	\item What happens if our next 3 points are the ones on the line (e.g., all exploration)?
+	\begin{itemize}
+	    \item Not a great idea, since we only need one of those points to resolve the other two!  We will waste two of the three experiments in that case.
+    \end{itemize}
+	\item What happens if our next 3 points are all as far away as possible (e.g., all exploitation)?
+	\begin{itemize}
+	    \item If you do this, then you have absolutely no clue where the decision boundaries are!
+    \end{itemize}
+\end{itemize}
+Ideally, we want to pick some points for exploration and some points for exploitation.
+
+\subsection*{Diversity-Based Sampling Strategies}
+\begin{itemize}
+	\item Cluster-based sampling - cluster the data and choose representative instances from each cluster
+	\item How could you choose $n$ instances in a \textbf{hierarchical clustering} mode?
+	\begin{itemize}
+	    \item Algorithm: Identify level of tree yielding $n$ clusters.  Choose randomly from those clusters.
+    \end{itemize}
+    \item How could you choose $n$ instances in a \textbf{k-means} mode?
+    \begin{itemize}
+	    \item Algorithm: Set $k = n$, and choose one instance from each cluster.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Discriminative Batch Mode Active Learning}
+Key features
+\begin{itemize}
+	\item It presents a framework for ``batch mode active learning'' that applies the Fisher information matrix to measure the overall informativeness for a set of unlabeled instances
+	\item Propose an efficient greedy algorithm that is based on the property of \textbf{submodular functions}
+	\item Empirical studies show that the proposed batch mode active learning algorithm is more effective than the traditional algorithms for active learning.
+\end{itemize}
+
+\subsubsection*{Batch Mode Active Learning Set-up}
+Approach:
+\begin{itemize}
+	\item Given that the Fisher information matrix represents the overall uncertainty of a classification model, the goal is to search for a set of instances that can most efficiently reduce the Fisher information matrix
+\end{itemize}
+Notation:
+\begin{itemize}
+	\item $p(x)$ be the distribution of all unlabeled instances
+	\item $q(x)$ be the distribution of unlabeled instances that are chosen for labeling
+	\item $\alpha$ denotes the parameters of the classification model
+	\item $I_p(\alpha)$ and $I_q(\alpha)$ denote the Fisher information matrix of the classification model for the distribution $p(x)$ and $q(x)$, respectively.
+	\item $D = (x_1, \cdots, x_n)$ be the unlabeled data
+	\item $S = (x_1^5, \cdots, x_k^5)$ be the subset of selected instances
+\end{itemize}
+The Fisher matrices $I_p(\alpha)$ and $I_q(\alpha)$ can be computed as:
+\begin{align*}
+    I_p(\hat{\alpha}) &= \frac{1}{n} \sum_{x \in \mathcal{D}} \pi(x) (1 - \pi(x)) xx^T + \delta I_d \\
+    I_q(S, \hat{\alpha}) &= \frac{1}{k} \sum_{x \in S} \pi(x) (1 - \pi(x)) xx^T + \delta I_d \\
+\end{align*}
+where
+\[\pi(x) = p(- | x) = \frac{1}{1 + \exp(\hat{\alpha}^T x)}\]
+\begin{itemize}
+	\item $\hat{\alpha}$ stands for the classification model that is estimated from the labeled instances
+	\item $I_d$ is the identity matrix of size $d \times d$
+	\item $\delta << 1$ is the smoothing parameter
+	\item $\delta I_d$ is added to the estimation of $I_p(\hat{\alpha})$ and $I_q(\hat{\alpha})$ to prevent them from being singular matrices
+\end{itemize}
+The final optimization problem for batch mode active learning is formulated as follows:
+\[S^* = \argmin_{S \subseteq D \land |S| = k} \text{ tr}(I_q(S, \hat{\alpha})^{-1} I_p(\alpha))\]
+\textbf{Challenge:} The number of candidate sets for $S$ is exponential in the number of unlabeled examples $n$
+
+\subsection*{Batch Mode Active Learning: Algorithm}
+The key idea of this approach is to explore a general theorem about submodular functions (Newhauser et al., 1978)
+\begin{itemize}
+	\item Consider the optimization problem that searches for a subset $S$ with $k$ elements to maximize a set function $f(S)$
+\begin{verbatim}
+    Initialize S = empty set
+    For i = 1, 2, ..., k
+        Compute x* = argmax_{x not in S} f(S + x) - f(S)
+        Set S += x*
+\end{verbatim}
+    \item If $f(S)$ is (i) a nondecreasing submodular function, and (ii) $f(\emptyset) = 0$, then the above greedy algorithm will guarantee a performance $\left(1 - \frac{1}{e}\right) f(S^*)$, where $S^* = \argmax_{|S| = k} f(S)$ is the optimal subset
+\end{itemize}
+
+\subsection*{Meta-Learning for Batch Mode Active Learning}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W4_6.png} 
+\end{center}
+
+\subsection*{Summary of Batch Selection Strategies}
+\begin{itemize}
+	\item Batch mode strategies can improve the efficiency of scalable processes in an active learning context
+	\item They mostly require consideration of exploration and exploitation in the design of the batches
+\end{itemize}
+
 \end{document}
+
