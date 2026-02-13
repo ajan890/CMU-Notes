@@ -36,6 +36,19 @@
 \begin{document}
 \maketitle
 
+\subsection*{Compound Screening}
+Goal: find compounds that bind to and modify a given target.\\
+Screening can be done \textbf{in vitro} or \textbf{in silico} (i.e., computationally)
+\begin{itemize}
+	\item \textit{in vitro} gives definite answers, but is expensive
+	\item \textit{in silico} screen is faster, but it is always necessary to validate hits \textit{in vitro}
+\end{itemize}
+\textbf{Challenge:} Most compounds won't bind to the target (i.e., they are \textit{inactive})
+\begin{itemize}
+	\item Thus, most of the \textit{in vitro} screening effort is wasted.  In theory, \textit{in silico} screening could increase the yield from \textit{in vitro} screens
+	\item But \textit{in silico} screening requires models, which must be trained from \textbf{highly imbalanced data sets}.
+\end{itemize}
+
 \section*{Linear Classifiers}
 \begin{itemize}
 	\item Let $x \in \mathbb{R}^n$ be a point in an $n$-dimensional space
@@ -63,7 +76,7 @@ For SVMs,
 	\item Loss function: \textbf{Hinge Loss}
 	\[\mathcal{l}(x_i; w, b) = \max(0, 1 - y \cdot (w \cdot x_i - b))\]
     \item Risk objective: structural risk minimization
-    \[argmin_{w, b} = \frac{!}{n} \sum \mathcal{l}(x_i; w, b) + \lambda \Vert w \Vert^2\]
+    \[argmin_{w, b} = \frac{1}{n} \sum \mathcal{l}(x_i; w, b) + \lambda \Vert w \Vert^2\]
     \item Search function: quadratic programming
 \end{itemize}
 \begin{center}
@@ -108,7 +121,200 @@ For SVMs,
     \end{itemize}
     \item Near boundary selection (i.e., margin sampling). 
 \end{itemize}
+Results:
+\begin{itemize}
+	\item Active learning performed better than passive learning.
+	\item Passive learning performed better than random guessing (no training).
+\end{itemize}
 
+\subsection*{Summary of Warmuth \textit{et al.}}
+``Active Learning with Support Vector Machines in the Drug Discovery Process''
+\begin{itemize}
+	\item Drug screening is a good candidate for Active Learning
+	\begin{itemize}
+	    \item Statistical models can predict activity quickly, if not perfectly
+	    \item Activity assays are expensive (relative to computational predictions)
+    \end{itemize}
+    \item However, drug screening does pose challenges to machine learning
+    \begin{itemize}
+	    \item The number of inactive compounds is usually \textit{much} larger than those that are active, so a majority label classifier has high accuracy, but it's the minority label that we care about
+	    \item Chemical space is large
+	    \item Some encodings of compounds are high dimensional
+    \end{itemize}
+    \item The paper demonstrates that SVM-based Active Learning can potentially overcome these challenges
+    \item The querying strategy should be matched to your goals
+    \begin{itemize}
+	    \item If your goal is to maximize the number of active compounds discovered, use the \textbf{Largest Positive Score} criterion
+	    \item If your goal is to maximize the classification accuracy of the model, use the \textbf{Near Boundary} criterion (aka margin sampling)
+    \end{itemize}
+\end{itemize}
+
+\section*{High Throughput Screening}
+\begin{itemize}
+	\item For a single target, engineer assay to detect effects on target
+	\begin{itemize}
+	    \item Protein, cellular, whole organism
+    \end{itemize}
+    \item Compound library contains millions of compounds
+    \item Automation
+    \begin{itemize}
+	    \item Liquid handling robotics
+	    \item Plate reading mechanisms
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Enormous experimental spaces are common}
+For drug discovery, we often have to test millions of drugs, and even if we only target one protein, we have to test on many others as well for side effects.
+\begin{itemize}
+	\item We can't do all of these experiments.
+	\item However, we can predict what we can't observe.
+\end{itemize}
+Perhaps we're not running the right experiments!
+\begin{itemize}
+	\item We can choose to execute experiments expected to yield hits
+	\item Execute experiments expected to yield the most improvement in accuracy of predicted efforts
+\end{itemize}
+\textbf{Goal:} Use active learning to improve the hit discovery rate for a large number of targets tested using diverse methods against a large number of compounds
+\begin{itemize}
+	\item On PubChem database, we have:
+	\begin{itemize}
+	    \item 177 Assays (108 \textit{in vitro}, 69 \textit{in vivo}).  Sign of score modified to reflect type of assay (inhibition or activation)
+	    \item 133 Unique protein targets
+	    \item 20000 Compounds
+	    \item $\sim$1000000 experiments (30\% coverage)
+	    \item Compare discovery rate and accuracy across different methods.  Discovery is defined as a drug-protein pair whose $|\text{rank score}| > 80$.
+    \end{itemize}
+\end{itemize}
+Out of the million experiments, around $0.096\%$ returned active compounds, or protein pairs with $|\text{rank score}| > 80$.
+\begin{itemize}
+	\item Experiments were chosen by assuming activity can be predicted based on lienar combination of features.
+	\item Use lasso regression (Tibshirani, 1996) to select features
+\end{itemize}
+
+\subsection*{Accuracy Assessment}
+\begin{itemize}
+	\item Train a model based on all observed data
+	\item For all experiments:
+	\begin{itemize}
+	    \item $|\text{rank score}| > 80 \rightarrow $ positives
+	    \item $|\text{rank score}| \leq 80 \rightarrow $ negatives
+    \end{itemize}
+    \item Set a threshold $t$ on predictions.
+    \begin{itemize}
+	    \item $|\text{predicted rank score}| > t \rightarrow$ positive prediction
+	    \item $|\text{predicted rank score}| \leq t \rightarrow$ negative prediction
+    \end{itemize}
+    \item Sweep across thresholds calculating True positive rate and False positive rate
+\end{itemize}
+
+\subsection*{Selection Methods}
+\begin{itemize}
+	\item \textbf{Uncertainty sampling:} select experiments for which prediction most uncertain.
+	\begin{itemize}
+	    \item Across $n$-folds, hold out a random portion of experimental results and make $n$ predictions for each unobserved experiment
+	    \item Select unobserved experiments with largest standard deviation in predictions
+    \end{itemize}
+    \item \textbf{Density sampling:} select unobserved experiments from regions of feature space which have been least explored regardless of experimental values
+    \begin{itemize}
+	    \item Randomly select 2000 observed experiments
+	    \item Randomly select 2000 unobserved experiments
+	    \item Features represented for each experiment by concatenating compound and protein features
+	    \item Select experiments with minimal values for:
+	    \[\frac{\text{mean distance to Unobserved}}{\text{mean distance to Observed}}\]
+    \end{itemize}
+    \item \textbf{Diversity sampling:} select most diverse set of experiments
+    \begin{itemize}
+	    \item Features represented for each experiment by concatenating compound and protein features
+	    \item K-means ($K = 384$) on experiments
+	    \item Select experiments nearest to each discovered centroid
+    \end{itemize}
+    \item \textbf{Hybrid selection:} select half of experiments using greedy select and half using uncertainty sampling
+    \item \textbf{Memory limited approach:} make selections using prediction learned from observations from the previous $m$ rounds
+\end{itemize}
+
+\subsection*{Conclusions of Kangas \textit{et al.}}
+``Efficient Discovery of Responses of Proteins to Compounds using Active Learning''
+\begin{itemize}
+	\item Hits can be more rapidly identified using active learning while combining information from experiments for multiple targets
+	\item Hits can be rapidly identified using a system that utilizes information from heterogeneous sources
+\end{itemize}
+
+\section*{Dropout as a Bayesian Approximation}
+\begin{itemize}
+	\item New theoretical framework casting dropout training in deep neural networks as approximate Bayesian inference in deep Gaussian processes
+	\begin{itemize}
+	    \item Develop the tools necessary to represent uncertainty in deep learning
+    \end{itemize}
+    \item Perform an extensive assessment across learning tasks, model architectures, etc.
+    \begin{itemize}
+	    \item Show a considerably improvement in predictive loglikelihood and RMSE compared to existing state-of-the-art methods
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Overview of Gaussian Process}
+Gaussian Process Regression (aka. Kriging)
+\begin{itemize}
+	\item Informally, a Gaussian Process (GP) extends the concept of a \textbf{multivariate Gaussian probability distribution} over $d$-dimensional \textit{vectors} to a probability distribution over continuous \textit{functions}
+	\item Key idea: Any $d$-dimensional continuous function, $f \::\: \mathbb{R}^d \rightarrow \mathbb{R}$, can be interpreted as the realization of an \textbf{infinite} number of random variables, one for each point in $\mathbb{R}^d$
+    \item Gaussian Processes are often used as \textbf{priors} in the context of Bayesian, nonparametric, nonlinear regression
+    \begin{itemize}
+	    \item Bayesian means that learning and inference are performed by applying Bayes' Theorem, which forces us to specify a prior on our unknowns.
+    \end{itemize}
+    \item Recall that a Gaussian distribution is completely specified by two parameters: $\mu$ and $\Sigma$ (the mean and covariance): $X \sim \mathcal{N}(\mu, \Sigma)$
+    \item Similarly, a GP is completely specified by two parameters, $m$ and $K$
+    \[f \sim \mathcal{G}\mathcal{P}(m, K)\]
+    \begin{itemize}
+	    \item $m(x) = \mathbb{E}[f(x)]$ is the \textbf{mean function}
+	    \item $K(x, x')$ is the \textbf{covariance function}, which can be used to compute the uncertainty (the gray area)
+	    \item $K$ is a \textbf{kernel}, that is, it is a measure of how similar points $x$ and $x'$ are.
+    \end{itemize}
+    \item GP's assume that if $x$ and $x'$ are 'close', then $|f(x) - f(x')|$ is small
+    \item When making predictions about an unobserved $x'$, we condition the GP on the data, $D_L = \{(x_1, y_1), \cdots, (x_n, y_n)\}$
+    \begin{itemize}
+	    \item The prediction, $\hat{f}(x')$, is a distance-weighted average of $y_1, \cdots, y_n$ where the weighting is determined by the kernel function
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{What's the Problem?}
+A model can be uncertain in its predictions even with a high softmax output
+\begin{itemize}
+	\item Passing a point estimate of a function (a) through a softmax (b) results in extrapolations with \textbf{unjustified} high confiednce for points far from the training data
+	\item However, passing the distribution through a softmax better reflects classification uncertainty far from the training data
+\end{itemize}
+
+\subsection*{Summary: Gal and Ghahramani (ICML, 2016)}
+``Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning''
+\begin{itemize}
+	\item Give a complete theoretical treatment of the link between Gaussian processes and dropout
+	\begin{itemize}
+	    \item Provide tools to model uncertainty with dropout NNs
+    \end{itemize}
+\end{itemize}
+
+\section*{Deep Batch Active Learning for Drug Discovery}
+\textbf{Goal:} Enable the use of active learning with advanced neural network models
+\[\argmax_{\mathcal{B} \subset \mathcal{V}, |\mathcal{B}| = N} \log(\det(\text{cov}(\mathcal{B})))\]
+Here, $\mathcal{V}$ is the unlabeled dataset at a specific iteration and $N$ is the batch size
+\begin{itemize}
+	\item Randomly generated a collection of batches as starting points, each containing $N$ distinct samples independently chosen from a distribution proportional to the quantile of the variances
+	\item Select the best $M < N$ of these batches as starting points for optimization
+	\item For each starting point, optimize the batch element-wise
+	\begin{itemize}
+	    \item i.e., changing the first element to optimize the covariance, then changing the second, and so on, doing several passes until the process reaches equilibrium
+    \end{itemize}
+    \item Select the highest scoring final batch
+\end{itemize}
+
+\subsection*{Approximation of the Posterior Distribution}
+\[\hat{y} = \frac{1}{S} \sum_{t = 1}^S f_\theta (x, m_s)\]
+where $S$ is the number of predictions by sampling $m_S$ masks, $\hat{y}$ is the predicted output of the model, and $f_\theta$ is the model with parameters $\theta$
+
+\subsection*{Conclusions of Bailey \textit{et al.}}
+``Deep Batch Active Learning for Drug Discovery''
+\begin{itemize}
+	\item Developed two novel active learning batch selection methods
+	\item Comprehensive evaluation across several tasks
+\end{itemize}
 
 
 \end{document}

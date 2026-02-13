@@ -1,0 +1,282 @@
+% document formatting 
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 5 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Random Forests}
+Decision trees are high-variance classifiers, but small changes in the training data can lead to very different trees.  \textbf{Solution: Random Forests}.
+\begin{itemize}
+	\item Build a collection of decision trees trained on different subsets of the data
+	\item Classify a test sample by majority vote across all trees in the forest
+\end{itemize}
+
+\subsection*{Procedure:}
+For $b = 1, \dots, B$:
+\begin{itemize}
+	\item Draw a bootstrap sample of size $N$ from the training data
+	\item Train a decision tree $T_b$ on the bootstrap sample by recursively repeating, at each node:
+	\begin{itemize}
+	    \item Randomly select $m$ attributes from the $D$ available attributes
+	    \item Choose the best split among the selected attributes
+	    \item Split the node into two child nodes
+	    \item Continue until the minimum node size $n_{min}$ is reached
+    \end{itemize}
+    \item Output the ensemble of trees $\{T_b\}_{b = 1}^B$ and classify new samples by \textbf{majority vote}
+\end{itemize}
+
+\subsection*{Random Forest on Similated Data}
+\begin{itemize}
+	\item Random forest with 500 trees.
+	\begin{itemize}
+	    \item RF-1: depth 1 trees
+	    \item RF-3: depth 3 trees
+    \end{itemize}
+    \item Smaller trees perform well
+\end{itemize}
+
+\section*{Clustering}
+\subsection*{Supervised vs. Unsupervised Learning}
+\textbf{Supervised learning}\\
+Learning to predict label $y_i$ from features $x_i$ using labeled data $(X, y)$
+\begin{itemize}
+	\item \textbf{Regression:} $y_i \in \mathbb{R}$.  E.g., linear regression, etc.
+	\item \textbf{Classification:} $y_i \in \{0, 1\}$.  E.g., Naive bayes classifier, logistic regression, decision trees, etc.
+	\item \textbf{Models:} deterministic $y_i = f(x_i; \theta)$ or probabilistic $P(Y_i | X_i = x_i; \theta)$
+\end{itemize}
+\textbf{Unsupervised learning}\\
+Learning structure or patterns from unlabeled data $X$, e.g., clustering, dimensionality reduction, etc.
+\begin{itemize}
+	\item Models: deterministic $f(x_i; \theta)$ or probabilistic $P(X_i; \theta)$
+\end{itemize}
+Clustering is an unsupervised learning method where we try to find clusters of data points, or group similar data points together.
+\begin{itemize}
+	\item We want high intra-cluster similarity
+	\item low inter-cluster similarity
+	\item Finding natural groupings among objects
+\end{itemize}
+
+\subsection*{Clustering Methods} 
+\begin{itemize}
+	\item Non-probabilistic methods
+	\begin{itemize}
+	    \item Hierarchical clustering
+	    \item $K$-means algorithm
+    \end{itemize}
+	\item Probabilistic method
+	\begin{itemize}
+	    \item (Gaussian) Mixture Model
+    \end{itemize}
+\end{itemize}
+We will also discuss \textbf{dimensionality reduction}, another unsupervised learning method later in the course.
+
+\subsection*{What is similarity?}
+From Webster's Dictionary: ``The quality or state of being similar; likeness; resemblance; as, a similarity of features''
+\begin{itemize}
+	\item It turns out that similarity is hard to define, but we know it when we see it.
+	\item The real meaning of similarity is a philosophical question.  We will take a more pragmatic approach.
+\end{itemize}
+
+\subsection*{Distance Measures}
+\begin{itemize}
+	\item Suppose two data points $x, y \in \mathbb{R}^D$ ($D$ features)
+	\begin{align*}
+        y &= (y_1, \dots, y_D) \\
+        x &= (x_1, \dots, x_D)
+    \end{align*}
+    \item Euclidean distance (L2 norm) (dissimilarity measure)
+    \[D(x, y) = \sqrt{\sum_{j = 1}^D \left(x_j - y_j\right)^2}\]
+    \item Correlation coefficient (similarity measure)
+    \[s(x, y) = \frac{1}{\sigma_x \sigma_y} \sum_{j = 1}^D (x_j - \mu_x) (y_j - \mu_y)\]
+\end{itemize}
+where $\mu_x$, $\mu_y$, $\sigma_x$, $\sigma_y$ are means and standard deviations across features.
+
+\subsection*{General Distance Measures}
+\textbf{Definitions:} Let $x$ and $y$ be objects from a universe.  The distance (dissimilarity) is a real-valued function $D(x, y)$, \textbf{typically} satisfying
+\begin{itemize}
+	\item Distance from a point to itself is zero: $D(x, x) = 0$
+	\item Positivity: if $x \neq y$, then $D(x, y) > 0$
+	\item Symmetry: $D(x, y) = D(y, x)$
+	\item Triangle inequality: $D(x, z) \leq D(x, y) + D(y, z)$
+\end{itemize}
+
+\subsection*{Overview}
+\begin{itemize}
+	\item K-means clustering: Construct partitions into $K$ clusters and evaluate them by a centroid-based objective function
+	\item Hierarchical clustering: Create a hierarchical decomposition of the set of objects using a linkage criterion
+\end{itemize}
+
+\section*{K-means Clustering}
+\textbf{Data:}
+\begin{itemize}
+	\item $N$ data points with $D$ features
+	\[x_1, \cdots, x_N \in \mathbb{R}^D \quad \text{matrix form } X \in \mathbb{R}^{N \times D}\]
+\end{itemize}
+\textbf{Learning objective:}
+Partition the data points into $K$ sets $S_1, \dots, S_k$ to minimize the within-cluster squared Euclidean distance
+\[\argmin_{S_1, \dots, S_k} \sum_{k = 1}^K \sum_{i \in S_k} \Vert x_i - \mu_k \Vert^2\]
+where $\mu_k = \frac{1}{|S_k|} \sum_{i \in S_k} x_i$ is the centroid of cluster $k$
+
+\subsection*{K-means Clustering: Optimization}
+Not all clusters are good.  In the below example, the right clustering is better than the left clustering.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W5_1.png} 
+\end{center}
+How do we solve this optimization problem?
+\begin{itemize}
+	\item Exact solution: exhaustive search over partitions (NP-hard)
+	\item Practical solution: K-means (Lloyd's algorithm), a fast heuristic converging to a local minimum
+\end{itemize}
+
+\subsection*{Lloyd's Algorithm}
+\begin{itemize}
+	\item \textbf{Input:} data $x_1, \cdots, x_N \in \mathbb{R}^D$; hyperparameter $K$
+	\item \textbf{Initialize:} cluster center $\mu_1, \dots, \mu_K$, randomly
+	\item \textbf{Iterate until convergence} (no chnages in assignments $a_i$)
+	\begin{itemize}
+	    \item \textbf{Assign} each data point to its closest cluster center
+	    \[a_i \leftarrow \argmin_{k \in \{1, \dots, K\}} \Vert x_i - \mu_k \Vert_2^2, \quad \text{for } i = 1, \dots, N\]
+        \item \textbf{Update} cluster centers based on the current assignments
+        \[\mu_k \leftarrow \frac{\sum_{i = 1}^N \mathds{1} (a_i = k) x_i}{\sum_{i = 1}^N \mathds{1} (a_i = k)}, \quad \text{for } k = 1, \dots, K\]
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Choosing $K$}
+How do we choose the number of clusters $K$?
+\begin{itemize}
+	\item In general, this is an unsolved problem.  However, many approximate methods exist.
+	\item \textbf{Heuristic (elbow method):} Run cluster with $K = 1, 2, 3, \dots$, and choose the value of $K$ at which improvements in the objective begin to slow down
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W5_2.png} 
+\end{center}
+
+\section*{Hierarchical Clustering}
+Create a hierarchical decomposition of the set of objects using a linkage criterion
+\begin{itemize}
+	\item \textbf{Bottom-up (agglomerative):}
+	\begin{itemize}
+	    \item Start with each point as its own cluster
+	    \item Repeatedly \textbf{merge} the closest clusters
+	    \item Continue until one cluster remains
+    \end{itemize}
+	\item \textbf{Top-down (divisive):}
+	\begin{itemize}
+	    \item Start with all points in one cluster
+	    \item Repeatedly \textbf{split} clusters
+	    \item Continue until each point is its own cluster (or stop early)
+    \end{itemize}
+\end{itemize}
+\textbf{Cluster assignments} are obtained by ``cutting'' the tree at a chosen level.
+
+\subsection*{Bottom-up hierarchical clustering}
+We begin with a distance matrix containing the pairwise distances between all objects in the dataset.
+\begin{center}
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+         & A & B & C & D & E \\ \hline
+        A & 0 & 8 & 8 & 7 & 7 \\ \hline
+        B &  & 0 & 2 & 4 & 4 \\ \hline
+        C &  &  & 0 & 3 & 3 \\ \hline
+        D &  &  &  & 0 & 1 \\ \hline
+        E &  &  &  &  & 0 \\ \hline
+    \end{tabular}
+\end{center}
+\begin{itemize}
+	\item Start with each point as its own cluster
+	\item Repeatedly merge the closest clusters
+	\item Continue until one cluster remains
+\end{itemize}
+In this example, we will first merge D and E into one cluster first, since they are the closest at the start.  After that, we choose B and C, followed by (BC) and (DE), finally A and (BCDE).
+\begin{itemize}
+	\item Whenever we merge two clusters, we have to recalculate the distance of that cluster to all other clusters.
+	\item For this example, we picked the minimum distance between two clusters to merge.
+	\item However, there are many other metrics to calculate distance between clusters.
+\end{itemize}
+
+\subsubsection*{Compute distance between clusters}
+\begin{itemize}
+	\item \textbf{Recipe 1: Single Linkage}:
+	\begin{itemize}
+	    \item Cluster distance is the distance between two closest members (one from each cluster).  
+	    \item Drawback: may produce long, ``chain-like'' (skinny) clusters.
+    \end{itemize}
+    \item \textbf{Recipe 2: Complete Linkage}:
+    \begin{itemize}
+	    \item Cluster distance is the distance between the two farthest members.
+	    \item Drawback: sensitive to outliers and may favor compact, spherical clusters.
+    \end{itemize}   
+    \item \textbf{Recipe 3: Average Linkage}:
+    \begin{itemize}
+	    \item Cluster distance = average distance over all pairs of points between two clusters.
+	    \item Most widely used; more robust to noise than single or complete linkage.
+    \end{itemize}
+\end{itemize}
+Algorithmically, this merging process runs in $O(n^2)$ time.  There are $n$ merges to create a tree, and each merge requires O($n$) updates.
+
+\subsection*{Height in Dendrogram Represents Cluster Distance}
+\begin{itemize}
+	\item Merge distances are monotonically non-decreasing (rely on properties of the linkage rule, such as: $D(A \cup B, C) \geq \min(D(A, C), D(B, C))$)
+	\item The height in the dendrogram represents the distance at which clusters are merged.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W5_3.png} 
+\end{center}
+
+\subsection*{Summary of Hierarchical Clustering Methods}
+\begin{itemize}
+	\item No need to specify the number of clusters in advance.
+	\item Hierarchical structure maps nicely onto human intuition
+	\item They do not scale well: time complexity of at least O($N^2$), where $N$ is the number of total objects.
+	\item Like any heuristic search algorithms, local optima are a problem.
+	\item Interpretation of results is (very) subjective.
+\end{itemize}
+
+\subsection*{But what are the clusters?}
+In some cases, we can determine the ``correct'' number of clusters.  However, things are rarely this clear cut, unfortunately.
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W5_4.png} 
+\end{center}
+One potential use of a dendrogram is to detect outliers.  An outlier would produce a single, isolated branch.
+
+\subsection*{Takeaway}
+\begin{itemize}
+	\item Clustering is an unsupervised learning method, and how it works
+	\item What are the different types of clustering algorithms?
+	\item What are the assumptions we are making for each, and what can we get from them?
+	\item Unsolved issues: number of clusters, initiailization, etc.
+\end{itemize}
+
+
+\end{document}
