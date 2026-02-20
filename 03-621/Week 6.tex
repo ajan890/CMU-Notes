@@ -1,0 +1,263 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 6}}
+
+\title{03-621 Week 6 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Mapping Traits onto the Genome Sequence}
+Knowing the human genome sequence is not enough to identify specific genes nor their biological functions.  A genetic map is what makes genome sequences \textbf{interpretable}.
+\begin{itemize}
+	\item Knonowing the location of a gene allows to identify the DNA sequence corresponding to a gene, and the DNA sequence variations that correspond with different alleles.
+\end{itemize}
+
+\subsection*{Basic Techniques for Mapping}
+For linkage and recombination:
+\begin{itemize}
+	\item For linkage disequilibrium: use mapping by association.  This works for complex traits and single-gene traits
+	\item Map by recombination frequency for single gene traits
+\end{itemize}
+For chromosome abnormalities, use cytological mapping, which reveals single-gene traits.
+
+\subsection*{Nomenclature}
+\begin{itemize}
+	\item $+/+$, $a^+ / a^+$, $A^+ / A^+$: wild type homozygote
+	\item $a / a$: mutant homozygote ($a$ recessive to wild type)
+	\item $a / +$, $a / A^+$: heterozygote (exhibits WT phenotype)
+	\item $A / A$: mutant homozygote ($A$ dominant to wild type)
+	\item $A / +$, $A / a^+$: heterozygote (exhibits $A$ phenotype)
+	\item $- / -$: homozygote for a null allele
+	\item $- / +$: heterozygote for a null allele
+\end{itemize}
+A null allele is one that has lost function completely.  Usually recessive to WT.
+
+\subsubsection*{Nomenclature for allele arrangements}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W6_1.png} 
+\end{center}
+
+\subsection*{Recombination}
+Recombination is the production of new combinations of alleles during meiosis
+\begin{itemize}
+	\item For genes on the \textbf{same chromosome}, recombination is a consequence of crossing over during Meiosis 1
+	\item Crossing over involves the physical exchange of DNA segments between homologs, at chiasmata.  (A chaisma is the physical location where the chromosomes cross.)
+	\item Note: Chiasmata are generally required for proper segregation of homologs during Meiosis I.
+\end{itemize}
+The observed frequency of recombinant chromosomes is a measure of the distance between the two genes:
+\[\text{Genetic distance } = 100 \times \frac{\text{Recombinants}}{(\text{Recombinants } + \text{ Parentals})}\]
+
+\subsubsection*{Example}
+Consider this dihybrid test cross involving recessive color and wing size traits in Drosophila (house flies)
+\begin{center}
+Wild type (Gray with normal wings) $\times$ Mutant (Black with vestigal wings)
+\end{center}
+Offspring:
+\begin{itemize}
+	\item Wild type: 965
+	\item Black-vestigial: 944
+	\item Gray-vestigial: 206
+	\item Black-normal: 185
+\end{itemize}
+Are $b$ and $vg$ linked?  If there is independent assortment, what phenotypic ratio do we expect?
+\begin{itemize}
+	\item If independent assortment, we expect 1 : 1 : 1 : 1.
+\end{itemize}
+
+\subsubsection*{Chi-squared ($\chi^2$) Test for Independent Assortment}
+\begin{enumerate}
+	\item Define the null hypothesis: $b$ and $vg$ assort independently
+	\item Collect data.  (Shown above.)
+    \item Calculate expected progeny ratios and numbers. (Expected is each one has a count of 575, calculated by averaging the numbers.)
+    \item Calculate Chi-square metrics: $\chi^2 = \sum [(\text{observed} - \text{expected})^2 / \text{Expected}]$
+    \[\chi^2 = \frac{(965 + 944 - 1150)^2}{1150} + \frac{(206 + 185 - 1150)^2}{1150} = 501 + 501 = 1002\]
+    \item Determine degrees of freedom: $df = n - 1$.  (2 - 1 = 1)
+    \item Calculate $P$: (Excel: CHISQ.DIST.RT.  Alternatively, refer to a table).
+    \begin{itemize}
+	    \item We get $P(\chi^2 = 1002 | df = 1) = 6.6\times 10^{-220}$
+    \end{itemize}
+\end{enumerate}
+For our example, the $\chi$ value is tiny compared to the null hypothesis $\alpha = 0.05$.  Therefore, we reject the null hypothesis.  The data are not compatible with independent assortment of $b$ and $vg$.  Instead, they support linkage on the same chromosome.
+
+\subsubsection*{Calculating Genetic Distance}
+Given $b$ and $vg$ are linked, what is the genetic distance between them?
+\[100 \times \frac{206 + 185}{965 + 944 + 206 + 185} = 0.17\]
+The units are called \textbf{centiMorgans} (cM) after T.H. Morgan.  1cM = 1\% recombinants.  (This does not imply 1\% crossing over!)
+\begin{itemize}
+	\item Genetic distance are essentially a map of the physical distance two genes are separated on a chromosome.
+	\item Genetic distances based on recombination frequencies allows us to map the relative positions of genes on chromosomes.
+	\item Over short intervals ($< \sim 20$ cM): map distances are often additive.  Over long intervals, $\%$ recombinants underestimate the map distance.
+	\item In humans, 1 cM $= \sim$1 million base pairs.
+	\item Varies locally, but on average, 1 million base pairs.
+	\item Differs between sexes ($\sim 2\times$) higher in females
+\end{itemize}
+
+\subsubsection*{Biological Meaning of Map Distance}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W6_2.png} 
+\end{center}
+\[r = \frac{1 + 1}{49 + 49 + 49 + 49 + 1 + 1 + 1 + 1} = \frac{2}{200}\]
+Thus, a 1 cM interval is a chromosomal segment that undergoes 1 crossover event per 50 meioses.\\\\
+Because even numbers of multiple crossovers restore the parental marker configurations, the maximum expected recombination frequency is 50\%.
+
+\subsection*{Recap: Genetic Map Distance}
+\begin{itemize}
+	\item \textbf{Scale}: frequency of cross-over (i.e., recombinant) gametes, which is a positive function of the physical distance between two loci
+	\begin{itemize}
+	    \item Unit: centi-Morgan (cM)
+	    \item 1 cM = 1 crossover per 50 meioses
+	    \item This corresponds to a recombinant frequency $\theta = 1 \%$
+    \end{itemize}
+    \item With the genome sequence in hand, the physical distance can be measured in nucleotides, so the genetic distance is an indication of the number of nucleotides between two loci.
+    \begin{itemize}
+	    \item The correlation allows us to identify the gene sequences for specific traits of interest.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{X-Y Crossover}
+Pseudoautosomal region 1 (PAR1) is a section on the human X and Y chromosomes where recombination is guaranteed to occur in male gamete meiosis.
+\begin{itemize}
+	\item It is a gene that is shared on both chromosomes, albeit in different locations
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W6_3.png} 
+\end{center}
+
+\subsection*{Problems over large distances}
+We cannot detect double cross overs because it does not result in recombination between $A$ and $B$ genes
+\begin{itemize}
+	\item We use \textbf{three-point crosses} to estimate linkage over \textbf{long distances} and determine marker order
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W6_4.png} 
+\end{center}
+In real life, we often \textbf{don't know} the order of the markers; that is what we want to find out!  One way to do this is by calculating the map distances, and then deciding which of the possible map orders fits.
+\begin{itemize}
+	\item Another way is by realizing that the double X-over progeny classes are much less frequent than any single X-over progeny class.
+\end{itemize}
+
+\subsubsection*{Shortcut to determining gene order in a 3-point cross}
+The gene in the middle is always the one that switches \textbf{both} partners in the double crossover.
+
+\subsubsection*{Do double crossover events occur as often as expected?}
+\begin{itemize}
+	\item Generally, no
+	\item ``Interference'': reduction in numbers of double crossover events observed as compared to expected.
+	\item The expectation is calculated from the frequencies of single crossover events.
+\end{itemize}
+\[\text{Coefficient of Coicidence} = \frac{\text{Observed \# of double recombinant chromosomes}}{\text{Expected \# of double recombinant chromosomes}}\]
+\[\text{Interference} = 1 - \text{ Coefficient of Coincidence}\]
+
+\section*{Population Genetics}
+Studies the frequencies of alleles and genotypes at the level of populations (natural or domesticated), where:
+\begin{itemize}
+	\item We may not be able to control crosses (genotypes of parents)
+	\item Genealogical relationships among individuals may be unknown
+\end{itemize}
+\textbf{Population:} The potentially interbreeding individuals in a given geographical area (they contribute to a common gene pool via their gametes)
+
+\subsection*{Population Genetics Questions}
+\begin{itemize}
+	\item How rapidly do allele frequencies change under selection?
+	\item Why do harmful alleles persist in a population?
+	\item Why are some single-gene disorders rare and others comparatively common?
+	\item Why are some single-gene disorders common in some populations but rare in others?
+\end{itemize}
+Allele frequencies in populations are determined by:
+\begin{itemize}
+	\item Mutation
+	\item Selection
+	\item Sampling Variance
+\end{itemize}
+
+\subsection*{The Hardy-Weinberg Principle}
+Recall: \textbf{If mating is random} and there are \textbf{two alleles} at a given locus with frequencies $p$ and $q$, the distribution of genotype frequencies in the population is given by the binomial expression:
+\[1 = (p + q)^2 = p^2 + 2pq + q^2\]
+This all works \textbf{if} certain assumptions are true \dots\\\\
+The \textbf{Gene Pool} refers to the total of all alleles at all genes in the population.
+\begin{itemize}
+	\item Let the probability of drawing a $A$ gamete (sperm or egg) be $p$
+	\item Let the probability of drawing a $a$ gamete (sperm or egg) be $q$
+\end{itemize}
+
+\subsubsection*{Hardy-Weinberg Assumptions}
+Hardy Weinberg gives the mathematical relationship between allele and genotype frequencies in an \textit{idealized} population
+\begin{enumerate}
+	\item Mating is random
+	\item All genotypes are equal in \underline{viability} and \underline{fertility} (no selection)
+	\item Mutation does not occur
+	\item Migration into the population does not occur (no gene flow)
+	\item The population is sufficiently large that sampling variation during reproduction does not cause random changes in allele frequency (no drift)
+\end{enumerate}
+
+\textbf{The Hardy-Weinberg Principle ties together the genotype frequencies}
+\begin{itemize}
+	\item For what allele frequencies is the frequency of heterozygotes maximal?  (0.5)
+	\item For very rare alleles, the proportion found in \textbf{heterozygotes} far exceeds the proportion in homozygotes
+\end{itemize}
+
+\subsection*{Sex Linkage on Recessive Frequency}
+\begin{itemize}
+	\item The \textbf{allele frequencies} in X-bearing male gametes are the same as in female gametes ($p$ and $q$).
+	\item The \textbf{allele frequencies} in male and female progeny are also the same ($p$ and $q$)
+	\item But the frequency of the \textbf{recessive phenotype} is \textbf{higher} in male progeny than female progeny.
+\end{itemize}
+
+For example, the \textit{G6PD} gene in humans is X-linked.  Recessive alleles cause haemolytic anemia that is exacerbated by diet (e.g., fava beans)
+\begin{itemize}
+	\item In a certain population, 0.0025 of newborn males are affected.
+	\item What is the frequency of disease alleles in that population?
+	\begin{itemize}
+	    \item Since males must inherit a Y chromosome from their father, the disease must come from the mother.  Therefore, the proportions must be $p = 1 - 0.0025 = 0.9975$, and $q = 0.0025$.
+    \end{itemize}
+    \item What proportion of newborn femals are carriers?
+    \begin{itemize}
+	    \item Since we have the values of $p$ and $q$, heterozygotes are given by $2pq$, so therefore $0.00249$ of newborn females are carriers.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Extending the Hardy-Weinberg Principle}
+We can use Hardy-Weniberg for more than two alleles.  If there are $n$ alleles, the genotype frequencies are given by the polynomial:
+\[1 = (p_1 + p_2 + p_3 + \cdots + p_n)^2\]
+For example, if there are three alleles, we have:
+\[1 = (p_1 + p_2 + p_3)^2 = p_1^2 + p_2^2 + p_3^2 + 2p_1 p_2 + 2p_1 p_3 + 2p_2 p_3\]
+
+\subsection*{Shortcuts for a Rare Recessive Trait}
+If the trait is less than 1 in 1000, then $p \approx 1$.  Therefore,
+\begin{itemize}
+	\item Frequency of carriers in the population: $2pq \approx 2(1)q = 2q$
+	\item Probability that a random \textit{unaffected} individual is a carrier: $2pq / (1 - q^2) \approx 2(1)q / 1 = 2q$
+	\item Probability that a random \textit{unaffected} individual is homozygous dominant: $p^2 / (1 - q^2) \approx p^2 / 1 = p^2$
+\end{itemize}
+
+
+
+\end{document}

@@ -1,0 +1,372 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{fit}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-750 Week 6 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\subsection*{Version Space}
+Given labeled data $D_L = \{(x_1, y_1), \cdots, (x_n, y_n)\}$
+\begin{itemize}
+	\item \textbf{Definition:} The \textbf{version space} is the set of hypotheses that are consistent with the current labeled training data $D_L$
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W6_1.png} 
+\end{center}
+
+\subsection*{Background}
+\textbf{Probably Approximately Correct (PAC) Learning}
+\begin{itemize}
+	\item In general, it is \textbf{impossible} to \textbf{guarantee} that any particular learning algorithm will \textbf{always} find the best model in the hypothesis space.
+	\begin{itemize}
+	    \item i.e., the one with the lowest \textbf{generalization error} (not the lowest training error)
+    \end{itemize}   
+    \item Informally, PAC learning considers scenarios where it is possible to provide a probabilistic guarantee that the learning algorithm will find a ``good'' model (i.e., close to optimal).
+    \item Concept class $\mathcal{C}$ is \textbf{PAC-learnable} by learning algorithm $A \::\: L, \mathcal{H} \rightarrow h$ if, $\forall c \in \mathcal{C}$ and $0 < \epsilon, \delta < 1/2$ and finite $m = |L|$
+    \[P(|R(h) - \hat{R}(h)| \leq \epsilon) \geq 1 - \delta\]
+    or equivalently, $P(|R(h) - \hat{R}(h)| > \epsilon) < \delta$
+    \item Concept class $\mathcal{C}$ is \textbf{efficiently PAC-learnable} if the above inequality holds and $m$ is polynomial in $1 / \epsilon$ and $1 / \delta$, and the algorithm returns hypothesis $h$ in time and space polynomial in $1 / \epsilon$ and $1 / \delta$
+    \item The `probably' in PAC refers to the $(1 - \delta)$; the `approximately' refers to the $\epsilon$.
+\end{itemize}
+PAC learning results let us do two useful things
+\begin{enumerate}
+	\item Derive formulas to bound the sample complexity (i.e., select $\epsilon$ and $\delta$ and determine $m$ - the minimum number of samples needed to guarantee that $P(|R(h) - \hat{R}(h)| \leq \epsilon) \geq 1 - \delta)$
+	\item Derive formulas to bound the \textbf{generalization error} with respect to the \textbf{training error}.  (i.e., select $m$ and $\delta$ and determine $\epsilon$ (the error bound))
+\end{enumerate}
+Note the precise form of the formulas will depend on any assumptions we make about $\mathcal{C} and \mathcal{H}$
+
+\subsection*{The CAL Algorithm}
+Key features:
+\begin{itemize}
+	\item It is a Type 1 algorithm (i.e., hypothesis elimination, picks points near decision boundary)
+	\item CAL is an active learning algorithm for binary classifiers
+	\item It can be used with any data access model
+	\item Guarantees
+	\begin{itemize}
+	    \item Under the assumptions of separable data and suitable choice of hypothesis class, CAL will converge to a perfect model
+	    \item The label complexity is $\Omega \left(\log \frac{1}{\epsilon}\right)$
+    \end{itemize}
+    \item The algorithms we will study next time are 'fancy' versions of CAL that come with better guarantees for label complexity.
+\end{itemize}
+Notation and Definitions:
+\begin{itemize}
+	\item Let $\mathcal{X}$ be an arbitrary domain
+	\item Let $\mathcal{Y} = \{0, 1\}$ be the set of binary labels
+	\item Let $\mathcal{D}$ be a probability distribution on $\mathcal{X}$
+	\item Let $\mathcal{H}$ be a hypothesis$^*$ class, $h \in \mathcal{H}, h \::\: \mathcal{X} \rightarrow \mathcal{Y}$
+	\item Let $\mathcal{S}$ be a set of labeled points in $\mathcal{X}$
+	\item Hypothesis $h \in \mathcal{H}$ is \textbf{consistent} with $S$ if it correctly labels \textbf{every} point in $S$.
+	\item The \textbf{version space} is the set of hypotehses consistent with $S$.
+\end{itemize}
+In the example below, $\mathcal{H}$ is the space of axis-aligned rectangles.  The illustrated rectangles are \textit{some} of the hypotheses in the version space
+\begin{center} 
+	\includegraphics*[width=0.4\textwidth]{W6_2.png} 
+\end{center}
+\[\mathcal{R}(S) = \{x \::\: \exists h_1, h_2 \in \mathcal{H}, \text{ consistent with $S$ and } h_1(x) \neq h_2(x)\}\]
+Notice that if we get the label for \textit{any} point in the disagreement region, we are \textbf{guaranteed} to be able to eliminate at least one hypothesis (and possibly many more)
+\begin{verbatim}
+Let H_0 = H be the initial set of hypothesis
+for i = 1, 2, ...
+    Get unlabeled point x_i in X (MQS, Pool-based, or Stream-based)
+    if (x_i in disagreement region):
+        y_i = oracle(x_i)
+        update version space: H_i = {h in H_{i-1}: h(x_i) = y_i}
+    else
+        H_i = H_{i - 1}
+\end{verbatim}
+Note that the version space shrinks over time (since updating version space is $\mathcal{H}_i = \mathcal{H}_{i - 1}$)
+\begin{itemize}
+	\item Unfortunately, we can't implement the conceptual version of CAL (unless $\mathcal{H}$ is finite.)
+\end{itemize}
+
+\subsection*{Problems with Conceptual CAL}
+\begin{enumerate}
+	\item How do we represent and update the version space?  The version space will, in general, contain an infinite number of models.
+	\item How do we detect whether $x_i$ is in the disagreement region?  That is, how do we determine whether there is \textit{any} pair of models in the version space disagree on $x_i$'s label?
+\end{enumerate}
+The 'real' version of CAL answers these questions using a clever idea: \textbf{Maintain the version space using two models.}
+\begin{itemize}
+	\item Use $S_i$ to construct two \textbf{consistent} models $h_s$ and $h_G$, that are the ``most specific'' ($h_s$) and ``most general'' ($h_g$) models in the version space, $V(S_i)$
+	\begin{itemize}
+	    \item $h_s$ is a model that assigns label $1$ to as few points in $x \in \mathcal{X}$ as possible (i.e., $h_s(x) = 1$), subject to being consistent with the points in $S_i$
+	    \item $h_G$ is a model that assigns label $1$ to as many points in $x \in \mathcal{X}$ as possible (i.e., $h_G(x) = 1$), subject to being consistent with the points in $S_i$
+    \end{itemize}
+    \item Notice that \textbf{if} we can construct and maintain $h_S$ and $h_G$, then it is easy to detect whether any given $x_i \in \mathcal{X}$ is in the disagreement
+    \item We simply test whether $h_S(x_i) \neq h_G(x_i)$.
+\end{itemize}
+
+\subsubsection*{Digression on Inductive Bias}
+\begin{itemize}
+	\item An inductive bias is a predisposition of a learning algorithm for some solutions over others.
+	\begin{itemize}
+	    \item Most learning algorithms inherently have at least some form of an inductive bias.  
+	    \begin{itemize}
+	        \item Preference for simple solutions over complex ones (Occam's razor)
+	        \item A tendency to choose solutions where the absolute values of the parameters remain small
+        \end{itemize}   
+    \end{itemize}
+    \item A most specific network, $h_S$, for a set of examples $S$ is one that classifies as positive those example points that are in fact positive and classifies as negative as much as possible of the rest of the domain
+    \begin{itemize}
+	    \item How? Explicitly add a new inductive bias to the backpropagation algorithm by penalizing the network for any part of the domain that it classifies as positive.
+	    \item That is, they add a bias that prefers specific concepts (hypotheses) over general ones.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{The Implicit Version of the CAL Algorithm}
+The `Two Faces' paper points out that there is an implicit version of the CAL algorithm that doesn't require neural nets or inductive biases
+\begin{itemize}
+	\item Suppose that when we are given $x \in \mathcal{X}$, we learn two \textbf{consistent} models
+	\begin{itemize}
+	    \item $h_s$ = Learn($S \cup \{(x, 0)\}$)
+	    \item $h_G$ = Learn($S \cup \{(x, 1)\}$)
+    \end{itemize}
+    \item Key observations
+    \begin{itemize}
+	    \item If $h_G$ is consistent with $S \cup \{(x, 1)\}$, and $h_S$ is consistent with $S \cup \{(x, 0)\}$, then $x$ must be in the disagreement region.
+	    \item If $h_G$ is not consistent with $S \cup \{(x, 1)\}$, then $x$'s true label must be 0.
+	    \item If $h_S$ is not consistent with $S \cup \{(x, 0)\}$, then $x$'s true label must be 1.
+    \end{itemize}
+\end{itemize}
+Note that this works because CAL assumes all data is separable, and therefore true labels can be \textit{inferred} if they are not consistent with either $h_G$ or $h_S$.  If the point is consistent with both, then it means the point is in the disagreement region, and therefore we ask the oracle for the label.
+
+\subsection*{Pseudocode of the Implicit Version}
+\begin{verbatim}
+Let S = {}
+For i = 1, 2, ...:
+    Get unlabeled point x_i in X.  (MQS, Pool-based, or Stream-based)
+    Let h_S = Learn(S + {(x, 0)})
+    Let h_G = Learn(S + {(x, 1)})
+    if h_S and h_G are both consistent with their respective training sets:
+        y_i = oracle(x_i)
+    else:
+        if h_S is not consistent with (S + {(x, 0)}):
+            y_i = 1
+        elif h_G is not consistent with (S + {(x, 1)}):
+            y_i = 0
+    S = S + {(x_i, y_i)}
+h = Learn(S)
+\end{verbatim}
+
+\subsection*{CAL Algorithm Guarantee}
+\begin{itemize}
+    \item The volume of $h_S$ is monotonically increasing
+    \item The volume of $h_G$ is monotonically decreasing
+    \item Thus, the algorithm is guaranteed to terminate when $h_S = h_G$ or, equivalently, when the volume of the disagreement region shrinks to zero
+    \begin{itemize}
+	    \item When that happens, you know that you have found the optimal model!
+    \end{itemize}    
+    \item Unfortunately, we can't prove an upper bound on how many labeled samples it will take to converge upon the optimal model (yet)
+\end{itemize}
+
+\subsubsection*{Aside: CAL vs Uncertainty Sampling vs QBC}
+\begin{itemize}
+	\item Notice that the disagreement region is defined with respect to a set of hypotheses
+	\begin{itemize}
+	    \item It is \textbf{not} defined with respect to any single hypothesis/model
+	    \item Do not confuse the disagreement region with uncertainty sampling
+    \end{itemize}
+	\item Also, recall that Query by committee (QBC) selects points based on disagreement, but
+	\begin{itemize}
+	    \item QBC quantifies disagreement (i.e., QBC is `agressive')
+	    \item CAL doesn't quantify disagreement (i.e., CAL is `mellow')
+	    \item The size of CAL's `committee' (i.e., the version space), is generally infinite
+    \end{itemize}
+\end{itemize}
+
+\subsection*{CAL Summary}
+\begin{itemize}
+	\item CAL is an active learning algorithm for binary classifiers
+	\item It is a Type 1 algorithm (i.e., hypothesis elimination)
+	\begin{itemize}
+	    \item The \textit{version space} is maintained by learning two models, $h_S$ and $h_G$
+	    \item CAL queries the oracle if $x_i$ is in the region of disagreement, otherwise it can correctly infer the true label
+    \end{itemize}
+    \item It is a mellow method (i.e., it doesn't look for maximally informative points)
+    \item CAL can be used with any data access model
+    \item Guarantee
+    \begin{itemize}
+	    \item Under the assumptions of separable data and suitable choice of hypothesis space/class, CAL will converge to a perfect model
+	    \item It can be shown that the label complexity is $\Omega(-\log \epsilon)$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Handling Non-Separable Data}
+\begin{itemize}
+	\item The CAL algorithm was noteworthy because it has some clever ideas and comes with a consistency guarantee
+	\begin{itemize}
+	    \item It will find the optimal model
+	    \item But it can only handle separable data
+    \end{itemize}
+	\item Can \textbf{any} active learning algorithm guarantee consistency on non-separable data?
+	\begin{itemize}
+	    \item Interestingly, the answer to that question was unknown until 2006 when the \textbf{Agnostic Active $(A^2)$ Learning Algorithm} was published
+	    \item In this context, ``agnostic'' means that the algorithm does not assume that $\mathcal{H}$ contains a perfect classifier, nor does it make any assumptions about the nature of any noise in the data.
+    \end{itemize}
+\end{itemize}
+
+\section*{The $A^2$ Algorithm}
+Key features
+\begin{itemize}
+	\item $A^2$ is an active learning algorithm for \textbf{binary classifiers}
+	\item It is a Type I algorithm (i.e., hypothesis elimination)
+	\item It can be used with any data access model
+	\item \textbf{It handles non-separable data}
+	\item Guarantees
+	\begin{itemize}
+	    \item $A^2$ will converge to the optimal model
+	    \item $A^2$ bounds the number of samples needed to reach the optimal model
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Intuition}
+\begin{itemize}
+	\item Consider an unknown binary function of the form $f \::\: [0, 1] \rightarrow \{-1, +1\}$.  $f$ maps a point on the unit interval to $+1$ or $-1$, but that is all we know about it.
+	\item Let's approximate $f$ by learning a \textbf{threshold function} of the form:
+	\[h_\theta (x) = \begin{cases} -1 & x \leq \theta \\ +1 & x > \theta \end{cases}\]
+    where $\theta$ is the \textbf{threshold parameter}
+    \item Our goal is to find the value of $\theta$ that minimizes the \textbf{true error}
+    \begin{itemize}
+	    \item The true error of model $h_\theta$ is:
+	    \[err(h_\theta) = P_{x \sim D}(h_\theta(x) \neq f(x))\]
+        where $D$ is some distribution over $[0, 1]$
+    \end{itemize}
+\end{itemize}
+Our initial hypothesis space is $\mathcal{H} = [0, 1]$.
+\begin{itemize}
+	\item The black curve illustrates the (unknown) true error rates for every possible choice of threshold, $\theta$.
+	\item We cannot compute the exact value of the true error using a finite set of labeled examples, for any choice of $\theta$!
+	\item The best we can do is to estimate the error and use that estimate to select the ``best'' choice of threshold, $\theta$.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W6_3.png} 
+\end{center}
+Suppose that we have an algorithm that, given a set of $m$ training instances and a choice of threshold, $\theta$, returns the \textbf{empirical error}
+\[\hat{err}(h_\theta) = \frac{1}{m} \sum_{i = 0}^m \mathbb{I}(h_\theta (x_i) \neq f(x_i))\]
+and a bound on the difference between the \textbf{true error} and the \textbf{empirical error}
+\[|err(h_\theta) - \hat{err}(h_\theta)| \leq \epsilon_\theta\]
+We still cannot compute the true error, for any given choice of $\theta$, but we do know that it must between the green lines.
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W6_4.png} 
+\end{center}
+Intuitively, the bound on the distance between the \textbf{true error} and the \textbf{empirical error} should decrease as we obtain more samples.  Thus, if we obtain more samples and re-estimate the empirical errors of the models in \textbf{version space}, we will also obtain tighter bounds, which can be used to eliminate even more hypotheses, in a recursive fashion
+\begin{itemize}
+	\item Let $\theta^{UB} = \argmin_\theta \hat{err}(h_\theta) + \epsilon_\theta$
+	\item Let $\theta^{LB} = \argmin_\theta \hat{err}(h_\theta) - \epsilon_\theta$
+    \item Let $UB = \hat{err}(h_{\theta^{UB}}) + \epsilon_{\theta^{UB}}$ be the least upper bound in the current hypothesis space
+    \item Let $LB = \hat{err}(h_{\theta^{LB}}) + \epsilon_{\theta^{LB}}$ be the least lower bound in the current hypothesis space
+\end{itemize}
+Notice that if $UB - LB$ ever becomes really small, we can stop and return $\theta^{UB}$, because we know that $\theta^{UB}$ must be close to optimal, and it has the best worst-case behavior.  Similarly, if the disagreement region ever becomes really small, we can stop and return $\theta^{UB}$, because we know the probability of a random point being in the disagreement region is very small, and $\theta^{UB}$ has the best worst-case behavior.
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W6_5.png} 
+\end{center}
+
+\subsubsection*{Aside: Computing Upper and Lower Bounds}
+\begin{itemize}
+	\item Unfortunately, we cannot compute the \textbf{exact} upper and lower error bounds for an arbitrary model, but we can do something almost as good
+	\item We can compute \textbf{generalization bounds}
+	\begin{itemize}
+	    \item It is possible to guarantee that:
+	    \[|err(h_\theta) - \hat{err}(h_\theta)| \leq \epsilon_\theta,\quad \text{with probability at least }(1 - \delta)\]
+        if $h$ is trained on at least $m$ independent and identically distributed samples
+        \item $m$ is a function of the hypothesis class and the values of $\epsilon$ and $\delta$ (but we get to select the values of $\epsilon$ and $\delta$!)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{$A^2$ Algorithm: Simplified Version}
+\begin{itemize}
+	\item Let $LB(m, h, \delta)$ be the lower bound on the true error of model $h$ trained on $m$ samples and with user-specified $0 < \delta < 0.5$
+	\item Let $UB(m, h, \delta)$ be the upper bound on the true error of model $h$ trained on $m$ samples and with user-specified $0 < \delta < 0.5$
+	\item Let $Disagree(\mathcal{H}_i, D) = P_{x \sim D} (\exists h, h' \in \mathcal{H} \::\: h(x) \neq h'(x))$ be the volume of the \textbf{disagreement region}, measured as the probability that there are at least two models that would give different labels to an instance $x$ drawn from sampling distribution $D$.
+    \item Let $Bound(\mathcal{H}_i, D) = Disagree(\mathcal{H}_i, D) \cdot \left(\min_{h \in \mathcal{H}_i} UB(m, h, \delta) - \min_{h \in \mathcal{H}_i} LB(m, h, \delta)\right)$ be a bound on the error rate of the current version, $\mathcal{H}_i$
+\end{itemize}
+
+\subsection*{$A^2$ Guarantees}
+\begin{itemize}
+	\item Convergence: It will return an $\epsilon$-optimal model.  That is, if the optimal model in $\mathcal{H}$ achieves error $\eta$, then $A^2$ will return a model $h$ with true error $err(h)$ such that $\eta \leq err(h_\theta) \leq \eta + \epsilon$ with probability at least $1 - \delta$
+	\item Sample Complexity:
+	\begin{itemize}
+	    \item If the amount of noise is ``small'', then it is possible to learn an $\epsilon$-optimal model using only $O(\log \frac{1}{\epsilon})$ samples
+	    \item If the amount of noise is ``large'' the algorithm's label complexity is never much worse than standard supervised learning (i.e., passive learning)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Limitations of $A^2$ Algorithm}
+\begin{itemize}
+	\item If $\mathcal{H}$ is infinite, then you can't compute any of the following, exactly:
+	\begin{itemize}
+	    \item $Disagree(\mathcal{H}, D)$
+	    \item $Bound(\mathcal{H}, D)$
+	    \item $\mathcal{H}' = \{h \in \mathcal{H} \::\: LB(m, h, \delta) \leq \min_{h' \in \mathcal{H}} UB(m, h', \delta)\}$
+    \end{itemize}
+    \item In practice, you need to resort to sampling models from $\mathcal{H}$ to approximate these things, which can be expensive
+\end{itemize}
+
+\section*{The DHM Algorithm}
+\begin{itemize}
+	\item Key Features
+	\begin{itemize}
+	    \item DHM is an active learning algorithm for binary classifiers
+	    \item It is a Type I algorithm (i.e., hypothesis elimination)
+	    \item It can be used with any data access model
+	    \item It handles non-separable data
+    \end{itemize}
+	\item Guarantees
+	\begin{itemize}
+	    \item DHM will converge to the optimal model
+	    \item DHM bounds the number of samples needed to reach the optimal model
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Architecture}
+\begin{itemize}
+	\item DHM maintains two sets, $S$ and $T$
+	\begin{itemize}
+	    \item $T$ contains points labeled by the oracle
+	    \item $S$ contains points with inferred labels
+	    \begin{itemize}
+	        \item Note: Unlike CAL, the points in $S$ \textbf{may be mislabeled}
+        \end{itemize}
+    \end{itemize}
+    \item DHM uses two techniques for inferring labels
+    \begin{itemize}
+	    \item The first technique is almost identical to CAL
+	    \item The second technique estimates the difference in the \textbf{generalization bounds} between the two models (a bit like $A^2$)
+	    \begin{itemize}
+	        \item If this difference is ``big enough'', we can infer the label.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+
+\end{document}

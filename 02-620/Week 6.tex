@@ -1,0 +1,171 @@
+% document formatting 
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 6 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Support Vector Machines}
+\subsection*{Generative vs. Discriminative Classifiers}
+\begin{itemize}
+	\item Training classifiers involves estimating $f \::\: X \rightarrow Y$ or $P(Y | X)$
+	\item Generative classifiers (e.g., Naive Bayes)
+	\begin{itemize}
+	    \item Model and learn $P(Y, X) = P(X | Y) P(Y)$
+	    \item Derive $P(Y | X)$ from $P(Y, X)$ using Bayes rule
+    \end{itemize}
+    \item Discriminative classifiers (e.g., logistic regression)
+    \begin{itemize}
+	    \item Model $P(Y | X)$ directly
+    \end{itemize}
+    \item SVM is
+    \begin{itemize}
+	    \item Another discriminative classifier
+	    \item Non-probabilistic
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Recap: Linear/Logistic Classifier}
+Recall our linear regression classifiers colassify $x = (x_1, x_2)$ into $y = 0$ or $y = 1$.
+\begin{itemize}
+	\item Our objective function is
+	\[P(Y = 1 | x; \theta) = \frac{1}{1 + e^{-\left(\theta_0 + \sum_{j = 1}^D \theta_j x_j\right)}}\]
+    \item The decision boundary is
+    \[\theta_0 + \sum_{j = 1}^D \theta_j x_j\]
+    \item Many different optimal classifiers (decision boundaries) are possible, as long as they divide the data correctly
+\end{itemize}
+Alternative criterion: \textbf{Max-margin principle}
+\begin{itemize}
+	\item Instead of fitting all points, focus on boundary points
+	\item Learn a boundary that leads to the \textbf{largest margin} from both sets of points
+\end{itemize}
+The margin is a set of \textbf{parallel lines} on each side of the decision boundary, that are parallel to the decision boundary, and separate the two classes by the widest margin possible.
+\begin{itemize}
+	\item The sides of the boundaries are referred to as \textbf{support vectors}.
+	\item The distance between the boundaries are represented by $M$, or the width of the margin.
+\end{itemize}
+
+\subsection*{Support Vector Machines: Model and Learning}
+\textbf{Data}
+\begin{itemize}
+	\item $N$ data points with $D$ features: $x_i \in \mathbb{R}^D$
+	\item Labels: $y_i \in \{-1, 1\}$
+\end{itemize}
+\textbf{Model}
+\begin{itemize}
+	\item Linear model:
+	\[y_i = \begin{cases} 1 & w^T x + b > 0 \\ -1 & w^Tx + b < 0 \end{cases}\]
+    \item Parameters: $\theta = (b, w_1, \dots, w_D)$
+\end{itemize}
+\textbf{Learning}
+\begin{itemize}
+	\item Max margin principle: maximize the distance between the two lines (hyperplanes) subject to correct classification of all points.
+	\item For the hard-margin version: $\argmin_{w, b} \frac{w^T w}{2}$, such that $y_i (w^T x_i + b) \geq 1$ for all $i$
+	\item For the soft-margin version: $\argmin_{w, b} \frac{w^T w}{2} + C \sum_{i = 1}^N \epsilon_i$ such that $y_i(w^T x_i + b) \geq 1 - \epsilon_i$, and $\epsilon_i \geq 0$ for all $i$
+\end{itemize}
+
+\subsection*{Support Vector Machine with Hard Margin}
+We can use the following classification:
+\begin{itemize}
+	\item $y = 1$ if $w'x + b \geq 1$
+	\item $y = 0$ if $w'x + b \leq -1$
+	\item Undefined if $-1 \leq w'x + b \leq 1$
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W6_1.png} 
+\end{center}
+Let's define the width of the margin to be $M$.  How can we encode our goal of maximizing $M$ in terms of our parameters, ($w$ and $b$) and training data?
+\begin{itemize}
+	\item It turns out that maximizing the margin $M$ is the same as minimizing the inverse of $M$.
+	\item The distance between the two hyperplanes $w^Tx + b = 1$ and $w^T x + b = -1$ is $\frac{2}{\sqrt{w^T w}}$.  Therefore, we can minimize $\left(\frac{w^T w}{2}\right)$
+	\item We still have the constraints:
+	\begin{itemize}
+	    \item For all $x$ in class $+1$, $w'x + b \geq 1$
+	    \item For all $x$ in class $-1$, $w'x + b \leq -1$
+    \end{itemize}
+    \item A total of $N$ constraints if we have $N$ input samples
+\end{itemize}
+
+\subsection*{SVM as Quadratic Programming (QP)}
+Our objective to minimize $\frac{w^T w}{2}$ is a quadratic function of $w$.  The constraints $w'x + b \leq -1$ and $w'x + b \geq 1$ are linear.
+\begin{itemize}
+	\item We can formulate this problem as a quadratic programming problem, and just plug it into a quadratic programming solver.
+\end{itemize}
+Note: A quadratic programming solver is similar to a linear programming solver, except a degree higher.
+
+\subsection*{Support Vector Machine with Soft Margin}
+What if our data is \textit{not linearly separable}?
+\begin{itemize}
+	\item Most of the time, our data will have noise or outliers.
+	\item Instead of just maximizing the margin, what if we minimize the training data error as well?
+	\begin{itemize}
+	    \item Instead of minimizing the number of misclassified points, we can minimize the \textit{distance} between these points and their correct plane
+    \end{itemize}
+    \item We can write the new optimization problem as
+    \[min_w \frac{w' w}{2} + \sum_{i = 1}^n C \epsilon_i\]
+    subject to the following constraints:
+    \begin{itemize}
+	    \item For all $x$ in class $+1$:
+	    \[w'x + b \geq 1 - \epsilon_i\]
+        \item For all $x$ in class $-1$:
+        \[w'x + b \leq -1 + \epsilon_i\]
+    \end{itemize}
+    \item We also want $\epsilon_i \geq 0$.  We now have a total of $2N$ constraints.
+\end{itemize}
+
+\subsection*{Reframing the Problem}
+\begin{itemize}
+	\item Instead of solving these quadratic programming problems directly, we will solve a dual formulation of the SVM optimization problem.
+	\item The main reason for switching to this type of representation is that it would allow us to identify \textbf{support vectors} and to use a neat trick that will make our lives easier (and the runtime faster!)
+\end{itemize}
+
+\subsection*{Dual Formulation of QP: A toy example}
+\begin{itemize}
+	\item In general, Lagrange multipliers can be applied to turn the original primal problem into a dual problem.
+	\item Primal problem: $\min_x x^2$ such that $x \geq b$.  The primal parameter is $x$.
+	\item Lagrangian: $\max_\alpha \min_x x^2 + \alpha(b - x)$ such that $\alpha \geq 0$.  $\alpha$ is a Lagrange multiplier associated with each constraint.
+\end{itemize}
+\begin{align*}
+    \frac{\dd}{\dd x} x^2 + \alpha(b - x) &= 0 \\
+    x &= \alpha / 2 \\
+    \alpha^2 / 4 - \alpha (\alpha / 2 - b) &= -\alpha^2 / 4 + \alpha b
+\end{align*}
+We can then write the Lagrangian as:
+\[\max_\alpha -\alpha^2 / 4 + \alpha b\]
+such that $\alpha \geq 0$.  The dual parameter is $\alpha$
+
+
+
+
+
+\end{document}
