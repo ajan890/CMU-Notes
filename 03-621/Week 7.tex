@@ -1,0 +1,252 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 7}}
+
+\title{03-621 Week 7 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\subsection*{Two Types of Non-random Mating}
+\begin{enumerate}
+	\item Assortative mating:
+	\begin{itemize}
+	    \item Negative (similar genotypes tend not to mate): increases proportion of heterozygotes
+	    \item Positive (similar genotypes mate preferentially): reduces the proportion of heterozygotes
+    \end{itemize}
+	\item Inbreeding
+	\begin{itemize}
+	    \item Mating between relatives
+	    \item Always \textbf{reduces} the proportion of heterozygotes
+    \end{itemize}
+\end{enumerate}
+
+If heterozygotes breed in the inbreeding case, there is always a 25\% chance of homozygous dominant progeny and a 25\% chance of homozygous recessive progeny
+\begin{itemize}
+	\item The result is that the population of heterozygotes will decrease since only 50\% of progeny would be heterozygotes.
+\end{itemize}
+How can we quantitate the effect of different degrees of inbreeding and make predictions in the difference it causes in homozygous populations?
+\begin{itemize}
+	\item Define an inbreeding coefficient, $F$.
+\end{itemize}
+
+\subsection*{Inbreeding Coefficient, $F$}
+We can define the inbreeding coefficient $F$ as the \textbf{prior probability} of identity by descent.
+\begin{itemize}
+	\item $F$ for an \textbf{individual} is the probability that both of their alleles are \textbf{identical by descent} (the exact same allele from the same ancestor).
+\end{itemize}
+\subsubsection*{Example: Calculating $F$ for an individual}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W7_1.png} \\
+    \includegraphics*[width=0.8\textwidth]{W7_2.png}
+\end{center}
+Note that the inbreeding coefficient does \textbf{not} tell us whether the child is homozygous dominant or homozygous recessive.  It only describes the chance the child is homozygous.  As a result,
+\begin{itemize}
+	\item There are two possibilities for identity by descent.  If the two alleles are $N$ and $D$, then 
+	\begin{align*}
+        P(NN) &= p F_I \\
+        P(DD) &= q F_I
+    \end{align*}
+    \item where $p$ and $q$ are the allele frequencies.
+\end{itemize}
+
+\subsection*{Previous history}
+We can incorporate previous history of inbreeding to account for the probability that the alleles in $A$ are already \textbf{identical by descent} from a previous ancestor
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W7_3.png} 
+\end{center}
+\subsubsection*{Example}
+Calculate $F_I$ assuming $A$ and $B$ each have an inbreeding coefficient of $0.05$.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W7_4.png} 
+\end{center}
+\[\left(\frac{1}{2}\right)^5 (1 + F_A) + \left(\frac{1}{2}\right)^5 (1 + F_B) \approx 0.0656\]
+
+\subsection*{Total Probabilities of Homozygous Genotypes}
+\[P(DD) = q^2 (1 - F_I) + q F_I\]
+\begin{itemize}
+	\item $q^2$: probability of DD homozygote if mating were random
+	\item $q^2 (1 - F_I)$: probability of DD homozygote that is \textit{not} identical by descent
+	\item $q F_I$: probability of DD homozygote that is identical by descent
+\end{itemize}
+This can rearrange to $P(DD) = q^2 + pq F_I$
+
+\subsection*{Total Probabilities of Heterozygous Genotypes}
+\[P(ND) = 2pq (1 - F)\]
+We can derive this by the following:
+\begin{align*}
+    P(ND) &= 1 - P(NN) - P(DD) \\
+    &= 1 - [p^2 + pqF] - [q^2 + pqF] \\
+    &= 2pq (1 - F)
+\end{align*}
+Therefore, $F$ can also be defined as the fractional reduction in heterozygote probability.
+
+\subsection*{Summary}
+\begin{itemize}
+	\item Frequency of $DD$ is NOT $F$
+	\item Frequency of $DD = q^2 (1 - F) + qF$
+	\item $F$ = probability of identity by descent (includes both $DD$ and $NN$)
+	\item Probability of identical $DD = qF$
+	\item Probability of identical $NN = pF$
+\end{itemize}
+
+\subsection*{Quantifying inbreeding at the population level}
+Define $H_I$ as the \textit{observed} frequency of Heterozygotes in a population with inbreeding.  The \textbf{fractional reduction}, $F$ of heterozygotes in this population relative to the expectation with random mating is thus:
+\begin{align*}
+    F_p &= \frac{(2pq - H_I)}{2pq}
+    H_I &= 2pq (1 - F_p)
+\end{align*}
+\begin{itemize}
+	\item $0 \leq F \leq 1$.  $F = 0$ means no inbreeding.  $F = 1$ means full inbreeding.
+	\item $0 \leq H_I \leq 2pq$.  $H_I = 0$ means full inbreeding.  $H_I = 2pq$ means no inbreeding.
+\end{itemize}
+The fractional reduction of heterozygotes is equal to the probability of identity by descent.
+
+\section*{Statistics for Inbreeding}
+How do we know whether mating is random in a particular population?
+\begin{enumerate}
+	\item Make a model
+	\item Test its predictions against actual data
+\end{enumerate}
+We have a quantitative model: the Hardy Weinberg Principle
+\[1 = (p + q)^2 = p^2 + 2pq + q^2\]
+We can use $\chi^2$ to compare!
+
+\subsection*{Using Chi-Squared to Check for Inbreeding}
+\begin{enumerate}
+	\item Find observed allele frequencies.
+	\begin{itemize}
+	    \item From observed counts, count the proportion of dominant and recessive alleles
+    \end{itemize}
+	\item Find expected allele frequencies.
+	\begin{itemize}
+	    \item Take the proportions observed in the population, and find the expected counts of dominant, heterozygous, recessive individuals.
+    \end{itemize}
+	\item Run Chi-squared on the three categories (a/a, a/b, b/b). 
+	\begin{itemize}
+	    \item Our dof = 1.  $N = 3$, but we have two constraints.
+	    \item The sum of all category frequencies = 1.
+	    \item The sum of all allele frequencies = 1. 
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{How to Determine if a Deviation from H-W is Due to Inbreeding}
+If an observed deviation from predicted HW genotype proportions is due to inbreeding: 
+\begin{itemize}
+	\item The departure \textbf{must} be a \textbf{reduction} of heterozygote frequency:
+	\[H_I < 2pq\]
+    \item The missing heterozygotes ($2pq - H_0$) should be \textbf{distributed equally} between the two types of homozygotes so that:
+    \begin{align*}
+        \text{freq}(AA) &= p^2 + \frac{1}{2} (2pq - H_I) \\
+        \text{freq}(aa) &= q^2 + \frac{1}{2} (2pq - H_I)
+    \end{align*}
+\end{itemize}
+
+\subsection*{Example: CCR5$Delta$32 Allele in European Population}
+For HIV to invade a T cell, it must interact with a CD4 receptor and a CCR5 co-receptor.
+\begin{itemize}
+	\item The CCR5$\Delta$32 allele was discovered among individuals who remain uninfected despite exposure to HIV-1.
+	\item There is a region deleted in the $\Delta$32 allele such that it causes a frameshift.
+	\item As a result, the CCR5+ and CD4 receptors on the T cell are not near each other like they normally are.
+	\item HIV-1 is unable to bind, and therefore it does not interact with the T cells.
+\end{itemize}
+
+\subsection*{Some Questions of Interest about CCR5$\Delta$32}
+\begin{itemize}
+	\item How common is the CCR5$\Delta$32 allele?
+	\item Will its frequency increase over time?  (How much, how fast?)
+	\item What is the current distribution among human populations\dots and why?
+\end{itemize}
+It turns out that if we do the random mating/inbreeding check with the CCR5 gene, it turns out negative.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Genotype & Observed \# & Expected Frequency & Expected \# \\ \hline
+    $+/+$ & 795 & $0.890^2 = 0.792$ & 792 \\ 
+    $+/\Delta 32$ & 190 & $2(0.890)(0.110) = 0.196$ & 196 \\
+    $\Delta 32 / \Delta 32$ & 15 & $0.110^2 = 0.0121$ & 12 \\ \hline
+\end{tabular}
+\end{center}
+\[\chi^2 = \frac{(795 - 792)^2}{792} + \frac{(190 - 196)^2}{196} + \frac{(15 - 12)^2}{12} = 0.945\]
+With a degree of freedom of 1, this gives, $0.1 < P(\chi^2) < 0.5$.  Way higher than the rejection threshold ($0.05$)!
+\begin{itemize}
+	\item In this case, what accounts for its current distribution among human populations?
+	\item Will its frequency increase over time?
+\end{itemize}
+Critical factors:
+\begin{itemize}
+	\item How great is the advantage due to HIV-1 resistance?
+	\item Is CCR5$\Delta$32 HIV-1 resistance counterbalanced by the disadvantage with respect to bacterial infection?
+	\item Which genotype has the greatest \textbf{net} viability/fertility:
+	\begin{center}
+        +/+, $\Delta$32/+, or $\Delta$32/$\Delta$32?
+    \end{center}
+    \item What is the magnitude of the difference?
+\end{itemize}
+
+\subsection*{Measure of Diversity in a Population: Expected Heterozygosity ($H_E$)}
+\[H_E = 1 - \sum_{i = 1}^n p_i^2\]
+Where $p_i$ is the frequency of the $i$-th allele in the population
+\begin{itemize}
+	\item (High diversity) System in H-W equilibrium, with \textbf{many, equally frequent} alleles:
+	\begin{center}
+        $p_i^2 \rightarrow 0$.  Therefore, $H_E \rightarrow 1$.  (each allele is mostly in heterozygotes)
+    \end{center}
+    \item (Medium diversity) System in H-W equilibrium with \textbf{two, equally frequent} alleles:
+    \begin{center}
+        $p_1^2 + p_2^2 = 0.5$, so $H_E = 0.5$.  (half of each allele is in heterozygotes)
+    \end{center}
+    \item (Low diversity) As allele frequencies become increasingly skewed:
+    \begin{center}
+        $\sum p_i^2 \rightarrow 1$,  Therefore, $H_E \rightarrow 0$.  (no heterozygotes)
+    \end{center}
+\end{itemize}
+
+\subsection*{Natural Selection Forces that Shape Diversity}
+\begin{itemize}
+	\item \textbf{Negative Selection (Purifying Selection)}
+	\begin{itemize}
+	    \item Alleles that reduce survival and/or reproductive success
+	    \item Prevents allele from spreading (if new mutation) or reduces its frequency if already established
+    \end{itemize}
+	\item \textbf{Positive Selection}
+	\begin{itemize}
+	    \item Alleles that increase survival and/or reproductive success
+	    \item Increases frequency of allele and promotes its spread through the population
+    \end{itemize}
+	\item \textbf{Balancing Selection}
+	\begin{itemize}
+	    \item When heterozygotes have better survival and/or reproduction than either homozygote
+	    \item Maintains multiple allels in the population at specific relative frequencies
+    \end{itemize}
+\end{itemize}
+
+
+\end{document}

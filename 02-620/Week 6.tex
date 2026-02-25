@@ -23,6 +23,7 @@
 \usepackage{alphabeta}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\dd}{\text{d}}
 
 \graphicspath{{./assets/images/}}
 
@@ -162,9 +163,160 @@ What if our data is \textit{not linearly separable}?
 \end{align*}
 We can then write the Lagrangian as:
 \[\max_\alpha -\alpha^2 / 4 + \alpha b\]
-such that $\alpha \geq 0$.  The dual parameter is $\alpha$
+such that $\alpha \geq 0$.  This is the dual problem.  The dual parameter is $\alpha$
 
+\subsection*{Dual Formulation of QP: SVM with hard-margin}
+Primal formulation:
+\[\min_w \frac{w^T w}{2}\]
+such that $(w^T x_i + b) y_i \geq 1$, for all $i$.\\\\
+This can be written as the Lagrangian:
+\[\max_\alpha \min_{w, b} \frac{w^T w}{2} + \sum_{i = 1}^N \alpha_i [1 - (w^T x_i + b) y_i]\]
+such that $\alpha_i \geq 0$, for all $i$.\\\\
+Finally, converting to the dual formulation,
+\[\max_{\alpha_i} \sum_{i = 1}^N \alpha_i - \frac{1}{2} \sum_{i = 1}^N \sum_{j = 1}^N \alpha_i \alpha_j y_i y_j x_i^T x_j\]
+where $\sum_{i = 1}^N \alpha_i y_i = 0$, and $\alpha_i \geq 0$, for all $i$.\\\\
+If we differentiate with respect to $w, b$, $w = \sum_i \alpha_i x_i y_i$, this tells us about support vectors.
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W6_2.png} 
+\end{center}
+\[w^T x_j + b = \sum_{i = 1}^N \alpha_i y_i x_i^T x_j + b\]
+To evaluate a new sample $x_j$, we need to compute: dot product with support vectors in the training data.
 
+\subsection*{Dual Formulation of QP: SVM with soft-margin}
+Primal formulation:
+\[\min_{w, b} \frac{w^T w}{2} + C \sum_{i = 1}^N \epsilon_i\]
+such that $(w^T x_i + b) y_i \geq 1 - \epsilon_i$, for all $i$.  $\epsilon_i \geq 0$, for all $i$.\\\\
+Dual formulation:
+\[\max_{\alpha_i} \sum_{i = 1}^N \alpha_i - \frac{1}{2} \sum_{i = 1}^N \sum_{j = 1}^N \alpha_i \alpha_j y_i y_j x_i^T x_j\]
+$\sum_{i = 1}^N \alpha_i y_i = 0$, and $C \geq \alpha_i \geq 0$, for all $i$.  The only difference is that the $\alpha_i$'s are now bounded.
+
+\subsection*{Summary}
+Support vector machine:
+\begin{itemize}
+	\item Instead of fitting all points, focus on boundary points
+	\item Learn a boundary that leads to the largest margin from both sets of points
+\end{itemize}
+SVM Primal vs. Dual formulations:
+\begin{itemize}
+	\item Primal formulation:
+	\[\min_w \frac{w^T w}{2} \quad \text{s.t. } (w^T x_i + b) y_i \geq 1, \forall i\]
+    \item Dual formulation:
+    \[\max_{\alpha_i} \sum_{i = 1}^N \alpha_i - \frac{1}{2} \sum_{i = 1}^N \sum_{j = 1}^N \alpha_i \alpha_j y_i y_j x_i^T x_j,\quad \text{s.t. } \sum_{i = 1}^N \alpha_i y_i = 0, \alpha_i \geq 0, \forall i\]
+\end{itemize}
+\begin{center}
+\begin{tabular}{r|c|c}
+    & \textbf{Primal Formulation} & \textbf{Dual Formulation} \\ \hline
+    Parameters & $w, b$ & $\alpha_i$ \\
+    Number of Parameters & \# features & \# training samples, $N$ \\
+    What parameters mean & Decision boundary margin & Support vectors $\alpha_i$ \\
+    How are parameters related? & & $w = \sum_i \alpha_i x_i y_i$
+\end{tabular}
+\end{center}
+
+\subsection*{Computational Cost for Testing}
+\begin{itemize}
+	\item During testing, the computational costs using primal vs. dual representations are:
+	\begin{itemize}
+	    \item Primal: $y_{new} = \text{sign}(w^T x_{new} + b)$
+	    \item Dual: $y_{new} = \text{sign}\left(\sum_{i = 1}^n \alpha_i y_i x_i' x_{new} + b\right)$
+    \end{itemize}
+    \item If one uses dual parameters to make predictions, the prediction depends only on the support vectors, but this is not explicitly represented in the primal.
+\end{itemize}
+Runtime notes:
+\begin{itemize}
+	\item $w^T x_{new}$ takes $D$ operations, for $D$ features.
+	\item $x_i' x_{new}$ takes $Dr$ operations, where $r$ is the number of support vectors, $(\alpha_i > 0)$.  This is a dot product with all training samples.
+\end{itemize}
+
+\subsection*{Dual SVM - Interpretation for linearly non-separable case}
+In the equation
+\[w = \sum_i \alpha_i x_i y_i\]
+Points on the wrong side of the margin (or between the margins) would have $\alpha_i$'s that are not zero.
+
+\subsection*{Non-linear SVM: Kernel Trick}
+Consider a 1D number line.  Positions are labeled with classes.  
+\begin{verbatim}
+--------(1)-----(1)--------------(2)---------(2)--------------
+\end{verbatim}
+A SVM can correctly classify this data by having the decision boundary down the middle.  But what about the next one?
+\begin{verbatim}
+--------(1)-----(1)--------------(2)---------(2)--------(1)---
+\end{verbatim}
+Normally, an SVM cannot classify this data.  However, what if we mapped this number line onto a 2D plane, following the curve $x^2$?
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W6_3.png} 
+\end{center}
+By transforming the input space from $x$ to a higher dimensional space $\phi(x) = (x, x^2)$, the training set is now linearly separable.
+
+\subsection*{Classifying Based on 2D Input}
+The original input space $x$ can be mapped to some higher dimensional feature space $\phi(x)$ where the training set is separable:
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W6_4.png} 
+\end{center}
+\begin{itemize}
+	\item Original problem: $\max_{\alpha_i} \sum_{i = 1}^N \alpha_i - \frac{1}{2} \sum_{i = 1}^N \sum_{j = 1}^N \alpha_i \alpha_j y_i y_j x_i^T x_j$ such that $\sum_{i = 1}^N \alpha_i y_i = 0$, and $\alpha_i \geq 0$, for all $i$.
+	\item After input transformation: $\max_{\alpha_i} \sum_{i = 1}^N \alpha_i - \frac{1}{2} \sum_{i = 1}^N \sum_{j = 1}^N \alpha_i \alpha_j y_i y_j \textcolor{red}{\phi(x_i)^T \phi(x_j)}$ such that $\sum_{i = 1}^N \alpha_i y_i = 0$, and $\alpha_i \geq 0$, for all $i$.
+	\begin{itemize}
+	    \item Red part is the kernek, $\kappa$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Transformation of Inputs}
+\begin{itemize}
+	\item Possible problems
+	\begin{itemize}
+	    \item High computation burden due to high-dimensionality
+	    \item Many more parameters
+    \end{itemize}
+	\item SVM solves these two issues simultaneously
+	\begin{itemize}
+	    \item ``Kernel tricks'' for efficient computation
+	    \item Dual formulation only assigns parameters to samples, not features
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Kernel Trick}
+\begin{itemize}
+	\item Consider feature $x = [x_1, x_2]$
+	\item Map it to a 6-dimensional space
+	\[\phi(x) = [1, \sqrt{2} x_1, \sqrt{2} x_2, x_1^2, x_2^2, \sqrt{2} x_1 x_2]^T\]
+    \item Compute $\phi(x)^T \phi(x')$: what's the time complexity?
+    \item Kernel:
+    \[\phi(x)^T \phi(x') = \kappa(x, x') = (x^T x' + 1)^2\]
+\end{itemize}
+
+\subsection*{Why do SVMs work?}
+\begin{itemize}
+	\item If we are using huge features spaces (via kernels), why don't we overfit the data?
+	\begin{itemize}
+	    \item Number of parameters remains the same (and most are set to 0)
+	    \item While we have a lot of input values, at the end we only care about the support vectors and these are usually a small group of samples
+	    \item The minimization (or the maximizing of the margin) function acts as a sort of regularization term leading to reduced overfitting
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Multi-class Classification with SVMs}
+\begin{itemize}
+	\item What if we have data from more than two classes?
+	\item Most common solution: One vs. all (Create a classifier for each class against all other data)
+\end{itemize}
+
+\subsection*{Separable vs. Non-separable cases}
+\begin{itemize}
+	\item In separable cases, we minimize $\frac{w^T w}{2}$ subject to the constraints $(w' x_i + b) y_i \geq 1$.
+	\item For the non-separable case, we minimize $\frac{w^T w}{2} + C \sum_{i = 1}^N \epsilon_i$ subject to the constraints $(w' x_i + b) y_i \geq 1 - \epsilon_i$
+\end{itemize}
+
+\subsection*{Error Function for SVM}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W6_5.png} 
+\end{center}
+\begin{itemize}
+	\item Let $t = (w' x_i + b) y_i$.  $t > 0$ for both positive and negative training samples if classified correctly.
+	\item Ideal classifier:
+	\[\text{Error}(t) = \begin{cases} 0 & t > 0 \\ 1 & t < 0 \end{cases}\]
+    \item SVM: Error$(t) = [1 - t]_{+}$.  The $[]_+$ part denotes the positive part.  (Hinge Loss)
+\end{itemize}
 
 
 
