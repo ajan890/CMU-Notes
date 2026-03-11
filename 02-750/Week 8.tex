@@ -1,0 +1,296 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{fit}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-750 Week 8 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{PLAL Algorithm}
+Key Features:
+\begin{itemize}
+	\item PLAL is an algorithm for learning \textbf{binary and multiclass classifiers}
+	\item It is a Type II algorithm (i.e., cluster exploitation)
+	\item It is intended to be used with pool-based data access model
+	\item It handles non-separable data
+	\item It is mellow
+	\item Guarantees:
+	\begin{itemize}
+	    \item PLAL will converge to near-optimal labelings
+	    \item PLAL bounds the number of samples needed to reach near-optimal labeling
+    \end{itemize}
+\end{itemize}
+Model
+\begin{itemize}
+	\item Classification models encode \textbf{piecewise constant functions}
+	\item The theorems associated with PLAL are based on assumptions about the properties of a smooth approximation of the piecewise constant function
+	\begin{itemize}
+	    \item Note: PLAL does not actually construct the smooth approximation
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W8_1.png} 
+\end{center}
+
+\subsection*{Lipschitz Continuity}
+PLAL assumes that the data are ``Probabilistic Lipschitz''
+\begin{itemize}
+	\item Informally, this means that the labels change smoothly nearly everywhere throughout the input domain, $\mathcal{X}$, which guarantees that the instances within each cluster will \textbf{probably} have the same label
+\end{itemize}
+A Lipschitz continuous function is one where rate of change of the function is bounded by a constant, everywhere.
+\[|f(x) - f(x')| \leq 1 / \lambda |x - x'|, \forall x, x' \in [l, u]; \lambda > 0\]
+\begin{itemize}
+	\item Here, $\frac{1}{\lambda}$ is the \textbf{Lipschitz constant}
+\end{itemize}
+The PLAL algorithm makes assumptions about the continuity of the labeling function, $f\::\: \mathcal{X} \rightarrow \mathcal{Y}$.  Importantly, Lipschitz continuity lets us compute \textbf{upper} and \textbf{lower bounds} on the value of the function in \textit{any} closed interval $[a, b]$.
+\begin{itemize}
+	\item If the labeling function is Lipschitz-continuous, the data is \textbf{clusterable}
+	\item Distance between clusters is approximately $\frac{1}{\lambda}$
+	\item Label boundaries go through low-density regions
+\end{itemize}
+
+\subsection*{Probabilistic Lipschitz Continuity}
+Probabilistic Lipschitz relaxes the notion of `pure' Lipschitz continuity; by allowing some violations, it bounds the probability such violations occur
+\begin{itemize}
+	\item i.e., the clusters are \textbf{nearly} label-homogeneous
+	\item $P(\text{violates Lipschitz continuoity}) \leq \phi(\lambda), \forall \lambda > 0$
+	\item Intuition: if we center a ball of radius $\lambda$ on a cluster with label $l$, then the probability of finding instances in that ball that have a different label is bounded by some function $\phi(\lambda) \::\: \mathbb{R} \rightarrow [0, 1]$
+\end{itemize}
+
+\subsection*{PLAL labeling procedure}
+\begin{itemize}
+    \item First, use space partitioning trees to create the clusters  (hierarchical clustering).  These clusters do not necessarily need to be correct, and they cluster based on features, not labels.
+	\item In each cluster, check the labels of already-labelled points.  If the found labels are all the same, classify all unlabeled points in that cluster with the label.
+	\item If the labels are not all the same, then split the cluster into smaller clusters, and repeat.
+\end{itemize}
+
+\subsection*{PLAL Guarantees}
+Consistency:
+\begin{itemize}
+	\item Given a set $S$ containing $m$ instances sampled iid and parameters $\epsilon$ and $\delta$, PLAL labels at least $(1 - \epsilon)m$ instances correctly, with probability $(1 - \delta)$
+\end{itemize}
+Sample Complexity:
+\begin{itemize}
+	\item Recall that probabilistic Lipschitzness is defined as:
+	\[P(\text{violates Lipschitz continuity}) \leq \phi(\lambda)\]
+    \item The sample complexity of PLAL depends on the nature of $\phi$ and the spatial tree
+    \item For \textbf{dyadic trees}, where cells are partitioned by halving the dimensions,
+    \begin{itemize}
+	    \item If $\phi(\lambda) = \lambda^n$, the sample complexity is $O\left(m^{\frac{d}{n + d}} \left(\frac{1}{\epsilon}\right)^{\frac{n}{n + d}}\right)$, where $d$ is the dimensionality of the data
+	    \item If $\phi(\lambda) = \exp \left(-\frac{1}{\lambda}\right)$, the sample complexity is $O\left(\frac{1}{\epsilon}\right)$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Summary of Type II Algorithms}
+\begin{itemize}
+	\item Type II query selection techniques typically perform \textbf{cluster analysis} or related methods as a preprocessing step to reveal patterns or structure in the data pool, under the assumption that the instances assigned to a given cluster will probably have the same label
+	\item The DH and PLAL algorithms build a hierarchy over the pool and use it to guide sample selection, but do so in different ways
+    \item Assuming that the initial pool is iid, DH and PLAL produce an unbiased set of labels, because they label everything (either by going to the oracle, or by inferring labels through cluster assignment)
+    \item Both methods are consistent and have favorable label complexities, relative to standard supervised learning
+\end{itemize}
+
+\section*{Proactive Learning}
+Each query selection technique we have covered made 4 assumptions:
+\begin{itemize}
+	\item There is one oracle
+	\item Oracles always give the correct label
+	\item Oracles always give an answer
+	\item Oracles have fixed costs (i.e., each call has the same price)
+\end{itemize}
+\textbf{Proactive Learning} relaxes these assumptions.
+\begin{itemize}
+	\item The different oracles may represent different kinds of experiments, or different people
+	\item Experiments may occasionally give the wrong answer
+	\item Experiments may simply fail and produce no result whatsoever
+	\item Different types of experiments have different costs
+\end{itemize}
+Key features:
+\begin{itemize}
+	\item It presents three algorithms for learning classifiers `proactively'
+	\item It handles non-separable data
+	\item It is intended for \textbf{pool-based selective sampling}
+	\item It combines aspects of heuristic and Type II algorithms
+	\item It is \textbf{aggressive}
+	\item Guarantees: None
+\end{itemize}
+Notation:
+\begin{itemize}
+	\item Let $B$ be our labeling budget
+	\item Let $UL$ be a pool of unlabeled instances
+	\item Let $V(x)$ be the estimated value of labeling instance $x \in UL$.  $V(\cdot)$ can be any query selection criterion
+	\item Let $K$ be the set of oracles
+	\item Let $C_k$ be the cost of the $k$th oracle
+	\item Let $U(x, k)$ be the utility of labeling instance $x$ using oracle $k$.  The three algorithms define $U$ in different ways
+\end{itemize}
+
+\subsection*{Proactive Learning: Overall Strategy}
+Pseudocode for the abstract proactive learning strategy
+\begin{verbatim}
+while budget B is not exhausted:
+    Let (x*, k*) = argmax([U(x, k) for x in UL, k in K])
+    Pay oracle k* to label instance x*
+\end{verbatim}
+Notice that this is an aggressive strategy.  The choice of $x$ and $k$ depend on one another, so we need to rank $(x, k)$ pairs.
+
+\subsection*{Three Scenarios}
+The authors consider three scenarios:
+\begin{enumerate}
+	\item One reliable oracle and one \textbf{reluctant} oracle.
+	\begin{itemize}
+	    \item Reluctant means that it sometimes won't answer, because it is not confident about the true label
+    \end{itemize}
+    \item One reliable oracle and one \textbf{fallible} oracle
+    \begin{itemize}
+	    \item The fallible oracle sometimes returns incorrect labels
+    \end{itemize}
+    \item One fixed cost oracle and one \textbf{variable cost} oracle
+\end{enumerate}
+Each scenario gives rise to a different concrete algorithm with a different way to define the utility function, $U$.
+
+\subsection*{Setup}
+\begin{itemize}
+	\item Use real datasets
+	\begin{itemize}
+	    \item Train reliable oracle with all available data
+	    \begin{itemize}
+	        \item Always answers and is always correct
+        \end{itemize}
+	    \item Train unreliable oracle with only a small portion
+	    \begin{itemize}
+	        \item If its estimated uncertainty is in a given range, fallible returns a random answer, reluctant returns no answer.
+        \end{itemize}
+    \end{itemize}
+	\item Pick an active learning function $V(x)$ (e.g., uncertainty sampling)
+\end{itemize}
+
+\subsection*{Proactive Learning: Scenario 1}
+One reliable oracle and one reluctant oracle
+\begin{itemize}
+	\item The reliable oracle always answers and always gives the correct label
+	\item The reluctant oracle sometimes doesn't answer, but when it does, it gives the correct label
+	\item The reliable oracle is more expensive
+\end{itemize}
+The utility for scenario 1 is defined as:
+\[U(x, k) = P(ans | x, k) \frac{V(x)}{C_k}\]
+where $P(ans | x, k)$ is the probability that the oracle responds.
+\begin{itemize}
+	\item Note: $P(ans | x, k) = 1$, if $k$ is the reliable oracle
+\end{itemize}
+The key challenge for scenario 1 is estimating $P(ans | x, k)$
+\begin{itemize}
+	\item The authors estimate this using a centroid-based clustering algorithm (e.g., K-means)
+	\begin{itemize}
+	    \item A portion of the budget $B_c < B$ is set aside for estimating $P(ans | x, k)$
+	    \item $p = round(B_c / C_{reluctant})$
+	    \item The \textit{reluctant} oracle is asked to label one instance, $x_{ct}$, from each cluster
+	    \begin{itemize}
+	        \item $x_{ct}$ is the instance closest to the cluster's centroid
+        \end{itemize}
+        \item Note: the reluctant oracle may return a label for $x_{ct}$, or it may not
+    \end{itemize}
+    \item The algorithm assumes that the probability of getting an answer for instance $x$ is proportional to its distance to the nearest $x_{ct}$ and the reluctant oracle's responsiveness on that $x_{ct}$
+    \[\hat{P}(ans | x, reluctant) = \frac{0.5}{Z} \exp \left(\frac{\mathbb{I}(x_{c_t}, y_{c_t})}{2} \log \left(\frac{\max_d - \Vert x_{c_t} - x\Vert}{\Vert x_{c_t} - x\Vert}\right)\right), \quad \forall x \in S(x_{c_t})\]
+    where $S(x_{c_t})$ is the set of instances closest to centroid $x_{c_t}$, $\max_d$ is the maximum distance between any centroid and \textit{any} other instance, and $\mathbb{I} \in \{-1, 1\}$ is an indicator function such that $\mathbb{I}(x_{c_t}, y_{c_t}) = 1$, if the reluctant oracle returned a label for $x_{c_t}$, and $-1$, if it did not
+\end{itemize}
+
+\subsection*{Proactive Learning: Scenario 2}
+One reliable oracle and one fallible oracle
+\begin{itemize}
+	\item The reliable oracle always answers and always gives the correct label
+	\item The fallible oracle sometimes doesn't return the correct label
+	\item The reliable oracle is more expensive
+\end{itemize}
+The utility for scenario 2 is defined as:
+\[U(x, k) = P(correct | x, k) \frac{V(x)}{C_k}\]
+The key challenge for scenario 2 is estimating $P(correct | x, k)$
+\begin{itemize}
+	\item The strategy for estimating $P(correct | x, k)$ is very similar to the one used to estimate $P(ans | x, k)$ in scenario 1.
+	\begin{itemize}
+	    \item A portion of the budget, $B_c < B$ is set aside for estimating $P(correct | x, k)$ using k-means clustering, or similar
+	    \item $p = round(\frac{B_c}{C_{fallible}})$
+	    \item The fallible oracle is asked to label one instance, $x_{ct}$, from each cluster.
+	    \item Note: The fallible oracle must return the conditional probability of the label.  i.e., faliible oracle returns $P(y | x_{c_t})$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Proactive Learning: Scenario 3}
+One uniform cost oracle and one variable cost oracle
+\begin{itemize}
+	\item Both oracles always return the correct labels
+	\item The uniform cost oracle always charges the same price
+	\item The variable cost oracle charges proportional to the difficulty of the query
+\end{itemize}
+The utility for scenario 3 is defined as:\[U(x, k) = V(x) - C_k(x)\]
+\begin{itemize}
+	\item Note: assume that $V$ and $C$ are normalized to the same range
+\end{itemize}
+The price charged by the variable cost oracle is as follows:
+\[C_{variable}(x) = 1 - \frac{\max_{y \in \mathcal{y}} P(y | x) - 1 / |\mathcal{y}|}{1 - 1 / |\mathcal{y}}\]
+where $\mathcal{y}$ is the set of labels, and $P(y | x)$ is the conditional probability of label $y$, as determined by the variable cost oracle.  Thus, the cost is inversely proportional to the conditional probability of the most likely label
+\begin{itemize}
+	\item Note: $P(y | x)$ is only known by the variable cost oracle.  We assume that the oracle pre-computes the prices for each $x \in UL$, then gives the `price list' to the user.
+\end{itemize}
+
+\subsection*{Summary: Proactive Learning}
+\begin{itemize}
+	\item Proactive Learning relaxes the assumption that there is a single oracle and allows for the possibility that one or more of the oracles is reluctant, unreliable, or has variable costs
+	\item The benefits of Proactive Learning (relative to simply always selecting the `best' oracle) depends on (i) the cost ratios among oracles, and (ii) the degree to which the imperfect oracles deviate for the perfect one
+\end{itemize}
+
+\section*{Active Feature Value Selection}
+Real-world data sets often have \textbf{missing feature values}.  Each feature may require running a separate experiment\\\\
+Strategies for handling missing data:
+\begin{itemize}
+	\item Ignore it: just use a base learner that natively handles missing data
+	\begin{itemize}
+	    \item ex. decision trees
+	    \item But, some learning algorithms cannot (easily) ignore missing data
+    \end{itemize}
+    \item Use it: for categorical variables, treat `missing' as a category
+    \begin{itemize}
+	    \item But, this won't work for numeric data
+    \end{itemize}
+    \item Eliminate it: remove incomplete features (columns) or instances (rows)
+    \begin{itemize}
+	    \item But, this means throwing data away
+	    \item What do you do if every feature (or instance) has a missing value?
+    \end{itemize}
+\end{itemize}
+Strategies for handling missing data:
+
+
+
+
+\end{document}
+

@@ -1,0 +1,142 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 8}}
+
+\title{03-621 Week 8 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Complex and Quantitative Traits}
+\subsection*{Importance of Complex Trait Analysis in Humans}
+\begin{enumerate}
+	\item Identification of genetic variations that act as disease risk factors:
+    \begin{enumerate}
+	    \item Basis of tests to determine predisposition or susceptibility, allowing early diagnosis and thus more successful treatment
+	    \item The identified genes (or their networks) may serve as targets for therapies
+	    \item Precision Medicine: understanding the genetic heterogeneity of a disorder may allow treatments better tailored to the individual
+    \end{enumerate}
+    \item Defining the genetic variables simplifies analysis of the environmental risk factors.
+\end{enumerate}
+
+\subsection*{Essential Features of Complex Traits}
+The phenotypes can be described \underline{quantitatively}.  Each phenotype of a complex trait can be assigned:
+\begin{itemize}
+	\item a quantitative value $x$
+	\item a frequency $y$ in a population
+\end{itemize}
+Each trait exhibits a \textbf{distribution} of ``phenotypic values'' in a population
+
+\subsection*{Three Types of Complex Traits}
+\subsubsection*{Continuous Traits}
+\begin{itemize}
+	\item Vary continuously from one phenotypic extreme to the other
+	\item Cumulative small effects by many genes, plus environment
+	\item Example: height, weight, hand size, skin color, etc.
+\end{itemize}
+
+\subsubsection*{Meristic Traits}
+\begin{itemize}
+	\item Phenotype corresponds to one of several \textbf{discrete} categories
+	\item Additive effects of alleles at multiple genes
+	\item Example: Number of scales on a fish, number of offspring at a time
+\end{itemize}
+
+\subsubsection*{Threshold Traits}
+\begin{itemize}
+	\item Only two phenotypic classes (``dichotomous'')
+	\item Each individual has an underlying \textbf{total liability} (``risk'') to express the trait.
+	\item Individuals whose total risk (genes + environment) exceeds a threshold value will express the trait.
+	\item Example: whether or not an individual has schizophrenia
+\end{itemize}
+
+\subsection*{Complex Traits exhibit ``Non-Mendelian'' Inheritance}
+\begin{itemize}
+	\item The same genotype can yield different phenotypes (depending environments)
+	\item Many different genotypes can yield the same phenotypes
+	\item They cannoy be followed easily through pedigrees
+	\item It can be difficult to determine that they are heritable at all.
+\end{itemize}
+If inheritance is particulate (per Mendel), why do we get this behavior for most traits?
+\begin{itemize}
+	\item Continuous phenotype distributions
+	\item and ``regression towards the mean'': on average, parents of different heights have children of intermediate height
+\end{itemize}
+Distributions of Complex Trait phenotypes can usually be approximated by a Gaussian Distribution (aka Normal)
+\begin{itemize}
+	\item Populations can differ in Mean Phenotypic Value and Phentypic Variance for any given complex trait
+\end{itemize}
+
+\subsection*{Complex Traits Summary}
+\begin{itemize}
+	\item What are complex traits?
+	\begin{itemize}
+	    \item Multiple genetic and environmental factors
+	    \item Complex inheritance
+    \end{itemize}
+    \item Three types of complex traits
+    \begin{itemize}
+	    \item Continuous: height, weight, blood pressure
+	    \item Meristic: \# puppies per litter
+	    \item Threshold: schizophrenia, diabetes
+    \end{itemize}
+    \item Distributions of phenotypes approximated by a Normal distribution
+\end{itemize}
+
+\section*{Quantitative Traits}
+\subsection*{Quantitative Traits are Based on Polygenic Inheritance}
+Determined by the combined actions of many genes:
+\begin{itemize}
+	\item Alleles at each gene contribute a small (additive) amount to the differences in phenotypic value
+	\item Thus, the population usually exhibits a Gaussian distribution of phenotype values
+	\item For example, wheat kernel color is a quantitative trait.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W8_1.png} \\
+    \includegraphics*[width=0.9\textwidth]{W8_2.png}
+\end{center}
+\begin{itemize}
+    \item The distribution of genotypes corresponds to the 7 color phenotypes.
+    \item Superimposed environmental effects can smooth out the distribution even more
+\end{itemize}
+
+\subsection*{Polygenic Inheritance can Give Rise to Fine-Grained Phenotypic Variation}
+With just two alleles per gene: \# genotypes = $3^n$.
+\begin{itemize}
+	\item There are three since (homozygous dominant, homozygous recessive, and heterozygous)
+\end{itemize}
+
+\subsection*{Relative Importance of Genotype and Environment in Complex Traits}
+\begin{itemize}
+	\item Can we use phenotypic mean?  Why?
+	\item How about genetic versus environmental contributions to the variance in phenotype?
+\end{itemize}
+
+\end{document}
