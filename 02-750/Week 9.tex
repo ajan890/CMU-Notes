@@ -1,0 +1,585 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{fit}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-750 Week 8 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\subsection*{Background: Regression}
+The goal of regression analysis is to learn a map / function, $f \::\: \mathbb{R}^d \rightarrow \mathbb{R}$
+\begin{itemize}
+	\item As is the case for learning classifiers, the choice of training instances impacts generalization error, thus, we want to select them actively.
+\end{itemize}
+Regression models (like classifiers) can be divided into two categories:
+\begin{itemize}
+	\item \textbf{Parametric:} the model \textbf{summarizes} the training data using a \textbf{fixed} number of parameters (independent of the size of the training data)
+	\begin{itemize}
+	    \item For example, linear regression: $y = x^T \beta$
+    \end{itemize}
+    \item \textbf{Non-parametric:} the number of parameters is \textbf{proportional} to the amount of training data, and the predictions are often made using the actual training instances
+    \begin{itemize}
+	    \item For example, Gaussian Process Regression, KNN regression, Regression Trees
+    \end{itemize}   
+\end{itemize}
+
+\subsection*{Background: Bias-Variance Decomposition}
+A model's \textbf{generalization error} can be decomposed as follows:
+\[Err(x) = Bias^2 + Variance + Irreducible~Error\]
+\begin{itemize}
+	\item $\text{Bias} := \mathbb{E}_D [\hat{f}(x; D)] - f(x)$
+	\begin{itemize}
+	    \item This is the error due to the difference between the `true' function and the one we select from our chosen hypothesis class (Recall PAC learning)
+    \end{itemize}
+    \item $\text{Variance} := \mathbb{E}_D \left[\left(\mathbb{E}_D[hat{f}(x; D)] - \hat{f}(x; D)\right)^2\right]$
+    \begin{itemize}
+	    \item This is the error due to the training data being a finite sample of $P(X, Y)$.  Different training sets will produce different parameters, creating variance.
+    \end{itemize}
+    \item Irreducible Error: This is the error due to any noise in the training data
+\end{itemize}
+
+\subsubsection*{The bias-variance tradeoff}
+\begin{itemize}
+	\item Bias and variance are generally in opposition to one another
+	\begin{itemize}
+	    \item Complex models tend to have low bias but high variance
+	    \item Simple models (i.e., those with few parameters) tend to have high bias but low variance
+    \end{itemize}
+    \item Some learning algorithms intentionally introduce bias in order to decrease variance
+    \begin{itemize}
+	    \item For example, \textbf{Lasso} and \textbf{Ridge} regression introduce bias to reduce variance
+    \end{itemize}   
+\end{itemize}
+
+\subsection*{Regression Analysis}
+\begin{itemize}
+	\item The field of Statistics has developed a variety of techniques for learning regression models efficiently (i.e., with low sample complexity)
+	\item Examples:
+	\begin{itemize}
+	    \item Latin Hypercube Sampling
+	    \item Randomized Block Designs
+	    \item Taguchi Methods
+	    \item Optimal Design of Experiments (DOE)
+    \end{itemize}
+\end{itemize}
+
+\section*{Optimal Design of Experiments}
+A branch of statistics devoted to pre-selecting sets of \textbf{experimental conditions} that are collectively optimal \textbf{with respect to some criterion}
+\begin{itemize}
+	\item DOE shares many of the same objectives as Active Learning but\dots
+	\begin{itemize}
+	    \item Most DOE techniques are specifically for learning \textbf{parametric} regression models
+	    \item Most DOE methods select \textbf{all} the experiments \textit{a priori}, not iteratively$^*$
+	    \item \textbf{Some DOE methods are more than 100 years old!}
+    \end{itemize}
+\end{itemize}
+DOE methods often make (strong) assumptions about:
+\begin{itemize}
+	\item The \textbf{parametric form} of the model (e.g., linear)
+	\item The nature of the noise
+	\item The test density, $P(X)$
+\end{itemize}
+
+\subsection*{Example: DOE for Linear Regression}
+Model (in matrix form for $k$ training instances): $\mathbf{y} = X\beta + \epsilon$
+\begin{itemize}
+	\item $\mathbf{y}$ is a $k \times 1$ vector containing $k \geq 1$ observations / samples
+	\item $\mathbf{X}$ is the $k \times b$ \textbf{design matrix}.  Here, $b$ is the number of parameters.
+	\item $\beta$ is the $b \times 1$ parameter vector
+	\item $\epsilon$ is a $k \times 1$ noise / error vector
+	\begin{itemize}
+	    \item Assumptions
+	    \begin{itemize}
+	        \item $\mathbb{E}[\epsilon_i] = 0$.  (Expected value of noise is zero)
+	        \item $Var(\epsilon) = \sigma^2 < \infty$  (Noise is constant and has finite variance)
+	        \item $\mathbb{E}[\epsilon_i \epsilon_j] = 0$  (Noise is uncorrelated across instances)
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+The standard way of estimating $\beta$ via \textbf{ordinary least squares} (OLS)
+\begin{itemize}
+	\item Given a vector of $k \geq b$ observations / samples the OLS estimate is:
+	\[\hat{\beta} = (X' X)^{-1} X' y\]
+    \begin{itemize}
+	    \item Once we estimate $\hat{\beta}$, the predicted value for any $x$ is: $\hat{y} = x\hat{\beta}$
+    \end{itemize}
+    \item It can be shown (via the Gauss-Markov Theorem) that:
+    \begin{itemize}
+	    \item OLS produces a $\hat{\beta}$ that minimizes $\sum_{i = 1}^k (\hat{y}_i - y_i)^2$
+	    \item $\mathbb{E}[\hat{\beta} - \beta_{true}] = 0$  (i.e., OLS is an unbiased estimator)
+	    \item $Var(\hat{\beta}) = \sigma^2 (X'X)^{-1}$
+	    \item $Var(\hat{y}) = \sigma^2 x (X' X)^{-1} x'$
+    \end{itemize}
+\end{itemize}
+Recall the bias-variance decomposition:
+\[Err(x) = Bias^2 + Variance + Irreducible~Error\]
+\begin{itemize}
+	\item OLS is unbiased, so $Err(x) = Variance + Irreducible~Error$
+	\item We know that $Var(\hat{\beta}) = \sigma^2(X'X)^{-1}$
+	\begin{itemize}
+	    \item $\sigma^2$ is usually unknown, but it is a constant, so we can ignore 
+        \item So the \textbf{design matrix}, $X$ is really the \textbf{only thing that matters}, not the $y$'s.
+    \end{itemize}
+\end{itemize}
+DOE methods seek to minimize the variance in the estimate (and thus generalization error) by selecting an optimal set of $k$ training instances (i.e., rows of $X$)
+\begin{itemize}
+	\item Notice that these instances can be selected without knowing \textbf{any} labels!
+	\item Different DOE methods use different definitions for what it means to be optimal
+\end{itemize}
+
+\subsection*{Quantifying Uncertainty for Linear Regression}
+\begin{itemize}
+	\item Given $D_L = \{(x_1, y_1), \cdots, (x_n, y_n)\}$, the sum of squared vertical deviations from the point to the line is
+	\[f(b_0, b_1) = \sum_{i = 1}^n [y_i - (b_0 + b_1 x_i)]^2\]
+    \item The point estimates of $\beta_0$ and $\beta_1$, denoted by $\hat{\beta}_0$ and $\hat{\beta}_1$, are the \textbf{least squares estimates}, that is, the values that minimize $f(b_0, b_1)$
+\end{itemize}
+\begin{align*}
+    b_1 &= \hat{\beta}_1 = \frac{\sum_{i = 1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i = 1}^n (x_i - \bar{x})^2} = \frac{s_{xy}}{s_{xx}} \\
+    b_0 &= \hat{\beta}_0 = \frac{\sum_{i = 1}^n y_i - \hat{\beta}_1 \sum_{i = 1}^n x_i}{n} = \bar{y} - \hat{\beta}_1 \bar{x} \\
+    s_{xy} &= \sum_{i = 1}^n x_i y_i - \frac{\sum_{i = 1}^n x_i \sum_{i = 1}^n y_i}{n} \\
+    s_{xx} &= \sum_{i = 1}^n x_i^2 - \frac{\left(\sum_{i = 1}^n x_i\right)^2}{n} \\
+    \hat{\sigma}^2 &= s^2 = \frac{\sum_{i = 1}^n (y_i - \hat{y}_i)^2}{n - 2} = \frac{1}{n - 2} \sum_{i = 1}^n \hat{e}_i^2
+\end{align*}
+
+\subsection*{Optimality Criteria: G-Optimality}
+\[\min_{x_i, i = 1:k} \max_{x \in \mathcal{X}} \text{Var}(\hat{y}_x)\]
+\begin{itemize}
+	\item This criterion selects the $k$ instances that minimize the maximum variance of any prediction
+	\begin{itemize}
+	    \item This is equivalent to minimizing the maximum element in the diagonal matrix $X(X'X)^{-1} X'$
+    \end{itemize}
+    \item This is the criterion proposed by Smith
+\end{itemize}
+
+\subsection*{Optimality Criteria: D-Optimality}
+\[\max_{x_i, i = 1:k} |X'X|\]
+\begin{itemize}
+	\item Select the $k$ instances that maximize the \textit{determinant} of $X'X$
+	\item Geometric Interpretation
+	\begin{itemize}
+	    \item $|X'X|$ is inversely proportional to the product of the axes of the \textbf{confidence ellipsoid} around the point estimate of our parameter vector $\beta$
+	    \item Bigger $|X'X|$ means smaller ellipsoid, thus, higher confidence in $\beta$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Optimality Criteria: A-Optimality and E-Optimality}
+\textbf{A-Optimality:} (Chernoff 1953)
+\[\min_{x_i, i = 1:k} \text{Tr}\left((X'X)^{-1}\right)\]
+\begin{itemize}
+	\item Select the $k$ instances that minimize the \textit{trace} of the inverse $X'X$
+	\item Minimizes the average variance of the parameter estimates
+\end{itemize}
+\textbf{E-Optimality:} (Ehrenfeld 1953)
+\begin{itemize}
+	\item Select the $k$ instances that maximizes the minimum eigenvalue of $X'X$
+	\item Minimizes the maximum variance of $\beta$
+\end{itemize}
+
+\subsection*{DOE for Nonlinear Models}
+If the ``true'' model is non-linear, but can be expressed as a linear \textbf{basis function}, we can still use the previous objectives to find optimal designs
+\begin{itemize}
+	\item A linear basis function has the form: $f(x) = \sum_{i =1 }^b \alpha_i \phi_i(x)$
+	\begin{itemize}
+	    \item Here, each $\phi_i$ is one of the basis functions
+    \end{itemize}
+    \item Common Basis Functions: Polynomial, Fourier, Gaussian, Sigmoid
+\end{itemize}
+
+\subsubsection*{Example:}
+Consider the polynomial $f(x) = \alpha_1 c + \alpha_2 x + \alpha_3 x^3 + \alpha_4 x^3$
+\begin{itemize}
+	\item The basis functions are $\phi_1 = c, \phi_2 = x, \phi_3 = x^3, \phi_4 = x^3$
+	\item We could construct a $k \times 4$ design matrix, where the points are selected using any of the previously defined criteria (e.g., G-optimality)
+	\[X =\begin{bmatrix} 1 & x_1 & x_1^2 & x_1^3 \\ 1 & x_2 & x_2^2 & x_2^3 \\ 1 & x_3 & x_3^2 & x_3^3 \\ 1 & x_4 & x_4^2 & x_4^3 \end{bmatrix}\]
+    \item After obtaining labels, we can use OLS to estimate $\alpha = [\alpha_1 \alpha_2 \alpha_3 \alpha_4]'$
+\end{itemize}
+
+\subsection*{Summary: Optimal Design of Experiments}
+\begin{itemize}
+	\item DOE is primarily used for learning parametric regression models that can be expressed as linear basis functions
+	\item DOE is similar to Active Learning in the sense that it selects training data
+	\begin{itemize}
+	    \item DOE methods select instances by optimizing some scalar property of $X'X$ which will, in turn, minimized the (expected) generalization error
+	    \item Unlike active learning, DOE methods select the design points at the same time
+    \end{itemize}
+\end{itemize}
+
+\section*{Recursive Dyadic Partition (RDP) Algorithm}
+\begin{itemize}
+	\item RDP is an algorithm for learning \textbf{non-parametric regression models}
+	\item Type II (cluster expoiltation).  However, unlike ZLG, DH, and PLAL, it is intended for the \textbf{membership query synthesis} data access model.
+	\begin{itemize}
+	    \item Pool-based sampling is possible, if certain conditions are met
+    \end{itemize}
+    \item It is \textbf{aggressive}
+    \item Guarantees:
+    \begin{itemize}
+	    \item RDP will converge to the optimal model
+	    \item The upper and lower bounds on the rate of convergence are known
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Rationale}
+RDP is intended for learning \textbf{piecewise smooth functions}.
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W9_1.png} 
+\end{center}
+For functions whose complexity is spatially non-uniform and highly concentrated in small subsets of the domain, \textbf{the extra spatial adaptivity of the active learning paradigm can lead into significant performance gains}
+\begin{itemize}
+	\item The authors show that \textbf{there is no benefit to active learning} (relative to passive learning), if the function satisfies the \textbf{H\"{o}lder condition}.
+\end{itemize}
+
+\subsection*{RDP: Dyadic Space-Partitioning Trees}
+The algorithm uses dyadic space-partitioning trees.
+\begin{itemize}
+	\item Example in a 2D domain ($2^d$-ary tree structure)
+	\begin{center} 
+	    \includegraphics*[width=0.6\textwidth]{W9_2.png} 
+    \end{center}
+    \item Consider $f \::\: [0, 1]^d \rightarrow \mathbb{R}$
+    \begin{itemize}
+	    \item Step 1: Divide $[0, 1]^d$ into $2^d$ equal sized hypercubes
+	    \item Step 2: Repeat this process again on each hypercube
+    \end{itemize}
+    \item Repeating this process $\log(m)$ times gives rise to a partition of the unit cube into $m^d$ hypercubes of identical size.  (This process is represented as a $2^d$-ary tree structure above.)
+\end{itemize}
+Note: Dyadic means to divide the domain by $2^d$, where $d$ is the dimension of $\mathcal{X} = [0, 1]^d$\\\\
+There are \textbf{two phases} for this algorithm.
+\begin{enumerate}
+	\item \textbf{Preview Phase:}
+	\begin{itemize}
+	    \item Use half of the labeling budget to label points \textbf{uniformly} within the domain, $\mathcal{X}$
+	    \item Learn a bounded height regression tree modified to partition the domain via a \textbf{Recursive Dyadic Partition} (RDP)
+	    \item Use the RDP model to identify boundaries in the domain
+    \end{itemize}
+    \item \textbf{Refinement Phase:}
+    \begin{itemize}
+	    \item Use the remaining half of the budget to label the boundary regions densely
+	    \item Learn a regression model from the labeled points
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection*{Example:}
+\textbf{Preview Phase:}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W9_3.png} \\
+    The deepest nodes in the tree will tend to be in boundary regions (i.e., places where the function changes quickly)
+\end{center}
+\textbf{Refinement Phase:}
+\begin{center}
+    \includegraphics*[width=0.7\textwidth]{W9_4.png} \\
+    Use the remaining budget to desnsely sample the regions of the domain corresponding to the deepest nodes of the regression tree
+\end{center}
+
+\subsubsection*{Technical Issue}
+\begin{itemize}
+	\item If the dyadic partition is aligned with a boundary, the refinement phase is unlikely to sample in that region
+	\item This can be addressed by building multiple RDP models, shifted along one or more dimensions.  For example, the bottom left corner in the above examples.
+\end{itemize}
+
+\subsection*{RDP Guarantees}
+\textbf{Consistency and Rate of Convergence} (under certain assumptions on $f$)
+\begin{itemize}
+	\item The authors derive upper and lower bounds for the rate of convergence to the optimal model
+	\begin{itemize}
+	    \item Upper bound: $\mathbb{E} \left[ \Vert \hat{f} - f \Vert^2\right] \leq C \left(\frac{n}{\log n}\right)^{\frac{1}{d - 1 + \frac{1}{d}}}$
+	    \item Lower bound: $\mathbb{E} \left[\Vert \hat{f} - f \Vert^2\right] \leq cn^{-\frac{1}{d - 1}}$
+    \end{itemize}
+    \item The corresponding bounds for passive learning are as follows:
+    \begin{itemize}
+	    \item Upper bound: $\mathbb{E} \left[ \Vert \hat{f} - f \Vert^2\right] \leq C \left(\frac{n}{\log n}\right)^{-\frac{1}{d}}$
+	    \item Lower bound: $\mathbb{E} \left[\Vert \hat{f} - f \Vert^2\right] \leq cn^{-\frac{1}{d}}$
+    \end{itemize}
+    \item That is, RDP's complexity is essentially that of passive learning, but on a lower-dimensional space
+\end{itemize}
+
+\subsection*{RDP Algorithm: Summary}
+\begin{itemize}
+	\item The algorithm is elegant and easy to implement, but \textbf{the number of samples needed to obtain reasonable accuracies will be large in practice}, since we need to guarantee sufficient uniform sampling in a $d$-dimensional space, which is expensive (see \textit{curse of dimensionality})
+	\item If desired, we can use the labeled examples to train a more sophisticated regression model
+	\item The algorithm is noteworthy because it is \textbf{aggressive}, yet the authors are able to prove theorems about learning rates
+    \begin{itemize}
+	    \item Note, however, that these guarantees only hold if the underlying function is piecewise continuous
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Summary: DOE vs. Active Learning}
+Objective: Generate dataset from which one can learn an accurate predictive model
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Category} & \textbf{Design of Experiments} & \textbf{Active Learning} \\ \hline
+Logistics & \begin{tabular}[c]{@{}c@{}}Limited to one batch\\ (e.g., clinical trials)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Multiple batches\\ (e.g., compound screening)\end{tabular} \\ \hline
+Feature knowledge & \begin{tabular}[c]{@{}c@{}}Good when you know all your\\ features are useful\end{tabular} & \begin{tabular}[c]{@{}c@{}}Good when you don't know if\\ your features are useful\end{tabular} \\ \hline
+Model assumptions & \begin{tabular}[c]{@{}c@{}}Typically assumes data are\\ derived from a specific model\end{tabular} & No assumptions needed \\ \hline
+\end{tabular}
+\end{center}
+
+\section*{ALICE}
+\textbf{ALICE:} ``Active Learning in Approximately Linear Regression Based on Conditional Expectation of Generalization Error'', Sugiyama (JMLR, 2006)
+
+\subsection*{Aleatoric Uncertainty vs. Epistemic Uncertainty}
+\begin{itemize}
+	\item \textbf{Aleatoric uncertainty:} also known as data uncertainty, is irreducible uncertainty in data that gives rise to uncertainty in predictions
+	\begin{itemize}
+	    \item This type of uncertainty is not a property of the model, but rather is an inherent property of the data distribution, and hence, it is irreducible
+    \end{itemize}
+    \item \textbf{Epistemic uncertainty:} also known as knowledge uncertainty, occurs due to inadequate knowledge
+    \begin{itemize}
+	    \item One can define models to answer different questions in model-based prediction
+    \end{itemize}
+\end{itemize}
+
+\subsection*{The ALICE Algorithm}
+\textbf{Key Features:}
+\begin{itemize}
+	\item ALICE is an algorithm for learning parametric regression models that take the form of \textbf{linear basis functions}
+	\item Unlike most query selection methods, \textbf{it is not iterative!}
+	\begin{itemize}
+	    \item It constructs an A-optimal design, and then queries those points all at once
+	    \item It is intended for the membership query synthesis data access model
+	    \begin{itemize}
+	        \item Pool-based sampling is possible, if certain conditions are met
+        \end{itemize}
+    \end{itemize}
+    \item It is \textbf{aggressive}, but corrects for sampling bias using \textbf{importance weighting} (similar to IWAL)
+    \item Guarantees
+    \begin{itemize}
+	    \item ALICE will converge to the optimal model
+	    \item Under the assumption that the true model is approximately linear, the author proves bounds on the learning rate
+    \end{itemize}    
+\end{itemize}
+
+\subsection*{ALICE: Motivation}
+Traditional DOE methods \textbf{assume that we know the form of the true function}
+\begin{itemize}
+	\item Suppose that we are wrong.  How bad could the generalization error be?
+	\item For example:
+    \begin{itemize}
+	    \item True function: $f(x) = 1 - x + x^2 + \delta x^3 + \epsilon$
+	    \item Assume that $\epsilon \sim \mathcal{N}(0, 0.3)$
+	    \item Our assumed model: $g(x) = \alpha_1 - \alpha_2 x + \alpha_3 x^2$
+	    \item Compare A-optimal design vs a random selection of $k = 10$ labeled instances
+    \end{itemize}
+    \begin{center}
+        \begin{tabular}{|c|c|c|c|}
+        \hline
+        Generalization Error (k = 10) & $\delta = 0$ & $\delta = 0.05$ & $\delta = 0.5$ \\ \hline
+        A-optimal design: $\min \text{Tr}\left((X'X)^{-1}\right)$ & 1.1 & 2.0 & 95.5 \\ \hline
+        Random Selection & 2.2 & 2.3 & 7.1 \\ \hline
+        \end{tabular}
+    \end{center}
+    \item The magnitude of the error for $\delta = 0.5$ is due in part to the bias we introduce by misspecifying the model
+\end{itemize}
+
+\subsection*{ALICE: Background}
+It can be shown that for any linear estimator that:
+\[Variance = \sigma^2 \text{Tr}(ULL') \propto \text{Tr}(ULL')\]
+where $L = (X'X)^{-1} X'$ is the \textbf{Moore-Penrose pesudoinverse} and
+\[U_{i, j} = \int \phi_i(x) \phi_i(x) P_{\text{test}}(x) \:\dd x\]
+is a $b \times b$ matrix, where $b$ is the number of terms in the linear basis function
+\begin{itemize}
+	\item Recall that \textbf{for a correctly specified model}, ordinary least squares (OLS) is an unbiased estimator, thus, \textbf{minimizing $\text{Tr}(ULL')$ will minimize the (expected) generalization error}.
+\end{itemize}
+The author decomposes bias into two orthogonal components:
+\begin{itemize}
+	\item The \textbf{out-of-model bias} due to misspecifying the model;
+	\[B_{out} = \int \left(f(x) - g(x) \right)^2 P_{\text{test}}(x) \:\dd x\]
+    \item The \textbf{in-model bias} due to differences in $P_{\text{train}}$ and $P_{\text{test}}$
+    \[B_{in} = \int \left(\mathbb{E}_{\text{train}} [\hat{f}(x)] - g(x)\right)^2 P_{\text{test}(x) \:\dd x}\]
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W10_1.png} 
+\end{center}
+\begin{itemize}
+	\item If we have misspecified the model, $B_{out} > 0$
+	\begin{itemize}
+	    \item But, we can't reduce it either (unless we are \textbf{told} the true form of the function)
+	    \begin{itemize}
+	        \item That is, $B_{out}$ is a kind of irreducible error
+        \end{itemize}
+        \item So, we can just ignore $B_{out}$ when it comes to selecting design points
+    \end{itemize}
+    \item OLS is an unbiased estimator, so is it reasonable to assume that $B_{in} = 0$?
+    \begin{itemize}
+	    \item Unfortunately, OLS is only unbiased if $P_{train} = P_{test}$, which isn't true in Active Learning, so $B_{in} > 0$
+	    \item Solution: Use \textbf{Importance Weighting} (just like the IWAL algorithm)
+    \end{itemize}
+\end{itemize}
+ALICE's overall strategy is to use importance weighting to reduce $B_{in}$, and then to use an A-optimal design criterion to reduce variance, and thus the generalization error
+
+\subsection*{Recall: Importance Weighting}
+\begin{itemize}
+	\item The empirical average loss for model $h$ on $n$ instances is: $\frac{1}{n} \sum_i loss(h(x_i), y_i)$
+	\item As $n$ goes to $\infty$ the training loss converges to
+	\[\int loss(h(x), y) P_{train}(x) \:\dd x\]
+    \item Of course, what we really care about is the \textbf{test} loss:
+    \[\int loss(h(x), y) P_{test}(x) \:\dd x\]
+    \begin{itemize}
+	    \item If $P_{train} = P_{test}$, then these losses will be the same
+	    \item But if we have a biased training data, then $P_{train}(\mathcal{X}) \neq P_{test}(\mathcal{X})$
+    \end{itemize}
+    \item Recall that many learning algorithms can use \textbf{weighted loss functions}
+    \begin{itemize}
+	    \item Ex. weighted empirical loss: $\widehat{err}(h) = \frac{1}{n} \sum_i w_i loss(h(x_i), y_i)$
+    \end{itemize}
+    \item Let the \textbf{importance weight} of a training instance be defined as:
+    \[w_i = \frac{P_{test}(x_i)}{P_{train}(x_i)}\]
+    \item The importance-weighted loss is
+    \[\widehat{err}_{IW}(h) = \frac{1}{n} \sum_i \frac{P_{test}(x_i)}{P_{train}(x_i)} loss(h(x_i), y_i)\]
+    \item As $n$ goes to $\infty$ the importance-weighted loss converges to:
+    \begin{align*}
+        \widehat{err}_{IW}(h) &= \int loss(h(x), y) \frac{P_{test}(x)}{P_{train}(x)} P_{train}(x) \:\dd x \\
+        &= \int loss(h(x), y) P_{test}(x) \:\dd x
+    \end{align*}
+    which is exactly what we want!
+    \item Thus, if we can compute suitable importance weights, the fact that our training data are biased will not matter (in the limit)
+\end{itemize}
+
+\subsection*{ALICE and Importance Weighting}
+\begin{itemize}
+	\item Recall the \textbf{oridinary least squares} (OLS) estimate for a linear model $y = X\beta$ is:
+	\[\hat{\beta} = (X'X)^{-1} X' y\]
+    \item The \textbf{importance-weighted Least Squares} estimate minimizes the weighted sum of errors
+    \[\hat{\beta} = (X' DX)^{-1} X' Dy\]
+    where 
+    \[D_{i, j} = \begin{cases} \frac{P_{test}(x_i)}{P_{train}(x_i)} & \text{if } i = j \\ 0 & \text{otherwise} \end{cases}\]
+\end{itemize}
+Properties of \textbf{Importance-weighted Least Squares}
+\begin{itemize}
+	\item It is unbiased, asymptotically, even if the model is misspecified!
+	\item If the model is approximately correct (i.e., $f(x) \approx g(x)$), then the in-model bias is much smaller than the variance (i.e., $B_{in} << \text{Variance}$)
+	\item If we re-define matrix $L \equiv (X' D X)^{-1} X' D$, then the variance is still
+	\[Variance = \sigma^2 \text{Tr}(ULL') \propto \text{Tr}(ULL')\]
+    \begin{itemize}
+	    \item So, we can still use an A-optimal design criterion to reduce variance, and thus the generalization error
+    \end{itemize}
+\end{itemize}
+
+\subsection*{ALICE: Implementation Details}
+\begin{itemize}
+	\item The traditional approach to finding A-optimal (or D-optimal, etc.) designs is to use \textbf{semi-definite programming}
+	\item ALICE doesn't use semi-definite programming
+	\begin{itemize}
+	    \item Instead, it takes as input a finite set of $k$ probability densities, $\hat{P} = \{P_1, \cdots, P_k\}$
+	    \item It \textbf{samples} $n$ instances from each $p \in \hat{P}$ and then
+	    \begin{itemize}
+	        \item Constructs $k$ design matrices, $X_1, \cdots, X_k$, one for each $p \in \hat{P}$
+	        \item Constructs the corresponding $L_1, \cdots, L_k$ matrices
+        \end{itemize}
+        \item The algorithm finds the matrix $L_i$ that minimizes $\text{Tr}(UL_i L_i')$ and then requests for the corresponding set of points
+        \item It then learns the regression model using importance-weighted least squares
+    \end{itemize}
+\end{itemize}
+
+\subsection*{The ALICE Algorithm}
+\begin{itemize}
+	\item \textbf{Input:} A finite set $\hat{\mathcal{P}}$ of strictly positve probability densities
+	\item Calculate $U$.  
+	\[U_{i, j} = \int \phi_i(x) \phi_j(x) P_{test} (x) \:\dd x\]
+    \item For each $p \in \hat{\mathcal{P}}$
+    \begin{itemize}
+	    \item Create training input points $\{x_i^{(p)}\}_{i = 1}^n$ following $p(x)$
+	    \item Calculate $L_W$
+	    \[L = (X' DX)^{-1} X' D\]
+        \item Calculate $J(p)$
+        \[J(p) = \text{Tr}(ULL')\]
+    \end{itemize}
+    \item Choose $\hat{p}$ that minimizes $J$
+    \item Put $x_i = x_i^{(\hat{p})}$ for $i = 1, 2, \dots, n$.
+    \item Call the oracle and learn the model $\alpha = Ly$, which entails:
+    \begin{itemize}
+        \item Observe the training output values $\{y_i\}_{i = 1}^n$ at $\{x_i\}_{i = 1}^n$
+        \item Calculate $\hat{\alpha}_W$ by Eq. (9) 
+    \end{itemize}
+    \item \textbf{Output:} $\hat{\alpha}_W$
+\end{itemize}
+
+\subsection*{ALICE Guarantees}
+\textbf{Error} (assuming that $f(x) = g(x) + \delta r(x)$)
+\begin{itemize}
+	\item $\mathbb{E}[Err(x)] = \sigma^2 \text{Tr}(ULL') + O(\delta n^{-1})$
+    \begin{itemize}
+	    \item Note that $\sigma^2 \text{Tr}(ULL') = O(n^{-1})$, so if $\delta = O(1)$, then the expeted error decreases as $O(n^{-1})$ which is the same asymptotic rate as if the model was specified correctly
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Example Results}
+\begin{itemize}
+	\item True function: $f(x) = 1 - x + x^2 + \delta x^3 + \epsilon$
+	\begin{itemize}
+	    \item Assume that $\epsilon \sim \mathcal{N}(0, 0.3)$
+    \end{itemize}
+    \item Our assumed model: $g(x) = \alpha_1 - \alpha_2 x + \alpha_3 x^2$
+    \item Compare three different strategies using $k = 10$ labeled instances
+\end{itemize}
+\begin{center}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    Generalization Error (k = 10) & $\delta = 0$ & $\delta = 0.05$ & $\delta = 0.5$ \\ \hline
+    ALICE & 1.1 & 1.2 & 4.7 \\ \hline
+    A-optimal design: $\min \text{Tr}\left((X'X)^{-1}\right)$ & 1.1 & 2.0 & 95.5 \\ \hline
+    Random Selection & 2.2 & 2.3 & 7.1 \\ \hline
+    \end{tabular}
+\end{center}
+
+\subsection*{ALICE: Summary}
+\begin{itemize}
+	\item ALICE actively learns \textbf{linear basis function models}, and provides generalization guarantees, \textbf{even if the model is misspecified}
+	\item It is intended for a membership query synthesis data access model
+	\item It uses two techniques to (approximately) minimize generalization error
+	\begin{itemize}
+	    \item \textbf{Importance weighting} corrects for in-model bias, resulting in an unbiased estimator
+	    \item The importance weighted \textbf{A-optimal design} reduces variance
+    \end{itemize}
+    \item It has the same learning rate as passive learning, but produces better models
+    \item \textbf{It assumes that we know $P_{test}$}
+    \begin{itemize}
+	    \item If you don't know $P_{test}$ but do have access to an unlabeled pool of samples from $P_{test}$, the same author does have a closely related algorithm: 
+        \begin{itemize}
+	        \item \underline{Pool-based active learning in approximate linear regression}
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\section*{LapRDD}
+``Laplacian Regularized D-optimal Design for Active Learning and its Application to Image Retrieval'', He (IEEE Trans Image Process, 2009)
+
+
+
+
+\end{document}
+
+
+

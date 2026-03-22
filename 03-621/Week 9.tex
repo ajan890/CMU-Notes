@@ -1,0 +1,339 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/Week 9}}
+
+\title{03-621 Week 9 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{$h^2$ from Parent-Offspring Regression}
+\begin{center}
+    \includegraphics*[width=0.8\textwidth]{W9_1.png}
+\end{center}
+\begin{align*}
+    \beta &= \frac{\text{Cov}(x, y)}{\text{Var}(x)} \\
+    &= \frac{\sum (x_i - \bar{x})(y_i - \bar{y}) / (N - 1)}{\sum (x_i - \bar{x})^2 / (N - 1)} \\
+    &= \frac{(1/2) V_A}{(1/2) V_p} \\
+    &= \frac{V_A}{V_p} \\
+    &= h^2
+\end{align*}
+
+\subsection*{Possible values of $h^2$ and their interpretation}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W9_2.png} 
+\end{center}
+\begin{itemize}
+	\item $h^2 = 1.0$: Genes with \textbf{additive} effects determine \textbf{all} of the differences in phenotypic value
+	\item $1.0 > h^2 > 0$: Genes with additive effects, dominance, and/or epistasis may contribute, as well as the environment
+	\item $h^2 = 0.0$: \textbf{No additive genetic contribution} to the differences in phenotypic value
+\end{itemize}
+
+\subsection*{$h^2$ for Some Human Disease Traits}
+\begin{center}
+    \begin{tabular}{|c|c|}
+        \hline
+        \textbf{Trait} & $h^2$ \\ \hline
+        Cleft lip & 65 \\
+        Spina bifida & 65 \\
+        Club foot & 80 \\
+        Pyloric stenosis & 85 \\
+        Dislocation of hip & 95 \\
+        Hydrocephalus & 40 \\
+        Bipolar affective disorder & $\sim$100 \\
+        Multiple sclerosis & $\sim$100 \\
+        Schizophrenia & $\sim$100 \\
+        Diabetes & 80 \\
+        Epilepsy & 40 \\ \hline
+    \end{tabular}
+\end{center}
+These particular examples are all \textbf{threshold traits:} the heritability is for the quantitative phenotype, which is the \textbf{midparent value for the underlying liability (risk)}.\\\\
+\textbf{Note} that $h^2$ for a given trait can vary:
+\begin{itemize}
+	\item between different populations (different gene pools)
+	\item between different locations (different environments)
+	\item between different generations of the same population
+	\begin{itemize}
+	    \item Before / After selection
+	    \item With changes in environment (e.g., diet)
+    \end{itemize}
+\end{itemize}
+For the same trait and environment:
+\begin{itemize}
+	\item $h^2$ will be higher in a population with high genetic diversity
+	\item $h^2$ will be lower in a population with low genetic diversity
+\end{itemize}
+
+\subsection*{Selection}
+$h^2$ decreases when strong selection pressure reduces genetic diversity.
+\begin{itemize}
+	\item Consider a trait with phenotype values 4 to 16, with the (normal distribution) centered at 10.
+	\item If suddenly selection pressure favors only those with above phenotype value 12, then the genotypes contributing to the next generation would be those with high phenotype value
+	\item This reduces the gene pool and therefore $h^2$ decreases
+\end{itemize}
+Can we predict \textit{how} much the average phenotype will actually chnage under selection? \\
+Can we predict the \textit{average} phenotype of progeny for any two parents?
+\begin{itemize}
+	\item Yes and Yes!
+\end{itemize}
+If we know the $h^2$ for a trait in a population, the equation for parent-offspring regression allows us to find the \textbf{average} phenotype of progeny:
+\[y = h^2 x + b\]
+\begin{itemize}
+	\item $y$ = expected offspring value
+	\item $x$ = mid-parental value
+\end{itemize}
+We can also obtain $h^2$ from (and apply it to)
+\begin{itemize}
+	\item Group Selection Experiments
+	\item Threshold Traits
+\end{itemize}
+To do this we modify the regression equation to obtain the ``Breeder's Equation'
+
+\subsection*{Linking $h^2$ and Selection: The Breeder's Equation}
+\begin{itemize}
+	\item Parent-offspring regression: $y = h^2 x + b$
+	\item Rewrite in terms of differences from the original population $M$: $(y - M) = h^2 (x - M)$
+	\item Average this over the selected parents and their offspring: $(M' - M) = h^2(M^* - M)$
+	\begin{itemize}
+	    \item $M'$ = mean of progeny
+	    \item $M^*$ = mean of selected parents
+    \end{itemize}
+    \item \textbf{The Breeder's Equation:} $R = h^2 S$
+    \begin{itemize}
+	    \item $R = (M' - M)$.  ``\textbf{R}esponse to selection'' 
+	    \item $S = (M^* - M)$.  ``\textbf{S}election differential''
+    \end{itemize}
+    \item The amount of evolutionary change ($R$) is determined by the narrow-sense heritability ($h^2$) and the strength of selection ($S$).
+    \item $h^2$ can be \textbf{obtained} from selective breeding experiments \textit{or} from the incidence of a threshold trait among children of affected parents in a population
+    \[h^2 = \frac{R}{S} = \frac{M' - M}{M^* - M}\]
+    \item $h^2$ can be used to \textbf{predict} the phenotypic mean of a progeny population obtained by selective breeding (or natural selection)
+    \[M' = M + h^2(M^* - M)\]
+\end{itemize}
+
+\subsubsection*{Example: Effect of Selection on Size of Tobacco Flowers}
+We can obtain $h^2$ from selection experiments:
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W9_3.png} 
+\end{center}
+And we can predict the effect of selection:
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W9_4.png} 
+\end{center}
+
+\subsubsection*{For how long?  Response over multiple generations}
+\begin{itemize}
+	\item \textbf{strictly speaking}, an initial $h^2$ from the breeders' equation only holds for predicting a \textbf{single} generation of response.
+	\begin{itemize}
+	    \item Reason: allele and genotype frequencies change after selection so that $\sigma_A^2, \sigma_D^2, \sigma_I^2$, and $\sigma_{gxe}^2$ can change.  Environment can also change.
+    \end{itemize}
+    \item In practice, an initial $h^2$ usually does well for 5-10 generations, sometimes much longer
+\end{itemize}
+This depends on:
+\begin{enumerate}
+	\item Degree of environmental change between generations
+	\item Degree of genetic change between the generation in which $h^2$ was estimated and the generation in which selection is applied.  Strong/Fast vs. Moderate/Gradual selection.
+\end{enumerate}
+
+\subsection*{$h^2$ does not always decrease after selection}
+\textbf{Example: Oil content in corn}
+\begin{itemize}
+	\item Original $h^2$ for oil content in corn has held since 1896, or 125 generations(!)
+	\item Implies gradual selection has not exhausted genetic diversity
+\end{itemize}
+\textbf{Example: Lactation milk yield in dairy cows}
+\begin{itemize}
+	\item $h^2$ for lactation milk yield in dairy cattle has actually \textit{increased} over time:
+	\begin{itemize}
+	    \item $\sim 25\%$ in the 1970s
+	    \item $\sim 40\%$ currently
+    \end{itemize}
+    \item The reason for this is due to improvements in feeding and veterinary care.
+    \item Leads to reduced $V_E$
+\end{itemize}
+
+\subsection*{Obtaining $h^2$ values for human traits}
+\begin{enumerate}
+	\item Continuous and Meristic traits
+	\begin{itemize}
+	    \item Phenotypic values can be measured or counted directly
+	    \begin{itemize}
+	        \item Use parent-offspring regression
+        \end{itemize}
+    \end{itemize}
+    \item Threshold traits
+    \begin{itemize}
+	    \item We can't measure the underlying liability directly.
+	    \item We can't do selection experiments
+	    \item However, we can use the Breeders' Equation, adapted to incidence distributions
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{The Breeder's Equation for Selection}
+Our examples so far have represented \textbf{Truncation Selection}
+\begin{itemize}
+	\item e.g., only individuals \textbf{above} a certain phenotypic value ($T$) contribute to the next generation.
+\end{itemize}
+Expression of Threshold Traits is equivalent to truncation selection!
+\begin{itemize}
+	\item The quantitative phenotype with a continuous distribution is the underlying \textbf{liability}.  The trait is expressed if liability \textbf{exceeds} a threshold.
+	\item This is the same situation as threshold selection.  (Members below the threshold do not reproduce.)
+	\item This equivalence gives us a way of estimating $h^2$ for the liability of threshold traits using the Breeder's Equation
+\end{itemize}
+
+\subsection*{What Proportion of the \textit{Liability} is Inherited?}
+Recall:
+\[h^2 = \frac{M' - M}{M^* - M} = \frac{R}{S}\]
+\begin{itemize}
+	\item $M$ = mean liability of the base population
+	\item $M^*$ = mean liability of affected individuals
+	\item $M'$ = mean liability of progeny from affected individuals
+\end{itemize}
+\textbf{How do we obtain $M$, $M^*$, and $M'$?}
+\begin{itemize}
+	\item We don't need them: only the differences $(R, S)$, which can be calculated from the proportions of affected individuals, using properties of the \textit{standard normal distribution}.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W9_5.png} 
+\end{center}
+This determines what proportion of the progeny of affected individuals in the population will be above threshold and develop the trait.
+\begin{itemize}
+	\item Note: A \textbf{standard normal distribution} is one with mean $\mu = 0$ and variance $\sigma^2 = 1$.
+	\item Any arbitrary normal distribution can be converted into a ``standard'' normal distribution by expressing the ordinate values in terms of standard deviations from the mean:
+	\[z = (x - \mu) / \sigma\]
+\end{itemize}
+
+\subsection*{Standardizing the Breeder's Equation}
+We express $R = M' - M$ and $S = M^* - M$ in terms of standard deviations of the mean.
+\begin{itemize}
+	\item Let $i = (M^* - M) / \sigma$, so $S = i\sigma$.  ($i$ stands for ``selection intensity'')
+	\item Let $x_1 = (Threshold - M) / \sigma$ and $x_2 = (Threshold - M') / \sigma'$, so $R = (x_1 - x_2)\sigma$.  ($\sigma' \sim \sigma$)
+\end{itemize}
+Now, we get $h^2 = \frac{R}{S} = \frac{(x_1 - x_2) \sigma}{i \sigma}$
+\[h^2 = \frac{x_1 - x_2}{i}\]
+Now we're in business, because for a standard normal distribution,
+\[P(x) = \sqrt{\frac{1}{2\pi}} \exp \left(-\frac{x^2}{2}\right)\]
+The area under the curve from $-\infty$ to $X$ is
+\[\Phi(X) = \int_{-\infty}^X P(x) \:\dd x\]
+or, the ``cumulative distribution function''.  Similarly, the area unde the curve from $X$ to $\infty$ would be $1 - \Phi(x)$.
+\begin{itemize}
+	\item The \textbf{mean value} for individuals within area $1 - \Phi(X)$ is
+	\[\mu^* = \frac{\exp\left(-\frac{x^2}{2}\right)}{\sqrt{2\pi} (1 - \Phi(x))}\]
+\end{itemize}
+Now we have what we need to obtain $h^2$ for threshold traits:
+\[h^2 = \frac{x_1 - x_2}{i}\]
+\begin{enumerate}
+	\item If $x$ is the distance between Threshold and Mean:
+	\begin{itemize}
+	    \item $1 - \Phi(x)$ is the proportion of the population that exceeds the threshold and is \textbf{affected}
+    \end{itemize}
+    \item Given $1 - \Phi(x_1)$ and $1 - \Phi(x_2)$, we can obtain $x_1$ and $x_2$ from the distribution function $\Phi(x)$
+    \item Then, we can calculate $i$:
+    \[i = \mu^* = \frac{\exp \left(-\frac{x_1^2}{2}\right)}{\sqrt{2\pi} (1 - \Phi(x_1))}\]
+\end{enumerate}
+\textbf{Note:} in practice, if we want to find $\Phi(x)$, we would use a statistical table, or use a calculator.
+
+\subsection*{$h^2$ for Threshold Traits \dots again}
+\[h^2 = \frac{x_1 - x_2}{i}\]
+Re-emphasize that:
+\begin{itemize}
+	\item $x_1$ is the number of standard deviations by which the Threshold exceeds the mean liability in the \textbf{base (i.e., ``general'') population}.
+	\item $x_2$ is the number of standard deviations by which the Threshold exceeds the mean liability among \textbf{offspring of affected} individuals.
+	\item $i$ is the number of standard deviations by which $\mu^*$ exceeds the mean liability in the \textbf{base population}.
+\end{itemize}
+
+\subsection*{Modification for Estimation for \textbf{Rare}} Threshold Traits
+The $h^2$ equation above holds for \textit{common} traits where $x_2$ is calculated from progeny of \textbf{two affected parents} (so midparent liability is $\mu^* = i$)
+\begin{itemize}
+	\item \textbf{If the trait is rare}, only 1 parent is likely affected and has average liability $\mu^* = i$
+	\item The other parent comes from the general population and has average liability $0$.
+	\item Therefore, \textbf{midparent liability} is $(i + 0) / 2 = i / 2$.
+\end{itemize}
+\[\therefore h^2 = \frac{x_1 - x_2}{i / 2} = \frac{2(x_1 - x_2)}{i}\]
+
+\subsubsection*{Example: Calculating $h^2$ for Threshold Traits}
+For this example, consider Rheumatic Fever.  The frequency in the general population is $0.005 = 1 - \Phi(x_1)$.
+\begin{itemize}
+	\item So, $\Phi(x_1) = 0.995$
+	\item From the distribution function we find: when $\Phi(x_1) = 0.995 \rightarrow x_1 = 2.57$.  So, $i = 2.8988$.
+\end{itemize}
+Frequency among offspring of affeted individuals is $0.05 = 1 - \Phi(x_2)$.
+\begin{itemize}
+	\item So, $\Phi(x_2) = 0.95$
+	\item From the distribution function we find: when $\Phi(x_2) = 0.95 \rightarrow x_2 = 1.64$.
+\end{itemize}
+Therefore,
+\[h^2 = \frac{x_1 - x_2}{i / 2} = \frac{2.57 - 1.64}{2.8988 / 2} = 0.64\]
+So, 64\% of the liability is heritable.
+\begin{itemize}
+	\item Since $H^2 \geq h^2$, \textbf{at least} 64\% of the variance in liability is due to genotype.
+\end{itemize}
+
+\subsection*{Remember: Broad- versus Narrow-Sense Heritability}
+\[H^2 = \frac{\sigma_g^2}{\sigma_p^2}\]
+Includes:
+\begin{itemize}
+	\item \textbf{Additive} effects of alleles ($\sigma_A^2$)
+	\item \textbf{Dominance} effects ($\sigma_D^2$)
+    \item \textbf{Epistasis} effects ($\sigma_I^2$)
+    \item $\sigma_g^2 = \sigma_A^2 + \sigma_D^2 + \sigma_I^2$ 
+\end{itemize}
+\[h^2 = \frac{\sigma_A^2}{\sigma_p^2}\]
+Includes: 
+\begin{itemize}
+	\item Only the \textbf{additive} effects of alleles
+	\item E.g., only the \textbf{additive} effects lead to heritable differences in phenotypic mean
+\end{itemize}
+$h^2$ is the proportion of phenotypic variance that can be used to predict the changes in the phenotypic mean after \textbf{selection on a population} or among \textbf{progeny of individuals.}
+\begin{itemize}
+	\item Generally, $h^2 < H^2$.
+	\item $h^2 = H^2$ when \textbf{all} alleles affecting a trait are \textbf{additive} in their effects (there is no dominance or epistasis)
+\end{itemize}
+
+\subsection*{Review: Variance and Gene Number}
+\[n = \frac{D^2}{8V_g}\]
+The following phenomena increase when $V_g$ is increased, leading to underestimates of gene number ($n$):
+\begin{itemize}
+	\item Dominance
+	\item Epistasis (examples: masking; multiplicative)
+	\item Unequal gene/allele contribution
+	\item Linkage
+\end{itemize}
+
+\subsection*{Effect of Unequal Contributions or Partially Linked Genes}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W9_6.png} 
+\end{center}
+Partial linkage has similar effects because recombination in F1 germlines generates recombinant chromosomes with different contributions.
+
+
+\end{document}

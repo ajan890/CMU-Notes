@@ -286,9 +286,170 @@ Strategies for handling missing data:
 	    \item But, this means throwing data away
 	    \item What do you do if every feature (or instance) has a missing value?
     \end{itemize}
+    \item Imputation: predict the missing data features
+    \begin{itemize}
+    	\item Simple imputation methods (ex. use mean/median/mode of observed values)
+    	\item Complex imputation methods (ex. density estimation; generative models)
+    	\item But, this means `inventing' data
+    \end{itemize}
+    \item Integration: ``sum out'' the missing values
+    \begin{itemize}
+	    \item But, this can be very expensive, and requires a distribution over each feature
+    \end{itemize}
+    \item Compensation: pay to acquire the missing feature values
 \end{itemize}
-Strategies for handling missing data:
+We consider two cases
+\begin{itemize}
+	\item Case 1: The labels for all instances are known
+	\item Case 2: Some labels are not known (and unknown labels are treated as missing features)
+\end{itemize}
+Data access model: Pool-based sampling.  Query selection: expected risk minimization.
 
+\subsection*{Algorithm 1 (known labels)}
+\begin{itemize}
+	\item Let $F$ be an (incomplete) $m$ by $n$ instance-feature matrix.  $n$ is the number of measurable features, $m$ is the number of instances in the pool
+	\item $F_{i, j}$ is the $j$-th feature for the $i$-th instance.  Any $F_{i, j}$ can be missing.
+	\item $Y = \{y_i \::\: i = 1, \dots, m\}$ is the set of class labels
+	\item $T = (F, Y)$ is the pool of training data
+	\item $L$ is the learning algorithm.  Importantly, $L$ must be capable of handling missing values
+	\item $\beta \geq 1$ is the batch size
+	\item $C$ is the cost matrix, where $C_{i, j}$ is the cost to acquire the $j$-th feature for the $i$-th instance.  Costs need not be uniform.
+\end{itemize}
+\begin{verbatim}
+Initialize set of possible queries Q = \
+    {q_ij for i in range(m) for j in range(n), if F_ij is missing}
+While stopping criterion not met:
+    Induce a classifier, M = L(T)
+    for q_ij in Q:
+        compute score(q_ij, c_ij, L, T)
+    Select the subset S of size beta
+    for q_ij in S:
+        Acquire values for F_ij
+        Remove q_ij from Q
+Return M = L(T)
+\end{verbatim}
+
+\subsubsection*{Scoring Function}
+The authors propose the following function to estimate the \textbf{expected utility} of a particular query $q_{i, j}$
+\[score(q_{i, j}, c_{i, j}, L, T) = E(q_{i, j}) = \sum_{k = 1}^K \mathcal{U} (F_{i, j} = v_k) P(F_{i, j} = v_k)\]
+\begin{itemize}
+	\item $\mathcal{K}$ is the number of distinct values the $j$-th feature can take on
+	\item $\mathcal{U}$ is a measure of the feature's utility for this instance
+	\item $P(F_{i, j} = v_k)$ is the probability the $j$-th feature is $v_k$ for instance $i$
+	\begin{itemize}
+	    \item For the first algorithm, $P(F_{i, j} = v_k) = P(F_{i, j} = v_k | y)$ is the class-conditional probability of the feature (estimated using the known values)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Utility}
+A query's utility is the marginal improvement in performance per unit cost
+\[\mathcal{U} (F_{i, j} = v_k) = \frac{\mathcal{A} (F, F_{i, j} = v_k)}{C_{i, j}}\]
+\begin{itemize}
+	\item $\mathcal{A}(F, F_{i, j} = v_k)$ is a function that measures the marginal improvement of the model if we measure feature $F_{i, j}$ and discover that it has value $v_k$
+\end{itemize}
+To measure marginal improvement, $\mathcal{A}$,
+\begin{itemize}
+	\item The algorithm assumes that we have a set of hold-out instances $T_H = (F_H, Y_H)$ in addition to the training data, $T = (F, Y)$
+	\item The data in $T_H$ is not used to train models or to estimate $P(F_{i, j} = v_k)$, so we can use it to determine whether a model trained under the assumption that $F_{i, j} = v_k$ is better or worse than one trained with $F_{i, j} = v_k'$, or one trained leaving $F_{i, j} = ?$
+	\item Let $LG(x) = \sum_y -\delta(y) \log \hat{f}_{F'}(y | x)$ be the log-gain (aka cross-entropy)
+	\begin{itemize}
+	    \item Here, $\hat{f}_{F'}(y | x)$ is the estimated posterior class probability a model trained on set $F'$ where we've temporarily assigned missing value $F_{i, j}$ to some $v_k$
+	    \item $\delta$ is an indicator function that is $1$, if $y$ is the correct label, and zero otherwise
+	    \item Small values of $LG$ indicate that the model places high probability on the correct label for some instance $x$
+    \end{itemize}
+    \item Let $\mathcal{A}(F, F_{i, j} = v_k) = \sum_{e \in T_H} LG(x_e)$ be the total log-gain if $F_{i, j} = v_k$
+\end{itemize}
+Why do we use log-gain instead of classification error?
+\begin{itemize}
+	\item Classification error isn't sensitive to the confidence of the predictions.
+\end{itemize}
+
+\subsubsection*{Managing Computational Complexity}
+\begin{itemize}
+	\item A brute-force implementation of this algorithm would require training $O(mnK)$ models, one for each possible value of each missing feature
+	\item Training and evaluating a model requires $\Omega(mn)$ time
+	\item These costs could become prohibitive for large values of $m$, $n$, or $K$
+\end{itemize}
+The authors address the complexity problem by sampling from set $Q$
+\begin{itemize}
+	\item Let $1 \leq \alpha \leq mn / \beta$ be the \textbf{exploration parameter}
+	\item The algorithm will only compute utilities for $\alpha \beta$ elements from $Q$ each round, and it will select $\beta$ elements from this sampled subset to query
+    \item They call this the \textbf{Sampled Expected Utility} (SEU)
+\end{itemize}
+Sevaral variants of SEU are possible
+\begin{itemize}
+	\item SEU-US: samples are chosen uniformly at random
+	\item SEU-ES: samples are chosen using \textbf{error sampling}.  That is, the probability of being sampled is `high' if the current model mis-labels a given instance (recall, labels are known), otherwise it is `low'
+\end{itemize}
+Variants of SEU tested:
+\begin{itemize}
+	\item SEU-US: random sampling
+	\item SEU-ES: error sampling
+	\item SEU-Accuracy: use $A$ = classification accuracy (rather than log-gain)
+	\item SEU-Frequency: $P$ is not class-conditional
+	\item SEU-DT: $P$ from tree induction (decision tree)
+\end{itemize}
+Out of those tested, SEU-ES works the best, overall.
+
+\subsection*{Algorithm 2 (Missing labels)}
+The main difference here is that now any $F_{i, j}$ or $y_i$ can be missing.
+\begin{itemize}
+	\item The second algorithm treats labels as just another kind of feature
+	\item The main differences between the algorithms is how they estimate $P(F_{i, j} = v_k)$ and how they rank missing values
+	\begin{itemize}
+	    \item The 2nd algorithm uses classification trees to estimate $P(F_{i, j} = v_k)$, rather than using class-conditional probabilities
+	    \item Roughly, $P(F_{i, j} = v_k) = \sum_y P(F_{i, j} = v_k | y) P(Y_i = y)$
+	    \item Classification trees are also used to estimate $P(Y_i = y)$, for missing $Y_i$
+	    \item Missing values are ranked using a somewhat different function that considers the uncertainty in the class-label
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Summary: Active Feature Value Acquisition}
+\begin{itemize}
+	\item Real-world data sets often contain missing feature values (ex. when different features are measured using different experiments)
+	\item Active Feature Value Acquisition generalizes active learning to handling both missing feature values and missing labels
+	\begin{itemize}
+	    \item The paper by Saar-Tsechansky, \textit{et al} uses a heuristic query selection strategy, but the results are promising on benchmark data sets
+	    \item Developing Active Feature Value Acquisition algorithms with formal guarantees remains an open problem
+    \end{itemize}
+\end{itemize}
+
+\section*{Reinforcement Learning}
+Reinforcement learning is modeled as a \textbf{Markov Decision Process}
+\begin{itemize}
+	\item A Markov decision process is a 4-tuple $(S, A, P_a, R_a)$, where
+	\begin{itemize}
+	    \item $S$ is a set of states called the \textit{state space}
+	    \item $A$ is a set of actions called the \textit{action space}.  $A_s$ is the set of actions available from state $s$
+        \item $P_a(s, s') = P(s_{t + 1} = s' | s_t = s, a_t = a)$ is the probability that action $a$ in state $s$ at time $t$ will lead to state $s'$ at time $t + 1$
+        \item $R_a(s, s')$ is the immediate reward (or expected immediate reward) received after transitioning from state $s$ to state $s'$, due to action $a$
+    \end{itemize}
+    \item A policy function $\pi$ is a potentially probabilistic mapping from state space $S$ to action space $A$.
+    \item \textbf{Objective:} choose a policy $\pi$ that will maximize some cumulative reward
+\end{itemize}
+
+\subsection*{Active Learning as Decision Making}
+There are many similarities between active learning and reinforcement learning
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline \textbf{Active Learning} & \textbf{Reinforcement Learning} \\ \hline
+Heuristic selection & Learned selection `action' \\ \hline
+Accuracy & Reward feedback \\ \hline
+Budget & Budget \\ \hline
+Simulation for evaluation & Simulation for learning (and evaluation) \\ \hline
+\end{tabular}\\ \vspace{1em}
+Why not frame active learning as reinforcement learning?
+\end{center}
+
+\subsection*{Learning how to Active Learn}
+\textbf{Goal of Active Learning:} Select a small subset of data for annotation such that a classifier learned on the data is highly accurate
+\begin{itemize}
+	\item Usually done using heuristic selection methods but performance of heuristics varies between datasets
+\end{itemize}
+\textbf{Key Idea}
+\begin{itemize}
+	\item Introduce a novel formulation by reframing the active learning as a reinforcement learning problem and explicitly learning a data selection policy, where the policy takes the role of the active learning heuristic
+\end{itemize}
 
 
 

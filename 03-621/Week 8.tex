@@ -12,6 +12,7 @@
 % lists
 \usepackage{enumerate}
 \usepackage{tabularx}
+\usepackage{multirow}
 
 % images
 \usepackage{graphicx} % for images
@@ -139,4 +140,273 @@ With just two alleles per gene: \# genotypes = $3^n$.
 	\item How about genetic versus environmental contributions to the variance in phenotype?
 \end{itemize}
 
+\subsection*{Variance due to Genotype Plus Environment}
+When Genotype and Environment act independently, the overall phenotypic variance is the sum of the variance due to genotype differences plus the variance due to environment differences.
+\[\text{Var}_p = \text{Var}_g + \text{Var}_e\]
+where
+\begin{itemize}
+	\item $\text{Var}_p$ represents phenotypic variance
+	\item $\text{Var}_g$ represents genotypic contribution
+	\item $\text{Var}_e$ represents environmental contribution
+\end{itemize}
+Some examples of independence include
+\begin{itemize}
+	\item serum cholesterol levels in humans (genotype + diet)
+	\item milk production in cattle
+\end{itemize}
+
+\subsection*{Non-Independence: Genotype by Environment Interaction}
+Environmental effects on phenotype differ according to genotype.
+\begin{itemize}
+	\item The G-E interaction can change the relative ranking of the genotypes with respect to phenotypic value
+	\item For example: Maize (corn)
+	\begin{itemize}
+	    \item Suppose $A$ and $B$ are genetically distinct varieties (different inbred lines/genotypes)
+	    \item $A$ might perform better in a poor environment
+	    \item $B$ might perform better in a rich environment
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Non-Independence: Genotype by Environment Association}
+Different genotypes are not distributed randomly with respect to the environment
+\begin{itemize}
+	\item Certain genotypes are preferentially associated with certain environments, which may increase or decrease the mean phenotypic value
+	\item For example, in the dairy husbandry: some farmers feed each cow in proportion to its level of milk production
+	\item In horse racing: the fastest horses are assigned to the best trainers and jockeys
+\end{itemize}
+
+\subsection*{To what extent is the phenotype due to genetics vs environment?}
+`'`Nature vs Nurture''
+\begin{itemize}
+	\item \textbf{Relative risk (sibling):} 
+	\[\lambda_s = \frac{\text{\% affected among siblings of affected}}{\text{\% affected in general population}}\]
+    \begin{itemize}
+	    \item $\lambda_s$ ranges from 1 to near infinity.
+    \end{itemize}
+    \item \textbf{Twin Concordance:}
+    \begin{itemize}
+	    \item \% of twin pairs where both are affected if one is affected.
+	    \[C = \frac{AA}{AA + AN + NA}\]
+        \item Monozygotic: ranges from near 0 (if raised apart) to 1.0
+        \item Dizygotic: ranges from near 0 (if raised apart) to 0.5
+    \end{itemize}
+    \item How does a shared environment impact $\lambda_s$ and $C$ values?
+    \item Relationship to gene number is not clear.
+\end{itemize}
+
+\subsubsection*{Examples}
+\begin{center}
+\begin{tabular}{|c|c|cc|}
+\hline
+\multirow{2}{*}{\textbf{Disorder}} & \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Relative risk}\\ \textbf{for sib} ($\lambda_s$)\end{tabular}} & \multicolumn{2}{c|}{\textbf{Twin Concordance (\%)}} \\
+ &  & \textbf{MZ Twins*} & \textbf{DZ Twins*} \\ \hline
+Type 1 diabetes & 15.0 & 42.9 & 7.4 \\
+Type 2 diabetes & 3.0 & 34.0 & 16.0 \\
+Crohn's disease & 25.0 & 37.0 & 10.0 \\
+Multiple sclerosis & 20.0 & 25.3 & 5.4 \\
+Cleft lip & 40.0 & 35.0 & 5.0 \\
+Breast cancer, female & 2.0 & 6.5 & 5.5 \\
+Peptic ulcer & & 64.0 & 44.0 \\
+Tuberculosis & & 51.0 & 22.0 \\
+Rheumatoid arthritis & & 50.0 & 8.0 \\
+Parkinson disease & & 15.5 & 11.1 \\
+Ulcerative colitis & & 7.0 & 3.0 \\
+Autism spectrum disorder & 6.5 & 60.0 & 7.0 \\
+Schizophrenia & 9.0 & 40.8 & 5.3 \\
+Alzheimer disease (late) & 4.0 & 32.2 & 8.7 \\
+Dyslexia & & 64.0 & 40.0 \\
+Major affective disorder & & 60.0 & 20.0 \\
+Alcoholism & & 40.0 & 20.0 \\ \hline
+\end{tabular}
+\end{center}
+
+\subsection*{Genetic vs Environmental Contributions to Phenotypic Variance}
+\[\sigma_p^2 = \sigma_g^2 + \sigma_e^2 + \sigma_{gxe}^2\]
+\begin{itemize}
+	\item $\sigma_g$ is the independent effect of genotype
+	\item $\sigma_e$ is the independent effect of environment
+	\item $\sigma_{gxe}$ is the effect of gene and environment interaction
+\end{itemize}
+So how much of the variance is due to genotype, and how much is due to environment?
+
+\subsubsection*{Importance of the Relative Magnitude of $\sigma_g^2$}
+\begin{itemize}
+	\item Determines how much the phenotype can be altered by:
+	\begin{itemize}
+	    \item natural selection (evolution)
+	    \item artificial selection (animal / plant breeding)
+    \end{itemize}
+    \item For \textbf{human} complex disease traits:
+    \begin{itemize}
+	    \item Determines to what extent risk can be reduced by modifying environmental factors
+	    \begin{itemize}
+	        \item diet, exercise, stress, exposure to risk factors, \dots
+	        \item (versus using drug therapies with side effects)
+        \end{itemize}
+        \item Determines how difficult it will be to identify the genes that influence susceptibility / risk
+        \begin{itemize}
+	        \item harder if \underline{many} genes make small contributions each, or if environmental effects are large
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Estimation of Variance Contributions}
+We have to separate the effects of Genotype and Environment.  We can use genetics to reduce or eliminate Genotypic variance.\\\\
+To do reduce or eliminate genotypic variance, we first inbreed, to obtain two lines of pure-breeding organisms, then cross them.
+\begin{itemize}
+	\item Recall that inbreeding reduces heterozygosity.  (e.g., enough times would create pure-breeding lines)
+	\item Cross the pure-breeding lines, so all the F1 progeny is heterozygous in mostly everything.
+\end{itemize}
+For a genetically \textbf{heterogeneous} population, our formula is
+\[V_p = V_g + V_e\]
+For a genetically \textbf{uniform} population, it is
+\[V_p = 0 + V_e\]
+Therefore, if we have two phenotypically divergent inbred lines ($P_1$ and $P_2$), and we cross them, we get a genetically uniform population at F1.
+\[V_{pF1} = 0 + V_e = V_e\]
+Additionally, note that the parental generation is also genetically uniform, as in:
+\[V_{pP1} = 0 + V_e = V_e \quad\quad V_{pP2} = 0 + V_e = V_e\]
+Then, we cross the F1 generation to make a genetically heterogeneous population
+\[V_{pF2} = V_g + V_e\]
+At this point, both $V_g$ and $V_e$ can be calculated, since the environment is probably the same for all generations.  If the genotype and environment are \textbf{independent}, then $V_{pP1} = V_{pP2} = V_{pF1}$.
+
+\subsection*{Estimating Genetic Variance for a Human Trait}
+With humans, we don't have inbred lines or controlled crosses.  However, for identical (i.e. monozygotic) twins, $\sigma_g^2 = 0$.  Therefore, we get $\sigma_p^2 = 0 + \sigma_e^2$. \\\\
+\begin{itemize}
+	\item How do we get $\sigma_g^2$ in this case?
+	\item Genotype and environment are what make them similar, so we can cancel the effect of environment by analyzing the covariance between many pairs of identical twins raised apart in different and random environments.
+	\item If $X_i$ and $Y_i$ are the members of a twin pair $i$:
+	\[COV_{X, Y} = \frac{\sum (X_i - \bar{X})(Y_i - \bar{Y})}{N - 1} = COV_g + COV_e\]
+    \item For monozygotic twins raised apart in different random environments,
+    \begin{itemize}
+	    \item Environment covariance $COV_e = 0$ (because random)
+	    \item Therefore, $COV_g = COV_{X, Y}$
+    \end{itemize}
+    \item However, $\sigma_g^2 = 0$ for any pair of identical twins, so: $(X_{gi} - \bar{X}_g) = (Y_{gi} - \bar{Y}_g)$.
+    \item Therefore,
+    \[COV_{X, Y} = \frac{\sum (X_{gi} - \bar{X}_g)^2}{N - 1} = \frac{\sum (Y_{gi} - \bar{Y}_g)^2}{N - 1} = V_g\]
+\end{itemize}
+The genetic contribution $V_g$ is equal to the covariance between identical twin pairs raised apart.
+
+\subsubsection*{$V_g$ from Dizygotic twins}
+We can estimate $V_g$ using dizygotic twins instead of monozygotic twins, which might be more practical, but not as good.\\\\
+With a fraternal twin (FT) pair (half alleles shared), we have
+\[V_{pFT} = \frac{1}{2} V_g + V_e\]
+This simplifies to
+\[V_g = 2[V_{pFT} - V_{pIT}]\]
+This can yield overestimates for $V_g$ because:
+\begin{enumerate}
+	\item Embryonic membranes are shared between identical twin (IT) pairs
+	\item Different sexes in half of FT pairs
+	\item GxE interaction increases FT variance but not IT.
+	\item Greater similarity in treatment of ITs
+	\item ``Private'' environment effects shared by pairs of twins raised together will appear to be genetic
+\end{enumerate}
+$H^2$ can also be estimated by comparing identical and fraternal twins.
+\begin{itemize}
+	\item We just saw that:
+	\begin{align*}
+    V_e &= V_{pIT} \\
+    V_g &= 2[V_{pFT} - V{pIT}]
+    \end{align*}
+    Therefore,
+    \[H^2 = \frac{V_g}{V_g + V_e} = \frac{2[V_{pFT} - V_{pIT}]}{2V_{pFT} - V_{pIT}}\]
+\end{itemize}
+Again, this can yield overestimates for $V_g$ for the same reasons as above.
+
+\subsection*{Evolutionary Impact of the Contributing Gene Number}
+The number of genes influences the amount by which a population can be genetically improved by selective breeding (or adapted by natural selection).
+\begin{itemize}
+	\item The larger the number of genes, the greater this potential
+	\item If the number of genes is large, selective breeding can even generate a population in which the phenotypic value of \textit{every} individual \textbf{greatly exceeds that of the best individuals in the starting population}.
+\end{itemize}
+
+\subsubsection*{Reason 1: Genotype Frequencies}
+\begin{itemize}
+	\item In a real starting population of \textit{limited size}, many of the possible genotypes are never formed because their expected frequencies are too low.
+	\item But, as selection changes the allele frequencies, these genotypes may become more likely, allowing further directional selection in future generations.
+\end{itemize}
+Consider a continuous trait determined by 5 genes with allelic pairs:
+\[A~a \quad B~b \quad C~c \quad D~d \quad E~e\]
+Suppose the most desireable phenotype is associated with the genotype
+\[aa~bb~cc~dd~ee\]
+\begin{itemize}
+	\item Before selection, the frequency of each one might be 0.1.
+	\item After a certain degree of selection, the frequency of each one might be 0.4.
+	\item This 4x change in allele frequencies gives a million-fold change in genotype frequency.  ($0.1^5 = 1\times 10^{-10}, 0.4^5 = 1\times 10^{-4}$)
+\end{itemize}
+
+\subsubsection*{Reason 2: Probability of Mutations}
+The larger the number of genes, the greater the probability that new mutations will arise in the population that further increase the phenotypic range.
+\begin{itemize}
+	\item (Because the target size for such mutations is larger)
+\end{itemize}
+If $\mu = 10^{-6}$ mutations per gene per generation:
+\begin{itemize}
+	\item A 3 gene trait would have $3 \times 10^{-6}$ new alleles per generation that may affect the trait.
+	\item A 20 gene trait would have $2 \times 10^{-5}$
+\end{itemize}
+
+\subsection*{Impact of the Contributing Gene Number for Human Disease Traits}
+\begin{itemize}
+	\item Determines how difficult it will be to identify the genes that influences susceptibility / risk
+	\item Harder if alleles at many genes each make small contributions
+\end{itemize}
+
+\subsection*{The number of genes cannot be deduced from phenotype distributions alone.}
+This is because we can approximate the same normal distribution with different numbers of genes, adjusting the number of alleles, allele contributions, and allele frequencies.
+\begin{itemize}
+	\item However, there is a way we can estimate the gene number using crosses.
+\end{itemize}
+
+\subsection*{Relation of $V_g$ to Gene Number}
+For a given difference $D$ in phenotypic means between $P_1$ and $P_2$, the genotypic variance $V_g$ in the F2 \underline{decreases} with the number of contributing genes.
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W8_3.png} 
+\end{center}
+\[V_g = \frac{D^2}{8n}\]
+\begin{itemize}
+	\item $D$ = difference between the \textbf{means} of the original inbred parent strains $P_1$ and $P_2$
+	\item $n$ = gene number
+	\item $V_g$ = variance
+\end{itemize}
+This relationship assumes:
+\begin{itemize}
+	\item Random mating
+	\item Additive effects by alleles and genes.  (No dominance, no epistasis)
+	\item Equal contribution by all genes
+	\item Genes are unlinked
+	\item Same environment
+\end{itemize}
+
+\subsection*{Proper Interpretation of Broad-Sense Heritability}
+\[H^2 = \frac{\sigma_g^2}{\sigma_p^2}\]
+\begin{itemize}
+	\item $H^2$ is important for estimating the genetic contribution to \textit{variance} in quantitative traits, but it can be misinterpreted.
+	\begin{itemize}
+	    \item Applies to populations, not individuals
+	    \item NOT the proportion of the phenotypic value that is due to genotype
+	    \item NOT fixed: varies with environment and genetic composition
+	    \item Cannot be used to predict progeny phenotype
+    \end{itemize}
+    \item Reason: Only the \textbf{additive} genetic effects lead to heritable differences in phenotypic mean, but 
+    \[V_g = V_A + V_D + V_I\]
+    (\textbf{A}dditive + \textbf{D}ominance + \textbf{E}pistasis effects)
+\end{itemize}
+
+\subsection*{A Predictive Measure of Heritability: Narrow-Sense Heritability $h^2$}
+Defined as: Ratio of \textbf{additive} genotypic variance to total phenotypic variance
+\[h^2 = \frac{V_A}{V_p} = \frac{V_A}{V_g + V_e}\]
+\begin{itemize}
+	\item $V_A$ is the genotypic variance due to \textbf{additive effects of alleles and genes}
+	\[V_g = V_A + V_D + V_I\]
+\end{itemize}
+$h^2$ is used for predicting phenotypic \textbf{means} of a population after group selection, or among progeny of individuals
+\begin{itemize}
+	\item How to obtain $h^2$
+	\begin{itemize}
+	    \item Parent-Offspring Regression
+	    \item Selection experiments: the ``Breeder's Equation''
+	    \item Incidence distributions for Threshold Traits
+    \end{itemize}
+\end{itemize}
 \end{document}

@@ -1,0 +1,414 @@
+% document formatting 
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{blkarray}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 9 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Mixture Models}
+Given samples $x^1, \cdots, x^N$, where each $x^i = [x_{i1}, \cdots, x_{iJ}]$ for $N$ samples and $J$ variables, we want to find $K$ clusters.
+\begin{itemize}
+	\item Our data matrix here has $N$ samples (rows), and $J$ variables (columns).
+	\item We are clustering rows together.
+\end{itemize}
+In the context of biology, we might be
+\begin{itemize}
+	\item clustering genotype data collected for $N$ individuals, $J$ loci.
+	\item clustering expression data of different genes at differnet times.
+	\item etc.
+\end{itemize}
+
+\subsection*{Difference between K-means and Mixture Models}
+\textbf{K-means gives hard assignments, Mixture Models give soft assignments.}
+\begin{itemize}
+	\item When K-means assigns a sample to a given cluster, the sample receives an integer label of the cluster.  The issue is that hard clustering does not reflect uncertainty of cluster assignment.
+	\item When a mixture model assigns a sample to a given cluster, it gives a probability for all the different clusters.  The actual cluster assignment is the largest probability.
+	\begin{itemize}
+	    \item Since these are probabilities, the sum of the assignments for one sample must be 1.
+    \end{itemize}
+\end{itemize}
+A mixture model is a generalization of K-means.
+
+\subsection*{Gaussian Mixture Models}
+Gaussian Mixture Models use multivariate Gaussians to model data distribution within a cluster. 
+\begin{itemize}
+	\item A cluster is defined by $N(\mu, \Sigma)$, where in a $D$-dimensional example, $\mu \in \mathbb{R}^{D \times 1}$ represents the mean of a cluster, and $\Sigma \in \mathbb{R}^{D \times D}$ represents variance.
+\end{itemize}
+
+\subsection*{Gaussian Mixture models data distribution with multiple clusters.}
+Each data point has:
+\begin{itemize}
+	\item (Latent) cluster label: $c \in \{1, \cdots, K\}$, and
+	\item (Observed) data value: $x \in \mathbb{R}^J$
+\end{itemize}
+S1: Cluster label, $p(c = i) = \pi_i$ (for example with 3 clusters)
+\begin{itemize}
+	\item $p(c = 1) = \pi_1$
+	\item $p(c = 2) = \pi_2$
+	\item $p(c = 3) = \pi_3$
+\end{itemize}
+S2: data given label, $p(x | c = i) \sim N(\mu_i, \Sigma_i)$
+\begin{itemize}
+	\item $p(x | c = 1) \sim N(\mu_1, \Sigma_1)$
+	\item $p(x | c = 2) \sim N(\mu_2, \Sigma_2)$
+	\item $p(x | c = 3) \sim N(\mu_3, \Sigma_3)$
+\end{itemize}
+Overall distribution:
+\[p(x) = \sum_{i = 1}^3 p(x, c = i) = \sum_{i = 1}^3 p(x | c = i) p(c = i)\]
+
+\subsection*{Mixture of Gaussians}
+The probability model for mixture of $K$ Gaussians is:
+\[p(x) = \sum_{i = 1}^K p(x, c = i) = \sum_{i = 1}^K p(x | c = i) p(c = i)\]
+\begin{itemize}
+	\item Mixing proportions $p(c = i) = \pi_i$, for $i = 1, \dots, K$ clusters
+	\item Mixture component parameters $\mu_i, \Sigma_i$: mean and covariance of Gaussians distributions for $i = 1, \dots, K$ clusters
+\end{itemize}
+
+\subsection*{Mixture Model as a Bayesian Network}
+\begin{itemize}
+	\item A mixture model is a special case of a Bayesian network
+	\begin{itemize}
+	    \item $c$: cluster labels
+	    \item $x$: observed data
+    \end{itemize}
+    \item What is the joint probability distribution?
+    \begin{align*}
+        \rightarrow P(x, c) &= P(c) \times P(x | c) \\
+        \rightarrow P(x) &= \sum_{i = 1}^k P(x | c = i) P(c = i) \\
+        &= \sum_{i = 1}^k P(x, c = i)
+    \end{align*}
+    \item A Hidden Markov Model is many mixture models threaded over time.
+\end{itemize}
+
+\subsection*{Model Summary}
+$x^1, \cdots, x^N$ generated IID as:
+\begin{itemize}
+	\item (Latent variable) cluster label: $c^n \sim \text{Categorical}(\pi_1, \cdots, \pi_k)$
+	\item (Observed) $[x^n | c^n = i] \sim N(\mu_i, \Sigma_i)$
+	\item Parameters: $\pi_i, \mu_i, \Sigma_i$ for each component $i$
+	\item Distribution: $p(x^n) = \sum_{i = 1}^K p(c^n = i) p(x^n | c^n = i)$
+\end{itemize}
+
+\subsection*{Mixture Model Inference}
+Given observed data $x$, can you infer cluster labels $c$?
+\begin{itemize}
+	\item Assume you have a mixture model estimated from data.
+	\item How can you infer the cluster labels for each sample?
+\end{itemize}
+The model is
+\[p(x, c) = p(x | c) p(c)\]
+\begin{itemize}
+	\item For sample $x$, infer cluster label $c$
+	\item More specifically, infer $p(c = i | x)$
+\end{itemize}
+Using bayes rule,
+\[p(c = i | x) = \frac{p(x | c = i) p(c = i)}{p(x)} = \frac{p(x | c = i) p(c = i)}{\sum_{i = 1}^K p(x | c = i) p(c = i)}\]
+Recall
+\[p(c = i) = \pi_i \quad p(x | c = i) \sim N(\mu_i, \Sigma_i)\]
+
+\subsection*{Inference Summary}
+\begin{itemize}
+	\item Model: $\pi_i, \mu_i, \Sigma_i$ for each component $i$
+	\item Question: given $x^n$, what's $i$ with the largest $p(c^n = i | x^n)$
+	\item Procedure:
+	\begin{itemize}
+	    \item For each $i$, compute $p(x^n | c^n = i) p(c^n = i)$
+	    \item Select $i$ with the largest such value
+    \end{itemize}
+\end{itemize}
+
+\section*{Mixture Model Learning}
+Learning parameters:
+\begin{itemize}
+	\item If we have fully observed data, $(c, x)$, we can use MLE!
+	\item If we have partially observed data $x$, no observations for $c$, then we use the EM algorithm!
+\end{itemize}
+Model selection:
+\begin{itemize}
+	\item How many clusters do we want?
+\end{itemize}
+
+\subsection*{Learning with Fully Observed Data}
+We have observed data ($N$ samples, $J$ variables), and observed cluster labels ($N$ samples)
+\begin{itemize}
+	\item Given samples $x^1, \cdots, x^N$, where each $x^n = [x_i^n, \cdots, x_J^n]$, for $N$ samples and $J$ variables.
+	\item Assume \textbf{cluster labels} $c^1, \cdots, c^N$ are known.
+	\item Then, we can perform MLE
+	\begin{align*}
+        &\argmax_{\pi_i, \mu_i, \Sigma_i} \log p\left((x^1, c^1), \cdots, (x^N, c^N)\right) \\
+        &= \argmax_{\pi_i, \mu_i, \Sigma_i} \sum_{n = 1}^N \log p(x^n | c^n) p(c^n) \\
+        &= \argmax_{\mu_i, \Sigma_i} \sum_{n = 1}^N \log p(x^n | c^n) + \argmax_{\pi_i} \sum_{n = 1}^N \log p(c^n)
+    \end{align*}
+    \begin{itemize}
+	    \item The left argmax represents the mixture component modes (Gaussian)
+	    \item The right argmax represents mixing proportions.  
+	    \item They can be optimized separately.
+    \end{itemize}
+\end{itemize}
+Mixing Proportions
+\[p(c = i) = \frac{N_i}{N}\]
+where 
+\begin{itemize}
+	\item $N$: Total number of samples
+	\item $N_i$: Number of samples in cluster $i$
+\end{itemize}
+Mixture model parameters
+\begin{align*}
+    \mu_i &= \frac{1}{N_i} \sum_{n = 1}^N x^n I(c^n = i) \\
+    \Sigma_i &= \frac{1}{N_i} \sum_{n = 1}^N (x^n - \mu_i)(x^n - \mu_i)^T I(c^n = i)
+\end{align*}
+where $N_i$: number of samples in cluster $i$
+\begin{itemize}
+	\item $I(c^k = i)$: Indicator function that takes value (1) if $c^k = i$, (0) otherwise.
+\end{itemize}
+
+\subsection*{Learning with Fully Observed Data Summary}
+\begin{itemize}
+	\item Data: $(x^1, c^1), \cdots, (x^N, c^N)$
+	\item Goal: learn model parameters $\pi_i, \mu_i, \Sigma_i$ for $i = 1, \cdots, K$
+    \item Procedure:
+    \begin{itemize}
+	    \item Mixing proportions: $\pi_i = \frac{N_i}{N}$, where $N_i = \sum_{n = 1}^N I(c^n = i)$
+	    \item Mixture model parameters:
+	    \begin{itemize}
+	        \item $\mu_i = \frac{1}{N_i} \sum_{n = 1}^N x^n I(c^n = i)$
+	        \item $\frac{1}{N_i} \sum_{n = 1}^N (x^n - \mu_i)(x^n - \mu_i)^T I(c^n = i)$
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Learning on Partially Observed Data}
+\begin{itemize}
+	\item Given samples $x^1, \cdot, x^N$, where each $x^n = [x_1^n, \cdots, x_J^n]$ for $N$ samples and $J$ variables
+	\item Assume \textbf{cluster labels} $c^1, \cdots, c^N$ are \textbf{unknown}
+\end{itemize}
+We have a latent variable model.  ($c$ is unobserved, only $x$ is observed).  What we know is that MLE is easy if labels were observed.  And labels can be inferred, if MLE solutions are known.
+
+\subsection*{EM Algorithm}
+Try maximizing the data log likelihood for $N$ samples!
+\begin{align*}
+    \log \prod_{n = 1}^N p(x^n) &= \sum_{n = 1}^N \log p(x^n) \\
+    &= \sum_{n = 1}^N \log \sum_{i = 1}^K p(x^n, c^n = i) \\
+    &= \sum_{n = 1}^N \log \sum_{i = 1}^K p(x^n | c^n = i) p(c^n = i)
+\end{align*}
+Difficult to optimize because $c^n$ is missing!
+
+\subsection*{EM Optimization Criterion}
+Maximize the `expected' data log likelihood for $N$ samples:
+\[E_{p(c^n | x^n)} \left[\sum_{n = 1}^N \log p(x^n, c^n)\right]\]
+\textbf{Iterate until convergence:}
+\begin{itemize}
+	\item Assign samples to clusters.  (\textbf{E-step}: Infer cluster labels $c^n$)
+	\item Find the cluster means.  (\textbf{M-step}: Parameter estimation $(\pi_i, \mu_i, \Sigma_i)$)
+\end{itemize}
+
+\subsubsection*{(Expectation) E-Step}
+Assign clusters $p(c^n | x^n, \theta^{(t)})$
+\begin{itemize}
+	\item Compute expected likelihood with respect to latent cluster labels
+	\[E_{p(c^n | x^n, \theta^{(t)})} \left[\log \prod_{n = 1}^N p(x^n, c^n)\right]\]
+    \item $\theta^{(t)} = \{\pi_i, \mu_i, \Sigma_i\}_{i = 1}^K$ are current estimates of parameters
+\end{itemize}
+
+\subsubsection*{(Maximization) M-step}
+Find the parameters that maximize this quantity
+\[\theta^{(t + 1)} = \argmax_\theta E_{p(c^n | x^n, \theta^{(t)})} \left[\log \prod_{n = 1}^N p(x^n, c^n)\right]\]
+\begin{itemize}
+	\item EM algorithm is guaranteed to converge: the log likelihood of the observed data is guaranteed to increase in each iteration.
+\end{itemize}
+
+\subsection*{E-step in Gaussian Mixture}
+\begin{itemize}
+	\item Compute cluster label probability $P(c^n = i | x^n)$ for each data point given the current parameters $\{\pi_i, \mu_i, \Sigma_i\}_{i = 1}^K$
+	\[P(c^n = i | x^n) = \frac{p(x^n | c^n = i) p(c^n = i)}{\sum_{i = 1}^K p(x^n | c = i) p(c^n = i)}\]
+\end{itemize}
+
+\subsection*{M-step in Gaussian Mixture}
+\begin{itemize}
+	\item Compute parameters given cluster labels $P(c^n = i | x^n)$
+	\item Mixing proportions
+	\[\pi_i = \frac{1}{N} \sum_{n = 1}^N p(c^n = i | x^n)\]
+    \begin{itemize}
+        \item where $N$ is the total number of samples
+    \end{itemize}
+    \item Mixing model parameters
+    \begin{align*}
+        \mu_i &= \frac{\sum_{n = 1}^N x^n p(c^n = i | x^n)}{\sum_{n = 1}^N p(c^n = i | x^n)} \\
+        \Sigma_i &= \frac{\sum_{n = 1}^N (x^n - \mu_i)(x^n - \mu_i)^T p(c^n = i | x^n)}{\sum_{n = 1}^N p(c^n = i | x^n)}
+    \end{align*}
+\end{itemize}
+
+\subsection*{Example: EM Algorithm on Gaussian Mixture}
+\begin{itemize}
+	\item To start: ``Guess'' the centroid $\mu_i$ and covariance $\Sigma_i$ of each of the $K$ clusters
+	\item Loop:
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W9_1.png} 
+\end{center}
+
+\subsection*{Convergence in EM}
+\begin{itemize}
+	\item The log likelihood of the observed data is \textbf{guaranteed to increase} in each iteration of the EM algorithm.  One can prove this monotonic increase data log likelihood.
+	\begin{itemize}
+	    \item Data log likelihood: $\log \prod_{n = 1}^N p(x^n)$
+	    \item Expected complete data log likelihood: $E[\log \prod_{n = 1}^N p(x^n, c^n)]$
+    \end{itemize}
+    \item EM converges to local minimum, and there are multiple local minimums
+    \begin{itemize}
+	    \item Latent variable model $\rightarrow$ objective function non-convex
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Learning with Partially Observed Data Summary}
+\begin{itemize}
+	\item Data: $x^1, \cdots, x^N$ (note that labels $c^n$ not observed)
+	\item Goal: learn model parameters $\pi_i$, $\mu_i$, $\Sigma_i$ for $i = 1, \cdots, K$
+    \item Procedure: 
+    \begin{itemize}
+	    \item \textbf{E step:} compute $P(c^n = i | x^n)$ given current parameters $\{\pi_i, \mu_i, \Sigma_i\}_{i = 1}^K$
+        \begin{itemize}
+	        \item $P(c^n = i | x^n) = \frac{p(x^n | c^n = i) p(c^n = i)}{\sum_{i = 1}^k p(x^n | c = i) p(c^n = i)}$
+        \end{itemize}
+        \item \textbf{M step:} compute parameters given cluster labels $P(c^n = i | x^n)$
+        \begin{itemize}
+	        \item $\pi_i = \frac{1}{N} \sum_{n = 1}^N p(c^n = i | x^n)$ 
+	        \item $\mu_i = \frac{\sum_{n = 1}^N x^n p(c^n = i | x^n)}{\sum_{n = 1}^N p(c^n = i | x^n)}$
+	        \item $\Sigma_i = \frac{\sum_{n = 1}^N (x^n - \mu_i)(x^n - \mu_i)^T p(c^n = i | x^n)}{\sum_{n = 1}^N p(c^n = i | x^n)}$
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{EM in Practice}
+\begin{itemize}
+	\item Initialization of EM: set the parameters to random values
+	\item Results can vary based on initialization
+	\item Run EM with multiple different initializations
+	\begin{itemize}
+	    \item Multiple random initializations
+	    \item Initialize with the results of simpler methods, e.g., K-means
+    \end{itemize}
+    \item Select the results with the highest data log likelihood
+\end{itemize}
+
+\subsection*{How to Select the Number of Clsuters}
+\begin{itemize}
+	\item Cross validation
+	\item Compute the likelihood of the held-out (validation) data to determine which model (number of clusters) is more accurate
+	\[\log p(x^1, \dots, x^N) = \sum_{n = 1}^N \log p(x^n | c^n) p(c^n)\]
+    \item Nonparametric Bayesian prior
+    \begin{itemize}
+	    \item Place a Dirichlet process prior on mixture proportions
+	    \item Infinite mixture models
+	    \begin{itemize}
+	        \item Assume an infinite number of clusters in prior
+	        \item Only a finite number of clusters are used to model data
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Constructing Mixture Models}
+\begin{itemize}
+	\item We have focused on mixture of Gaussians
+	\begin{itemize}
+	    \item Clustering genes and samples based on gene expression levels
+    \end{itemize}
+	\item Mixture of Bernoulli distribution for cluster discrete data
+	\begin{itemize}
+	    \item Cluster genome sequence data to find population structures
+	    \item Expression quantifcation from RNA-seq reads: cluster RNA-seq reads into the ones mapped to genes
+    \end{itemize}
+	\item Mixture of HMMs
+	\begin{itemize}
+	    \item More complex models for clustering genome sequence data
+    \end{itemize}
+\end{itemize}
+
+\section*{Bonus: Bernoulli Mixture Models}
+\begin{itemize}
+	\item Data points $x^1, \cdots, x^N \in \mathbb{R}^J$, latent clusters $c^1, \cdots, c^N$
+	\item Data generation process:
+	\begin{itemize}
+	    \item $c^n = i$ with probability $\pi_i$
+	    \item $x^n | c^n = i \sim Bern(\mu_i)$, i.e., $x_j^n$ is a coin toss with probability $\mu_{ij}$
+    \end{itemize}
+    \item Distribution $p(x^n) = \sum_{i = 1}^K p(x^n | c^n = i) p(c^n = i)$
+    \item Inference $p(c^n | x^n)$
+    \item EM algorithm
+    \begin{itemize}
+	    \item E step: $p(c^n | x^n; \pi_i, \mu_i)$
+	    \item M step:
+	    \begin{align*}
+            \pi_i^{new} &= \frac{1}{N} \sum_{n = 1}^N p(c^n = i | x^n; \pi_i, \mu_i) \\
+            \mu_i^{new} &= \frac{\sum_{n = 1}^N x^n p(c^n = i | x^n; \pi_i, \mu_i)}{\sum_{n = 1}^N p(c^n = i | x^n ; \pi_i, \mu_i)}
+        \end{align*}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Clustering Methods: Comparison}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+ & \textbf{Hierarchical} & \textbf{K-means} & \textbf{GMM} \\ \hline
+\textbf{Running Time} & naively, $O(N^3)$ & \begin{tabular}[c]{@{}c@{}}fastest (each iteration \\ is linear)\end{tabular} & \begin{tabular}[c]{@{}c@{}}fast (each iteration\\ is linear)\end{tabular} \\ \hline
+\textbf{Assumptions} & \begin{tabular}[c]{@{}c@{}}requires a similarity /\\ distance measure\end{tabular} & strong assumptions & \begin{tabular}[c]{@{}c@{}}strongest\\ assumptions\end{tabular} \\ \hline
+\textbf{Input parameters} & none & \begin{tabular}[c]{@{}c@{}}$K$ (number of \\ clusters)\end{tabular} & \begin{tabular}[c]{@{}c@{}}$K$ (number of\\ clusters)\end{tabular} \\ \hline
+\textbf{Clusters} & \begin{tabular}[c]{@{}c@{}}subjective (only\\ a tree is returned)\end{tabular} & \begin{tabular}[c]{@{}c@{}}exactly $K$\\ clusters\end{tabular} & \begin{tabular}[c]{@{}c@{}}exactly $K$\\ clusters\end{tabular} \\ \hline
+\end{tabular}
+\end{center}
+
+\subsection*{What's a Good Clustering?}
+\begin{itemize}
+	\item Internal criterion: A good clustering will produce high quality clusters in which:
+	\begin{itemize}
+	    \item the intra-class (that is, intra-cluster) similarity is high
+	    \item the inter-class similarity is low
+    \end{itemize}
+    \item External criteria for clustering quality
+    \begin{itemize}
+	    \item Assesses a clustering with respect to external resources
+	    \item Gene clustering: do genes in each cluster overlap with the genes annotated similarly in Gene Ontology (GO): \textbf{GO enrichment analysis}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Summary}
+\begin{itemize}
+	\item Mixture models as a probabilistic version of $K$-means
+	\item EM algorithm for learning mixture models
+\end{itemize}
+\end{document}

@@ -419,5 +419,167 @@ One inactive triple means the path is blocked or inactive.
 \end{tikzpicture}
 \end{center}
 
+\subsection*{d-separation: algorithm}
+\begin{itemize}
+	\item Given query: if $X_i \perp X_j | \{X_{k_1}, \cdots, X_{k_n}\}$?
+	\item List all (undirected) paths between $X_i$ and $X_j$
+	\item Check if each path is inactive or blocked
+	\item If all paths are inactive or blocked, then ``guaranteed that $X_i \perp X_j | \{X_{k_1}, \cdots, X_{k_n}\}$'' is true.
+\end{itemize}
 
+\subsection*{Examples}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw, circle] at (0, 0) (U) {U};
+    \node[draw, circle] at (2, 0) (V) {V};
+    \node[draw, circle] at (0, -1.5) (W) {W};
+    \node[draw, circle] at (2, -1.5) (X) {X};
+    \node[draw, circle] at (4, -1.5) (T) {T};
+    \node[draw, circle] at (1, -3) (Y) {Y};
+    \node[draw, circle] at (4, -3) (Z) {Z};
+
+    \draw[->] (U) -- (W);
+    \draw[->] (V) -- (W);
+    \draw[->] (V) -- (X);
+    \draw[->] (V) -- (T);
+    \draw[->] (W) -- (Y);
+    \draw[->] (X) -- (Y);
+    \draw[->] (T) -- (Z);
+\end{tikzpicture}
+\end{center}
+\textbf{Example 1:}
+\begin{itemize}
+	\item Query: if $V \perp Z | \{\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item V $\rightarrow$ T $\rightarrow$ Z:  Active (causal chain)
+    \end{itemize}
+    \item Conclusion: independence not guaranteed
+\end{itemize}
+\textbf{Example 2:}
+\begin{itemize}
+	\item Query: if $V \perp Z | \{T\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item V $\rightarrow$ T $\rightarrow$ Z:  Inactive (causal chain $T$ observed)
+    \end{itemize}
+    \item Conclusion: independence guaranteed
+\end{itemize}
+\textbf{Example 3:}
+\begin{itemize}
+	\item Query: if $U \perp V | \{\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item U $\rightarrow$ W $\rightarrow$ V:  Inactive (common effect, $W$ and descendants unobserved)
+	    \item U $\rightarrow$ W $\rightarrow$ Y $\rightarrow$ X $\rightarrow$ V:  Inactive
+	    \begin{itemize}
+	        \item U $\rightarrow$ W $\rightarrow$ Y: active (causal chain)
+	        \item W $\rightarrow$ Y $\rightarrow$ X: inactive (common effect)
+	        \item Y $\rightarrow$ X $\rightarrow$ V: active (causal chain)
+        \end{itemize}
+    \end{itemize}
+    \item Conclusion: independence guaranteed
+\end{itemize}
+\textbf{Example 4:}
+\begin{itemize}
+	\item Query: if $U \perp V | \{W\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item U $\rightarrow$ W $\rightarrow$ V:  Active (common effect, $W$ observed)
+	    \item U $\rightarrow$ W $\rightarrow$ Y $\rightarrow$ X $\rightarrow$ V:  Don't care
+    \end{itemize}
+    \item Conclusion: independence not guaranteed
+\end{itemize}
+\textbf{Example 5:}
+\begin{itemize}
+	\item Query: if $U \perp V | \{X\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item U $\rightarrow$ W $\rightarrow$ V:  Inactive (common effect, $W$ and descendants unobserved)
+	    \item U $\rightarrow$ W $\rightarrow$ Y $\rightarrow$ X $\rightarrow$ V:  Inactive
+	    \begin{itemize}
+	        \item U $\rightarrow$ W $\rightarrow$ Y: active (causal chain)
+	        \item W $\rightarrow$ Y $\rightarrow$ X: inactive (common effect)
+	        \item Y $\rightarrow$ X $\rightarrow$ V: inactive (causal chain)
+        \end{itemize}
+    \end{itemize}
+    \item Conclusion: independence guaranteed
+\end{itemize}
+\textbf{Example 6:}
+\begin{itemize}
+	\item Query: if $U \perp V | \{Y\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item U $\rightarrow$ W $\rightarrow$ V:  Active (common effect, descendant $Y$ observed)
+	    \item U $\rightarrow$ W $\rightarrow$ Y $\rightarrow$ X $\rightarrow$ V:  Active
+	    \begin{itemize}
+	        \item U $\rightarrow$ W $\rightarrow$ Y: active (causal chain)
+	        \item W $\rightarrow$ Y $\rightarrow$ X: active (common effect, $Y$ observed)
+	        \item Y $\rightarrow$ X $\rightarrow$ V: active (causal chain)
+        \end{itemize}
+    \end{itemize}
+    \item Conclusion: independence not guaranteed
+\end{itemize}
+\textbf{Example 7:}
+\begin{itemize}
+	\item Query: if $U \perp V | \{Z\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item U $\rightarrow$ W $\rightarrow$ V:  Inactive (common effect, $W$ and descendants unobserved)
+	    \item U $\rightarrow$ W $\rightarrow$ Y $\rightarrow$ X $\rightarrow$ V:  Inactive
+	    \begin{itemize}
+	        \item U $\rightarrow$ W $\rightarrow$ Y: active (causal chain)
+	        \item W $\rightarrow$ Y $\rightarrow$ X: inactive (common effect, $Y$ unobserved)
+	        \item Y $\rightarrow$ X $\rightarrow$ V: active (causal chain)
+        \end{itemize}
+    \end{itemize}
+    \item Conclusion: independence guaranteed
+\end{itemize}
+\textbf{Example 8:}
+\begin{itemize}
+	\item Query: if $W \perp X | \{\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item W $\rightarrow$ V $\rightarrow$ X:  Active (common effect, $V$ unobserved)
+	    \item U $\rightarrow$ W $\rightarrow$ Y $\rightarrow$ X $\rightarrow$ V:  Don't care
+    \end{itemize}
+    \item Conclusion: independence not guaranteed
+\end{itemize}
+\textbf{Example 9:}
+\begin{itemize}
+	\item Query: if $X \perp T | \{V\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item X $\rightarrow$ V $\rightarrow$ T:  Inactive (common cause, $V$ observed)
+	    \item X $\rightarrow$ Y $\rightarrow$ W $\rightarrow$ V $\rightarrow$ T:  Inactive
+	    \begin{itemize}
+	        \item X $\rightarrow$ Y $\rightarrow$ W: inactive (common effect)
+	        \item Y $\rightarrow$ W $\rightarrow$ V: active (causal chain)
+	        \item W $\rightarrow$ V $\rightarrow$ T: inactive (common cause)
+        \end{itemize}
+    \end{itemize}
+    \item Conclusion: independence guaranteed
+\end{itemize}
+\textbf{Example 10:}
+\begin{itemize}
+	\item Query: if $X \perp W | \{U\}$?
+	\item Paths: 
+	\begin{itemize}
+	    \item W $\rightarrow$ V $\rightarrow$ X:  Active (common effect, $V$ unobserved)
+	    \item W $\rightarrow$ Y $\rightarrow$ X: Don't care
+    \end{itemize}
+    \item Conclusion: independence not guaranteed
+\end{itemize}
+
+\subsection*{Summary}
+Markov blanket
+\begin{itemize}
+	\item In a Bayesian network, a variable is conditionally independent of all other variables given its (minimal) Markov blanket
+	\item A (minimal) Markov blanket of a node is all of its parents, children, and co-parents of children
+\end{itemize}
+D-separation
+\begin{itemize}
+	\item Question: Are $X$ and $Y$ conditionally independent given evidence vars in $\{Z\}$?
+	\item All paths inactive $\rightarrow$ independence
+\end{itemize}
 \end{document}

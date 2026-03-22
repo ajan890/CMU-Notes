@@ -1,0 +1,198 @@
+% document formatting 
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{blkarray}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 9 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Dimensionality Reduction}
+\subsection*{Data in High Dimensional Space}
+\begin{itemize}
+	\item High-dimensional data
+	\begin{itemize}
+	    \item Large number of features (large $K$)
+	    \item Difficult to visualize
+	    \item Difficult to fit a large model on data with many features
+    \end{itemize}
+    \item Can we reduce the dimension of the data?
+    \begin{itemize}
+	    \item For easy visualization
+	    \item For effective model learning
+    \end{itemize}
+\end{itemize}
+
+\subsection*{What is Dimensionality Reduction?}
+\begin{itemize}
+	\item Dimensionality reduction is a type of unsupervised learning
+	\item We try to reduce the $N$ sample $\times$ $K$ feature training data to a $N$ sample $\times$ $M$ feature training data, where $(M << K)$.
+	\item Easy to visualize in 2 or 3 dimensional space
+	\item Transformed features capture most important dimensions
+	\item May capture the low-dimensional structure of the data
+\end{itemize}
+
+\subsection*{Principal Component Analysis (PCA)}
+Consider reducing 2-dim data into 1-dim data. 
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_1.png} 
+\end{center}
+Now, we can create new axes, $y_1$ and $y_2$ that also represent the data on the plane using some linear transformation.  We rotate this new basis.
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_2.png} 
+\end{center}
+Finally, we project to one axes.  In this case, projecting onto $y_1$ is better since the data has \textbf{higher variability} along $y_1$.
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_3.png} 
+\end{center}
+The result is that we now have less dimensions, but the data is still represented well (albeit not as well compared to by both features)
+
+\subsection*{How to execute PCA}
+\begin{enumerate}
+	\item Find the principal components.  (linear algebra: eigen-decomposition)
+	\item Project the data onto the principle components of your choice.  (linear algebra: vector inner-product)
+\end{enumerate}
+
+\subsubsection*{Aside: Eigen-decomposition}
+\[S = UDU^T\]
+\begin{itemize}
+	\item $S$ is a $K \times K$ symmetric square matrix
+	\item $U$ is a $K \times K$ square matrix
+	\item $D$ is a $K \times K$ diagonal matrix
+\end{itemize}
+In code, we can do this by calling the \texttt{numpy.linalg.eigh} function in Python.
+\begin{itemize}
+	\item $U$ and $D$ are our eigenvalues and eigenvectors, respectively.
+	\item $U = [u_1, \cdots, u_K] \in \mathbb{R}^{K \times K}$.  $u_1, \cdots, u_K \in \mathbb{R}^K$
+	\item $D = \text{diag}(\lambda_1, \cdots, \lambda_K)$.  $\lambda_1, \cdots, \lambda_K \in \mathbb{R}$
+\end{itemize}
+
+\subsection*{PCA Step 1: PCs via Eigen-Decomposition}
+\begin{itemize}
+	\item Given $N \times K$ matrix $X = \begin{bmatrix} X_1^T \\ \cdots \\ X_N^T \end{bmatrix}$, reduce dimension from $K$ to $M$
+	\item Mean center the data
+	\begin{enumerate}
+	    \item Compute $K \times K$ covariance matrix, $S = \frac{1}{N} X^T X$
+	    \item Eigen-decomposition to obtain eigenvalues and eigenvectors
+	    \begin{itemize}
+	        \item $s = UDU^T$, where $U = [u_1, \cdots, u_k]$, $D = \text{diag}(\lambda_1, \cdots, \lambda_K)$
+	        \item Pick the $M$ eigenvectors (principal components) with the largest eigenvalues
+        \end{itemize}
+    \end{enumerate}
+\end{itemize}
+
+\subsection*{PCA Step 2: Project data onto PCs}
+\[x^T u_1 = \Vert x\Vert \Vert u_1 \Vert \cos(\theta) = \Vert x \Vert \cos(\theta)\]
+\begin{itemize}
+	\item $u_1$ is a unit vector of a principal component.
+	\item Remember to set the center of the data to the origin!
+\end{itemize}
+
+\subsection*{PCA: Putting everything together}
+\begin{itemize}
+	\item Given $N \times K$ data matrix $K = \begin{bmatrix} X_1^T \cdots, X_N^T \end{bmatrix}$, reduce dimension from $K$ to $M$
+	\item Mean center the data
+	\item Step 1
+	\begin{itemize}
+	    \item Compute $K \times K$ covariance matrix $S = \frac{1}{N} X^T X$
+	    \item Eigen-decomposition to obtain eigenvalues and eigenvectors
+	    \begin{itemize}
+        	\item $S = UDU^T$, where $U = [u_1, \cdots, u_K]$, $D = \text{diag}(\lambda_1, \cdots, \lambda_K)$
+        \end{itemize}
+        \item Pick $M$ eigenvectors (principal components) with the \textbf{largest eigenvalues}
+    \end{itemize}
+    \item Step 2
+    \begin{itemize}
+	    \item Project data onto the \textbf{top $M$ eigenvectors} $X_{p, i}^T = [X_i^T u_1, \cdots, X_i^T u_M]$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{How Many Principal Components (PCs) $M$?}
+\begin{itemize}
+	\item The $k$-th eigenvalue: variance of projected data onto the $k$-th PC.
+	\item The \textbf{first PC} retains the greatest fraction of \textbf{variation} in the sample
+	\item The $k$-th PC retains the $k$-th greatest fraction of variation in the sample
+\end{itemize}
+Therefore, 
+\begin{itemize}
+	\item For $K$ original dimensions, there are $K$ eigenvalues and vectors.  So $K$ PCs.
+	\item \textbf{Ignore the compoennts of lesser significance} with lower variation in data
+	\item Strategy: Plot the eigenvalues, use only the PCs with reasonably high eigenvalues.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W10_4.png} 
+\end{center}
+
+\subsection*{PCA Summary}
+$K \times K$ covariance matrix $S = \frac{1}{N} X^T X$
+\begin{itemize}
+    \item Eigen-decomposition of $S = UDU^T$, where $U = [u_1, \cdots, u_K]$, $D = \text{diag}(\lambda_1, \cdots, \lambda_K)$, and $\lambda_i$'s are sorted in descending order ($\lambda_1$ is the largest).
+    \item $\sqrt{\lambda_k} u_k$ is the $k$-th PC, and $u_k$ is called the $k$-th PC direction
+    \begin{itemize}
+	    \item Variance explained $\lambda_k$
+    \end{itemize}
+    \item PC scores: projecting data onto the PC directions: $X_{\text{proj}, i}^T = [X_i^T u_1, \cdots, X_i^T u_K]$
+    \begin{itemize}
+	    \item $\text{Var}(Xu_k) = \frac{1}{N} \sum_{i = 1}^N (X_i^T u_k)^T = u_k^T (\frac{1}{N} X^T X) u_k = u_k^T Su_k = \lambda_k$
+    \end{itemize}
+    \item Select top $M$ PCs to explain a given percentage of total variance $\sum_{k = 1}^K \lambda_k$
+\end{itemize}
+
+\subsection*{PCA as an Optimization}
+\begin{itemize}
+	\item Projection of vector $x$ onto an axis $u$ is $x^T u$
+	\item $X$ is a mean-centered $N \times K$ data matrix for $N$ samples, $K$ features
+	\item Find a unit vector $u$ such that the \textbf{variance of projected values is greatest}
+	\begin{itemize}
+	    \item Maximize $\frac{1}{N} u^T X^T Xu$, such that $u^T u = 1$  (e.g, $u$ is a unit vector).
+	    \item Recall that
+	    \[\text{Var}(X^T u) = \frac{1}{N} \sum_{i = 1}^N (x_i^T u)^2 = \frac{1}{N} u^T X^T Xu\]
+    \end{itemize}
+\end{itemize}
+How do we solve this?
+\begin{itemize}
+	\item Construct Lagrangian
+	\[\frac{1}{N} u^T X^T Xu + \lambda(1 - u^T u)\]
+    \item Differentiate the Lagrangian with respect to $u$ and set it to zero
+    \[\frac{1}{N} X^T Xu - \lambda u = 0\]
+    \item Or equivalently,
+    \[Su - \lambda u = 0\]
+    where $S = \frac{1}{n} X^T X$: covariance matrix
+    \item As $u \neq 0$, then $u$ must be an eigenvector of $S$ with eigenvalue $\lambda$
+    \item [slide 48+]
+\end{itemize}
+
+\end{document}
