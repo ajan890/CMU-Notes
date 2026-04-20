@@ -12,6 +12,7 @@
 % lists
 \usepackage{enumerate}
 \usepackage{tabularx}
+\usepackage{multirow}
 \usepackage{array}
 \usepackage{blkarray}
 
@@ -31,7 +32,7 @@
 
 \graphicspath{{./assets/images/}}
 
-\title{02-620 Week 9 \\ \large{Machine Learning for Scientists}}
+\title{02-620 Week 10 \\ \large{Machine Learning for Scientists}}
  
 \author{Aidan Jan}
 
@@ -192,7 +193,51 @@ How do we solve this?
     \[Su - \lambda u = 0\]
     where $S = \frac{1}{n} X^T X$: covariance matrix
     \item As $u \neq 0$, then $u$ must be an eigenvector of $S$ with eigenvalue $\lambda$
-    \item [slide 48+]
+    \item $u_1^T Su_1 = \lambda_1$ is the largest possible value.  Thus, $u_1$ is the first PC direction.  (Proof below)
+    \item Given $u_1$, $u_2^T Su_2 = \lambda_2$ is the largest possible value across all directions orthogonal to $u_1$.  Thus, $u_2$ is the second PC direction.
+    \item Given $u_1, u_2, u_3^T Su_3 = \lambda_3$ is the largest possible value across all directions orthogonal to $u_1$, $u_2$, thus $u_3$ is the third PC direction\dots
+    \item etc.
 \end{itemize}
 
+\subsubsection*{Proof that $\lambda_1$ is the largest possible value}
+\begin{itemize}
+	\item Consider any $u \neq u_1$ with $u^T u = 1$.
+	\item Write $u = \sum_{k = 1}^K a_k u_k$, then $u^T u = \sum_{k = 1}^K a_k^2 = 1$.
+	\item Furthermore, $u^T Su = \left(\sum_{k = 1}^K a_k u_k\right)^T S\left(\sum_{k = 1}^K a_k u_k\right) = \sum_{k= 1}^K a_k^2 \lambda_k$
+	\item This result is $< \lambda_1 \sum_{k = 1}^K a_k^2 = lambda_1 = u_1^T Su_1$
+\end{itemize} 
+
+\subsection*{Dimensionality Reduction of PCA}
+PCA leads to dimensionality reduction such that
+\begin{itemize}
+	\item The variability in data are preserved in the lower dimensions
+	\item For multiple correlated features (redundant features), remove the correlated dimensions
+	\begin{itemize}
+	    \item Focus on uncorrelated data
+	    \item Note PCs are orthogonal!
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Applying PCA to Images}
+Suppose you have $361 \times 261$ pixel images, and 83781 dimensional data.  In other words, every image in the dataset can be represented perfectly as a vector of integers over the 83781 dimensions.
+\begin{itemize}
+	\item In this case, your principal components are images!
+	\item Flatten all the images into vectors and do the same process.
+	\item Project the original image into 4 dimensions corresponding to the four PCs.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W10_5.png} 
+\end{center}
+
+\subsection*{Summary}
+Principal Component Analysis (PCA)
+\begin{itemize}
+	\item A type of unsupervised learning
+	\item Principle: reduce the dimension of the original data such that the variability in the original data are preserved in the lower dimension
+	\item In practice: use eigen decomposition
+	\begin{itemize}
+	    \item Top eigen values: the dimension that captures the most variability
+	    \item Eign vectors with top eigen values: dimensions to be used to describe the lower dimensional data
+    \end{itemize}
+\end{itemize}
 \end{document}

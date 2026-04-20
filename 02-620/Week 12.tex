@@ -1,0 +1,78 @@
+% document formatting 
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{blkarray}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-620 Week 12 \\ \large{Machine Learning for Scientists}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Neural Networks}
+\subsection*{Overview}
+Model: Neural Network Architectures:
+\begin{itemize}
+	\item Feedforward neural networks (aka. Fully Connected NN)
+	\item Convolutional neural networks
+	\item Graph neural networks
+	\item Variational autoencoder
+	\item Recurrent neural networks
+\end{itemize}
+Learning
+\begin{itemize}
+	\item Stochastic gradient descent
+	\item Back propagation
+\end{itemize}
+
+\subsection*{Logistic Regression as Basic Neuron Unit}
+Logistic regression for representing $f \::\: X \rightarrow Y$
+\begin{itemize}
+	\item $X = [X_1, \cdots, X_n]$ is a vector of input features
+	\item $Y$ is boolean
+\end{itemize}
+\[P(Y = 1 | X = [X_1, \cdots, X_n]) = \frac{1}{1 + \exp(-\w_0 - \sum_i w_i X_i)}\]
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W12_1.png} 
+\end{center}
+\begin{itemize}
+	\item Input: $X = [X_1, \cdots, X_n]$
+	\item Output: $o = \frac{1}{1 + \exp(-w_0 - \sum_i w_i X_i)} = \sigma(w_0 + \sum_i w_i X_i)$
+\end{itemize}
+
+
+
+
+\end{document}

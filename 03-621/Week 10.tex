@@ -1,0 +1,676 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usepackage[dvipsnames]{xcolor}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\dd}{\text{d}}
+
+
+\graphicspath{{./assets/images/Week 10}}
+
+\title{03-621 Week 10 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Mapping Genes for Complex Traits}
+\subsection*{Genetic Distance and Mapping Genes}
+To review: genetic distance is calculated based on frequency of recombinant gametes
+\[\text{Genetic distance} = \frac{\text{Recombinants}}{\text{Recombinants} + \text{Parentals}}\]
+\begin{itemize}
+    \item 1\% recombinants = 1 centiMorgan (cM)
+    \item Everything here is based off of crossovers
+\end{itemize}
+Problem: We can't do this for human pedigrees
+\begin{itemize}
+	\item We can't set up the most informative matings
+	\item We lack complete genotype information
+	\item No pure-breeding strains
+\end{itemize}
+Must use available pedigrees
+\begin{itemize}
+	\item But progeny numbers are relatively small
+	\item Any given pedigree is too small relative to the amount of data required to detect even moderately close linkage.
+	\item If we do anyways and try to use a $\chi^2$ test of significance of linkage, it would not tell us the actual map distance or the reliability of the estimate.
+\end{itemize}
+
+\subsection*{Sequential Likelihood Ratio Test (LOD Test)}
+Tests whether the hypothesis that two markers \textbf{are} linked (with recombination frequency $\theta = r, r < 0.5$) and provides a better explanation (higher probability) for a set of observed pedigrees than the null hypothesis that the markers \textbf{are not} linked ($\theta_o = 0.5$).
+\[LOD(\theta) = \log_{10} \text{ of the odds for linkage with } \theta\]
+Basic LOD test approach:
+\begin{itemize}
+	\item Given a pedigree, look at two parents, and count the number of recombinant children.  E.g., in 5 children, if 1 is recombinant, then $r = 0.2$.
+    \item $\lambda = \frac{P(\text{Pedigree} | \theta_i = \langle \text{recombinant fraction}\rangle)}{P(\text{Pedigree} | \theta_o = 0.5)}$
+\end{itemize}
+What is the probability of $s$ parentals and $t$ recombinants in a sample if the underlying recombination frequency is $\theta$?
+\begin{itemize}
+	\item $p$ = probability of parental = $1 - \theta$
+	\item $q$ = probability of recombinant = $\theta$
+	\item $s$ = observed number of parental types
+	\item $t$ = observed number of recombinant types
+\end{itemize}
+From the binomial distribution:
+\[P(s, t | N, \theta) = \frac{N!}{s!t!} p^s q^t\]
+The $N! / (s!t!)$ part accounts for all possible birth orders.
+\[\text{Likelihood ratio for linkage}\lambda = \frac{(N! / s!t!) (1 - \theta_i)^s (\theta_i)^t}{(N! / s!t!) 0.5^s 0.5^t} = \frac{(1 - \theta_i)^s \theta_i^t}{0.5^N}\]
+Note that the combinatorial component cancels out, so we don't need to bother with it, even if we don't know the birth order.
+\begin{itemize}
+	\item To find LOD, $\log_10$ the above result.
+\end{itemize}
+
+\subsection*{Not all matings are informative}
+\begin{itemize}
+	\item A test for informative vs. non-informatic meiosis: can we tell if the gamete was recombinant?
+	\item If we can tell: the meiosis is informative
+	\begin{itemize}
+	    \item Yes, gamete was recombinant
+	    \item Or no, not recombinant
+    \end{itemize}
+    \item Cannot tell if the gamete was recombinant
+\end{itemize}
+
+\subsection*{Is Support for Linkage Statistically Significant?}
+\begin{itemize}
+	\item $LOD(\theta_i) \geq 3$: ``There is significant evidence for linkage with $\theta_i$''
+	\item $LOD(\theta_i) \leq -2$: ``The true recombinant frequency is significantly greater than $\theta_i$;;- (and may be as igh as 0.5 = no linkage)
+	\item $-2 < LOD(\theta_i) < 3$: ``The evidence of linkage is not decisive.''  It is necessary to collect information for more pedigrees
+\end{itemize}
+For example, if we have $LOD(\theta_1 = 0.2) = 0.41$.  Therefore we cannot decide.  We need about 7x as much additional (consistent) data to get a LOD score of 3 and make a compelling case for linkage at 20 cM.  However, additional data may lead to a different estimate of $\theta$.
+
+\subsubsection*{How to Proceed}
+\begin{itemize}
+	\item Collect more pedigrees
+	\item Re-calculate $r$ across all the pedigrees (the new pedigrees may exhibit different recombinant fractions)
+	\item Repeat LOD analysis on all pedigrees with the re-calculated $r$
+	\item \textbf{Continue increasing sample size until clear evidence for or against linkage is obtained (LOD $\geq 3$ or LOD $\leq -2$)}
+\end{itemize}
+Further pursuit of linkage to a particular marker is not a high priority unless LOD > 0.
+
+\subsection*{MLE of $\theta$}
+The computational algorithms test not a single value of $\theta$, but a range of values $\theta_i$ between 0 and 0.5 on each pedigree, adding the scores over all the pedigrees $j$ to obtain:
+\[Z(\theta_i) = \sum_j LOD(\theta_i)\]
+If $Z(\theta_i) \geq 3$ for some $\theta_i$, the maximum likelihood estimate of $\theta$ is $\argmax Z(\theta_i)$
+
+\subsection*{Summary of LOD Score Interpretation}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_1.png} 
+\end{center}
+
+\subsection*{Detection of Linkage in Human Pedigrees}
+Major points:
+\begin{itemize}
+	\item LOD Scores provide a simple metric to indicate whether a linked gene model explains a set of pedigree data better than an unlinked gene model.
+	\item LOD scores reflect the size of the data set, so a higher score is achieved with a larger data set (if the linked gene model really explains the data).  We can add LOD scores for new pedigrees as they become available.
+	\item Our example was substantially simplified because
+	\begin{itemize}
+	    \item we knew the coupling relationship between markers
+	    \item we had a perfect test-cross
+	    \item complete dominance, penetrance, and expressivity
+    \end{itemize}
+    \item Additional probabilities can be factored in, to account for deviations from this perfect situation.  Computationally intensive.
+\end{itemize}
+
+\subsection*{Recombinational and Physical Chromosome Maps}
+\begin{itemize}
+	\item How do we use these types of maps?
+	\item A physical map tells us where the trait determinants (``genes'') lie and, from sequence analysis, what the gene products may do biochemically.
+	\item A recombinational map tells us what a gene does biologically\dots and the chance that we have inherited a particular allele
+\end{itemize}
+
+\subsection*{Recombination Maps and Genome DNA Sequence are Combined to Identify Genes for Important Traits}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W10_2.png} 
+\end{center}
+
+\subsection*{Cross-over Frequency Varies Characteristically along Chromosomes}
+\begin{itemize}
+	\item Frequency is low at centromeres and telomeres
+	\item As a result, if we look at recombination rate maps, there will be much lower recombination near centromeres and telmoeres and higher in the between
+	\item This leads to ``cold spots'' and ``hot spots''
+\end{itemize}
+
+\subsection*{Rate of Recombination Between Sexes}
+There are more recombination events in \textbf{females}.
+
+\subsection*{How do we Find the Genes for Complex Traits}
+Known as ``Quantitative Trait Loci'' (QTLs).  The problems we have to overcome:
+\begin{enumerate}
+	\item Determined by combined effects of multiple genes
+	\item A given phenotypic value may correspond to many \textit{different combinations of alleles} at multiple genes
+	\item Environmental effects can also blur the relationship between phenotypic value and genotype
+\end{enumerate}
+Not as straightforward as recombination-mapping of single-gene Mendelian traits
+
+\subsubsection*{General Approach}
+Identify statistically significant correlations between
+\begin{itemize}
+	\item phenotypic values for a particular trait
+	\item genotypes at specific molecular marker loci
+\end{itemize}
+Large numbers of pre-selected markers throughout the genome are tested at the same time.  The variants at the marker loci do not necessarily influence the trait (they usually don't) - they only serve to identify the approximate locations of the variants that do.\\\\
+\textbf{Example:} M1 - M8 are tested markers
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_3.png} 
+\end{center}
+The observed correlations between phenotypic values and marker genotypes reveal the locations of QTL$_1$ and QTL$_2$.
+
+\subsection*{How does Association Arise?}
+\begin{itemize}
+	\item The marker genotype itself influences the trait (low prior probability)
+	\item The marker is closely linked to a sequence variant that influences the trait:
+	\begin{itemize}
+	    \item For \textbf{progeny of a specific mating:}
+	    \begin{itemize}
+	        \item $1 - \theta$ = probability that the parental allele combination is passed on to an offspring (transmission bias)
+        \end{itemize}
+        \item For a \textbf{random-mating population}
+        \begin{itemize}
+	        \item \textbf{Linkage disequilibrium:} over short distances ($\theta << 0.5$), the ancestral allele combinations remain unchanged for many generations
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Two Broad Types of Methods:}
+Both ultimately rely on linkage and recombination, but not on measurements of recombination frequency
+\begin{enumerate}
+	\item Associations in populations with \textit{known pedigrees}
+	\begin{itemize}
+	    \item Progeny of controlled crosses: experimental and agricultural organisms
+	    \item Available human pedigrees: if large allele effect - transmission bias
+    \end{itemize}
+	\item Associations in \textit{random-mating populations}
+	\begin{itemize}
+	    \item Known as GWAS: genome-wide association studies
+	    \item Complex human traits with large or small allele effects
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{1. QTL Mapping Using Controlled Crosses}
+Example: Fruit weight in commercial tomato strains.
+\begin{itemize}
+	\item First, identify many molecular markers that differ between the inbred parent strains (e.g., a SNP every 5 cM.)
+	\item Suppose the Beefmaster tomato (mean 230g) has B/B alleles at all genes
+	\item The Sungold tomato (mean 10g) has S/S alleles at all genes.
+	\item Using the $n = \frac{D^2}{8V_g}$ formula, we predict there are 10 genes affecting weight.  As a result, the average contribution per Beefmaster allele provides $(230 - 10) / 10 = 22$g to weight.
+\end{itemize}
+Now, suppose we cross the Beefmaster and Sungold.  The result is a heterozygous tomato at all genes.  (B/S at all genes).  Following this, we cross the F1 with one of the parents (say, the Beefmaster tomato in this case).
+\begin{itemize}
+	\item The result is varying weights of tomatoes, with weights ranging from the same as the B/S F1 heterozygote, to the wild-type Beefmaster.
+	\item Every SNP marker either has B/B or B/S, but none will have S/S.
+\end{itemize}
+The result is the following:
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W10_4.png} 
+\end{center}
+We care about the genotype at each marker in each offspring, and the mean phenotypic value when the B or S allele is inherited.
+\begin{itemize}
+	\item We can now use a statistical test to determine how much each individual gene contributes to the weight
+	\item For example, using the above chart, if we compare the means of B/B and B/S at M3, we can determine it contributes around 11g.
+\end{itemize}
+We can define the QTL location more narrowly by analyzing more markers between M2 and M3, and then comparing with the location of the predicted genes in this region:
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W10_5.png} 
+\end{center}
+The QTL regions are further evaluated to identify the causal alleles and the relevant genes.
+\begin{itemize}
+	\item The QTL region is mapped to between two markers
+	\item More known markers between $M_i$ and $M_j$ are genotyped, OR, the DNA between those markers is sequenced from individuals with different phenotypes
+    \item The causal variant and gene are identified based on:
+    \begin{itemize}
+	    \item Sequence analysis
+	    \item Expression pattern
+	    \item Evolutionary comparisons
+	    \item Experimental tests
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Finding QTLs in Humans}
+We cannot use the same approach because:
+\begin{itemize}
+	\item We cannot perform controlled crosses
+	\item No ``true-breeding'' humans
+	\item Small numbers of progeny
+\end{itemize}
+Solution:
+\begin{itemize}
+	\item Analyze genotype-phenotype associations in \textit{random-mating} populations
+	\item Approach known as GWAS (genome-wide association studies)
+\end{itemize}
+
+\subsection*{Concepts for GWAS}
+\begin{enumerate}
+	\item Molecular Markoers
+	\item Haplotypes
+	\item Linkage Disequilibrium
+	\item Haplotype Blocks
+\end{enumerate}
+The latter three lead to a dramatic reduction of hypothesis search space.  Every variant in the genome is a potential QTL hypothesis.
+
+\subsubsection*{Choice of Molecular Markers}
+SNPs for humans: identified by the Thousand Genome and HapMap Projects
+\begin{itemize}
+	\item Advantages:
+	\begin{itemize}
+	    \item Their exact physical locations in the genome are known.
+	    \item Abundant and distributed uniformly throughout genome, so there is a high probability that \textbf{some} will be linked to the relevant genes.
+	    \item Large numbers can be assessed at once by microarray hybridization
+	    \item Genotypes (homozygotes, heterozygotes, hemizygotes) can be distinguished readily
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Marker Methods}
+Marker \textbf{discovery} is by genome sequencing of many individuals\\\\
+International HapMap Project
+\begin{itemize}
+	\item discovers the variations by sequencing
+	\item catalogues the variations and maintains database
+	\begin{itemize}
+	    \item location in the genome sequence
+	    \item nature of change
+	    \item frequency in population
+	    \item haplotype combinations
+    \end{itemize}
+	\item identifies a set of markers suitable for GWAS and mapping
+	\begin{itemize}
+	    \item common variations (minor allele frequency $>0.05$)
+	    \item reliability of genotyping
+	    \item maximize coverage of genome
+	    \item ($1 \times 10^6$ SNPs for resolution $10000-100000$ bp)
+    \end{itemize}
+    \item Marker \textbf{scoring} in cases vs controls is by microarray hybridization
+\end{itemize}
+
+\subsection*{Haplotypes}
+Haplotypes are combinations of syntenic alleles in an individual that were inherited together from one parent.
+\begin{itemize}
+	\item e.g., for a particular pair of homologous chromosomes in a particular individual
+	\item In other words, a haplotype is the genotype of an entire chromosome (or portion of a chromosome)
+	\item These haplotypes are broken up/scrambled during crossing over
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_6.png} 
+\end{center}
+
+\subsection*{Linkage Disequilibrium}
+Some local haplotypes occur more frequently than expected at random
+\begin{itemize}
+	\item Over time, combinations of alleles at distant loci on the same chromosome become randomized in the population, as a consequence of crossing over
+	\item But alleles of loci that are close together tend to remain in the same combinations over time (stay in linkage disequilibrium)
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_7.png} 
+\end{center}
+\textbf{Haplotype blocks} are groups of alleles that are always inherited together due to linkage disequilibrium
+
+\subsubsection*{Quantification of Linkage Disequilibrium}
+A useful metric is $r^2$, equivalent to the Pearson correlation coefficient.  For two biallelic loci $A(a)$ and $B(b)$:
+\[r^2(p_a, p_b, p_{ab}) = \frac{D^2}{p_a p_b p_A p_B} = \frac{(p_{ab} - p_a p_b)^2}{p_a p_b p_A p_B}\]
+\begin{itemize}
+	\item $p_x$ is the frequency of allele or haplotype $x$
+	\item $D$ is (observed $-$ expected) haplotype frequency
+\end{itemize}
+The range for $r^2$ is from 0 to 1.
+\begin{itemize}
+	\item $r^2 = 0$: no disequilibrium (random allele combinations)
+	\item $r^2 > 0$: increasing disequilibrium (biased allele combinations)
+	\item $r^2 = 1$: full disequilibrium (if minor allele frequencies are equal)
+\end{itemize}
+We'll see later that $r^2$ can be used to adjust estimates of statistical power and required sample sizes in genetic association studies.
+
+\subsubsection*{Linkage Disequilibrium is Enhanced by Local Variations in Crossover Frequency}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_8.png} 
+\end{center}
+Recombination hotspots enhance linkage disequilibrium and give rise to haplotype blocks.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W10_9.png} 
+\end{center}
+
+\subsection*{Haplotypes and Individual Genotypes}
+If two haplotypes exist in a population for loci $E(e)$ $F(f)$ $G(g)$ $H(h)$
+\begin{itemize}
+	\item haplotype 1: $EFgH$
+	\item haplotype 2: $efGh$
+\end{itemize}
+an individual can have one of these three genotypes
+\[\frac{EFgH}{EFgH} \quad \text{or} \quad \frac{EFgH}{efGh} \quad \text{or} \quad \frac{efGh}{efGh}\]
+If we only score the genotype for one marker, then we can infer (or ``impute'') the genotype for the other three:
+\begin{itemize}
+	\item If genotype $F/f$ is detected in an individual, it is possible to infer genotypes $E/e$, $g/G$, and $H/h$
+\end{itemize}
+Similarly, if $H(h)$ or an \textit{unknown} variant site within this haplotype block affects a phenotype, the phenotypic value will correlate with the presence of $F$ versus $f$ allele.
+
+\subsection*{Hotspot Locations}
+Recombination hotspots tend to be located in \textbf{regulatory regions} (rather than within transcribed regions)\\\\
+The following is an example of haplotypes across a small chromosomal region
+\begin{itemize}
+	\item only sequence variations are shown, not all the nucleotides
+	\item blank spaces can represent \textbf{many} invariant nucleotide positions
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_10.png} 
+\end{center}
+\textbf{Low-frequency variants} that may be QTLs have arisen by mutation within specific haplotype blocks, so they remain associated with the haplotype of origin (they do not recombine into other haplotypes in the block)
+
+\subsection*{GWAS Mapping of a Disease Risk Gene Using Haplotypes}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_11.png} 
+\end{center}
+
+\subsection*{Association between Continuous, Meristic, and Threshold Traits}
+For visible continuous or meristic traits, we would proceed with the same type of analysis as discussed earlier for Tomato fruit weight:
+\begin{itemize}
+	\item Test for association between marker alleles and mean phenotypic value (but among individuals in a random-mating population)
+\end{itemize}
+For threshold traits, the relevant quantitative phenotype (the underlying liability) is hidden.
+\begin{itemize}
+	\item We test instead for association with the emergent binary trait: affected/non-affected, as we'll describe now.
+\end{itemize}
+However, keep in mind that in some cases, we can also test for association with a continuous trait known to be a risk factor: e.g., serum cholesterol levels, insulin levels, \dots
+
+\section*{Effect Size Associated with a Marker}
+\subsection*{The Outcomes Odds Ratio}
+Ideally, we want the \textbf{Outcome Odds Ratio:} the odds of being affected given a particular genotype, divided by the odds given the absence of that genotype.
+\[OOR = \frac{\text{Odds affected in exposed}}{Odds affected in non-exposed}\]
+This requires pre-selecting samples of different genotypes, and then determining their phenotypes.\\\\
+For late-onset traits, the Outcome Odds Ratio requires following the individuals over their lifetime.
+
+\subsection*{The Exposure Odds Ratio}
+GWAS yield the \textbf{Exposure Odds Ratio}: the odds of carrying a specific genotype given that the disease state is affected, divided by the odds of carrying that same genotype given that the disease state is unaffected.
+\[EOR = \frac{\text{Odds exposed in affected}}{\text{Odds exposed in non-affected}}\]
+This is mathematically equilivant to OOR.
+\begin{itemize}
+	\item In GWAS, equal-sized samples of affected and unaffected are collected, and their genotypes are then determined.
+\end{itemize}
+
+\subsection*{Odds Ratios}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W10_12.png} 
+\end{center}
+Confidence Intervals for the Odds Raio
+\begin{itemize}
+	\item Upper 95\% CI = $\exp \left(\ln(OR) + 1.96 \sqrt{\frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d}}\right)$
+	\item Lower 95\% CI = $\exp \left(\ln(OR) - 1.96 \sqrt{\frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d}}\right)$
+\end{itemize}
+If the confidence interval includes the value $1$, the odds ratio is not considered significant
+
+\subsection*{Significance of Association: $\chi^2$ Test of Independence}
+For each SNP tested, SNP1, SNP2, \dots, SNPn
+\begin{itemize}
+	\item $H_0$ = same allele distribution in cases and controls
+	\item $H_a$ = different allele distribution in cases and controls
+\end{itemize}
+we find the values of the tables above, $G_D, A_D, G_C, A_C$, and their sums.
+\begin{itemize}
+	\item This makes no assumption about the relative impact of homozygotes or heterozygotes: accommodates dominant/recessive, additive and multiplicative models with best generalized power and computational efficiency.
+\end{itemize}
+\[\chi^2 = \sum \frac{(O - E)^2}{E}\]
+The expected frequencies are the following:
+\begin{align*}
+    E(G_D) &= (\textcolor{blue}{G_D + A_D}) \frac{(\textcolor{red}{G_D + G_C})}{N} \\
+    E(G_C) &= (\textcolor{orange}{G_C + A_C}) \frac{(\textcolor{red}{G_D + G_C})}{N} \\
+    E(A_D) &= (\textcolor{blue}{G_D + A_D}) \frac{(\textcolor{cyan}{A_D + A_C})}{N} \\
+    E(A_C) &= (\textcolor{orange}{G_C + A_C}) \frac{(\textcolor{cyan}{A_D + A_C})}{N}
+\end{align*}
+In this situation, we have $dof = 1$
+
+\subsection*{Must Adjust for Testing of Multiple Hypotheses}
+Each SNP represents a \underline{separate hypothesis} tested (SNP association with the trait)
+\begin{itemize}
+	\item With $P \leq 0.05$ to reject $H_0$, we accept a $5\%$ probability of incorrectly rejecting $H_0$ for the SNP tested (a false positive)
+\end{itemize}
+If we test $1 \times 10^6$ SNPs with threshold $P \leq 0.05$, we expect to accept
+\[(1 \times 10^6)(0.05) = 5 \times 10^4 \text{ false positives!}\]
+Therefore, we must raise the threshold for significance.
+\begin{itemize}
+	\item A simple (but conservative) solution: \textbf{Bonferroni Correction}
+	\[\alpha^* = \alpha I n\]
+    \item $\alpha^*$ = adjusted threshold for a single test (SNP)
+    \item $\alpha$ = overall false positive threshold (i.e., $P$ of at least 1 false)
+    \item $n$ = number of tests (SNPs)
+\end{itemize}
+This is \textbf{not} the best solution, but it has been the standard for reporting results, leading to problems that we will discuss later.\\\\
+For the above example, if we want an overall false positive rate of $5\%$ with $1 \times 10^6$ SNPs, we must set the threshold for individual SNPs to:
+\[\alpha^* = (0.05) / (1 \times 10^6) = 5 \times 10^{-8}\]
+This is the threshold most commonly used in GWAS for ``genome-wide significance''
+\begin{itemize}
+	\item It involves a \textbf{tradeoff}: we will reject many true positives.  (Type II Error: false negatives)
+\end{itemize}
+
+\subsection*{Visualization of GWAS Results: ``Manhattan'' Plots}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_13.png} 
+\end{center}
+SNPS that are \textit{correlated} (\textbf{not causated}) with the trait we are studying would have the ``skyscrapers''.
+\begin{itemize}
+	\item Thousands of SNP associations have been identified for diverse human traits
+	\item GWAS detects correlation, not causation.  Relatively few cases have the relevant genes identified.
+\end{itemize}
+GWAS is only an \textbf{initial} low-resolution analysis.
+\begin{itemize}
+	\item Uses common SNPs pre-selected to maximize coverage and statistical robustness with limited sample size
+	\item Results point to relevant \textbf{neighborhoods}, but the regions can contain many genes
+	\item The relevant alleles are frequently NOT the tested SNPs, but rather other genetic variations in linkage disequilibrium with them.
+\end{itemize}
+High-resolution follow-up is required.
+
+\subsection*{Some Questions About GWAS Results}
+\begin{itemize}
+	\item How do we know whether we have identified all the QTLs?
+	\begin{itemize}
+	    \item How much of the measured heritability is actually explained by the identified loci?
+    \end{itemize}
+    \item Can we predict phenotype (e.g., disease risk) from genotype?
+    \item What do current results show about the genetic architecture of complex traits? (as opposed to long-standing hypotheses?)
+    \item What are the broad implications for
+    \begin{itemize}
+	    \item evolution of complex traits
+	    \item development of therapies for complex diseases
+    \end{itemize}
+\end{itemize}
+
+\subsection*{SNP-based Heritability: General}
+\[\text{PRS} = \text{Polygenic Risk Score} = \sum_{SNP_j} x_j \beta_j\]
+\begin{itemize}
+	\item $SNP_j$ is the set of tested SNPs
+	\item $x$ is the allele dosage at SNP $j$: 0, 1, or 2 copies of the trait-increasing allele
+	\item $\beta$ is the additive allele effect from the data (from odds ratio)
+\end{itemize}
+\[h_{PRS}^2 = \frac{var\left(\sum_{SNP_j} x_j \beta_j\right)}{var(y)}\]
+\begin{itemize}
+	\item $y$ is the trait phenotypic value
+\end{itemize}
+If restricted to the set of SNPs that achieve genome-wide significance, then this heritability is sometimes called $h_{GWAS}^2$.
+\begin{itemize}
+	\item If all the QTLs have been identified, $h_{PRS}^2$ should be equal to the traditional estimates of narrow-sense heritability $h^2$.
+	\item \textbf{Continuous traits}: comparison is straightforward because we can measure the SNP effect as well as $V_P$ and $V_A$ in the same real physical units.
+	\item \textbf{Threshold traits}: comparison is more complicated because the quantitative trait is the underlying liability (for which we calculate $h_{liability}^2$ based on recurrent risk $\lambda_s$ in the population).  But what we get from the GWAS experiment is the SNP contribution to the \textbf{observed binary trait} (the probability of being affected, in a non-representative sample).
+\end{itemize}
+
+\subsection*{SNP-based Heritability: Threshold Traits}
+The standardized individual phenotype (e.g., probability of being affected) is:
+\[y_j = m + \sum_{i \in C} z_{ij} \alpha_i + \epsilon_j\]
+\begin{itemize}
+	\item $z_{ij}$ is the standardized, normalized genotype at gene $i$: $(x_{ij} - 2p_i) / (2p_i q_i)^{\frac{1}{2}}$
+	\begin{itemize}
+	    \item $x$ is the dosage at gene $i$, $p$ and $q$ are the allele frequencies in sample
+	    \item $2p$ is the expected value (mean for a binomial distribution with 2 trials).  (2 alleles per individual = 2 trials)
+	    \item $2pq$ is the variance for a binomial distribution with 2 trials
+    \end{itemize}   
+    \item $\alpha$ is the effect size in standard deviation units
+    \item $\epsilon$ is the environmental contribution
+\end{itemize}
+The SNP contribution to phenotypic variance is then: $\sigma_g^2 = \sum_i \alpha_i^2$, and the narrow-sense heritability accounted for by the SNPs is:
+\[h^2 = \frac{\sigma_g^2}{\sigma_g^2 + \sigma_\epsilon^2} = \sigma_g^2 = \sum_i \alpha_i^2\]
+The conversion between the heritability of the observed binary trait ($h^2_{PRS}$) and the heritability of the continuous liability can be computed as follows:
+\[h_{liability}^2 = [h_{observed}^2 \cdot \frac{K (1 - K)}{\varphi(\phi^{-1}[K])^2}] \cdot \frac{K(1 - K)}{P(1 - P)}\]
+\begin{itemize}
+	\item $K$ is the frequency of the binary trait in the population
+	\item $P$ is the frequency of the binary trait in the observed sample
+	\item the \textbf{denominator} of the first fraction is the squared height $z$ of the standard normal probability density function at the liability threshold $t$ (i.e., the squared probability density function evaluated at the $K$ quantile of the inverse comuluative density function)
+\end{itemize}
+
+\subsection*{SNP-based Heritability}
+\begin{itemize}
+	\item In principle, if all the genes have been found, \textbf{an individual's PRS gives us the genetic contribution to their phenotypic value}.
+	\item If we also understnad the environmental effects, \textbf{we can predict the phenotypic value}.
+	\item If we have found all the genes, we expect
+	\[h_{PRS}^2 = h_{measured}^2\]
+    \item But we don't get that.  This leads to the missing heritability problem.
+\end{itemize}
+
+\section*{Missing Heritability Problem}
+Thousands of SNP associations have been identified for diverse human traits, but the genome-wide significant SNPs only account for a \textbf{small proportion} of the measured heritability for any trait.  Why?
+\begin{itemize}
+	\item Over-conservative correction for multiple hypothesis testing
+	\item The multi-gene architecture of complex traits (makes the over-correction problem worse)
+	\item Possible overestimation from family studies
+	\begin{itemize}
+	    \item Shared / "private" environments
+	    \item Hidden non-additive genetic effects
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Over-conservative Multiple-Testing Correction}
+\begin{itemize}
+	\item Bonferroni is very conservative: many true positives will be rejected
+	\item Makes incorrect assumption of marker independence:
+	\begin{itemize}
+	    \item Markers in the same haplotype block are correlated; they are associated with the same causal locus
+	    \item Even markers in other nearby blocks can be correlated due to partial linkage
+    \end{itemize}
+\end{itemize}
+A better method: \textbf{Holm-Bonferroni Correction}
+
+\subsubsection*{Holm-Bonferroni Correction}
+\begin{itemize}
+	\item More power than Bonferroni but equal protection against Type I error
+	\item Ensures family-wise error rate (FWER) is controlled to $\leq \alpha$
+	\item Does not assume independent hypotheses
+\end{itemize}
+To do this:
+\begin{itemize}
+	\item Let $H_1, \dots, H_m$ be a family of $m$ null hypotheses and $P_1, \dots, P_m$ the corresponding $p$-values
+	\item Order the $p$-values (from lowest to highest) $P_{(1)}, \dots, P_{(m)}$
+	\item For a given significance level $\alpha$, let $k$ be the minimal index such that $P_{(k)} > \frac{\alpha}{m + 1 - k}$
+	\item Reject the null hypotheses $H_{(1)} \dots H_{(k - 1)}$ and do not reject $H_{(k)} \dots H_{(m)}$
+	\item If $k = 1$, then do not reject \textbf{any} of the null hypotheses
+	\item If no such $k$ exists then reject all of the null hypotheses.
+\end{itemize}
+
+\subsection*{Genetic Architecture}
+The second factor behind hidden heritability.  What do we actually expect to see in the case of a complex disease trait?
+\begin{enumerate}[label=\alph*)]
+	\item Rare single-gene Mendelian trait with complete penetrance
+	\item Rare allele contributing large effect to a complex trait
+	\item Common allele contributing small effect to a complex trait
+\end{enumerate}
+Hint: It's the common allele.
+
+\subsection*{Genetic Explanations of the ``Missing Heritability'' (not mutually exclusive)}
+\begin{itemize}
+	\item \textbf{Infinitesimal hypothesis}:
+	\begin{itemize}
+	    \item Proposes many common alleles at many genes with small effects each
+	    \item Strongly supported by current evidence - updated to ``Omnigene'' Model
+    \end{itemize}
+	\item \textbf{Rare allele hypothesis}
+	\begin{itemize}
+	    \item Proposes large effects by rare alleles (freq $<1\%$)
+	    \item Difficult to detect with standard-size studies
+	    \item More being detected with increasing sample sizes, but little contribution to $h^2$
+    \end{itemize}
+	\item \textbf{Epistasis hypothesis}
+	\begin{itemize}
+	    \item Proposes hidden epistasis hidden in heritability studies
+	    \item Can be tested with the same data (compare Association for single SNPs versus combinations of SNPs)
+	    \item But complex analysis and difficult to detect in standard-size studies
+	    \item Problem of multiple hypothesis testing is magnified
+	    \item not supported by current evidence (although examples exist)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Sample sizes required for GWAS}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W10_14.png} 
+\end{center}
+\begin{itemize}
+	\item $x$-axis: Odds ratio = magnitude of gene effect
+    \item $y$-axis: Sample size needed for 90\% probability to achieve a significant result at $P < 10^{-8}$ (infinitesimal model)
+\end{itemize}
+
+\subsection*{What is the actual genetic architecture of complex traits?}
+Ronald Fisher's Infinitesimal Model (1918): large number of genes, with common alleles each contributing a small additive effect.
+\begin{itemize}
+	\item Does this model hold up in the face of modern GWAS evidence, especially for common threshold disease traits?
+	\item How important are rare alleles with large effect?
+	\item How important are non-additive effects?
+\end{itemize}
+
+\subsection*{Genetic Explanations of the ``Missing Heritability'' (not mutually exclusive)}
+\begin{itemize}
+	\item Infinitesimal hypothesis
+	\begin{itemize}
+	    \item proposes many common alleles at many genes with small effects each
+	    \item \textbf{strongly supported by current evidence - updated to ``Omnigene Model''}
+    \end{itemize}
+	\item Rare allele hypothesis
+	\begin{itemize}
+	    \item proposes large effects by rare alleles (freq <1\%)
+	    \item difficult to detect with standard-size studies
+	    \item more being detected with increasing sample sizes, \textbf{but little contribution to $h^2$}
+    \end{itemize}
+	\item Epistasis hypothesis
+	\begin{itemize}
+	    \item proposes extensive epistasis hidden in heritability studies
+	    \item can be tested with the same data (compare association for single SNPs versus combinations of SNPs)
+	    \item but complex analysis and difficult to detect in standard-size studies
+	    \item problem of multiple hypothesis testing is magnified
+	    \item \textbf{no supported by current evidence (although examples exist)}
+    \end{itemize}
+\end{itemize}
+Common variants (MAF >5\%) have small additive effect sizes, but they are responsible for \textbf{most of the variance in the population}.  In contrast, very rare variants can have large effects on disease, but they \textbf{contribute little to mean phenotype and variance} in the population.\\\\
+Can we explain this in terms of the evolutionary processes of natural selection and adaptation?
+\begin{enumerate}
+	\item Large deleterious effects will be strongly selected against (even if they can have beneficial effects in some contexts)
+	\item Spreading out effects among many common variants minimizes strong negative selection, maintaining a reservoir of diversity that allows strong positive responses when needed (recall the gene number effect)
+\end{enumerate}
+
+
+
+
+
+
+
+
+\end{document}
+

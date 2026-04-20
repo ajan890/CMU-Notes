@@ -1,0 +1,367 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{dsfont}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usetikzlibrary{fit}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/}}
+
+\title{02-750 Week 10 \\ \large{Automation of Scientific Research}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\subsection*{What is a Hyperparameter?}
+\textbf{Definition:} A \textit{hyperparameter} is an external configuration setting defined by the user \textbf{before} training a machine learning model, which govern the learning process itself
+\begin{itemize}
+	\item Unlike parameters (e.g. weights), they are \textbf{not learned from data}, but directly affect performance, including speed of convergence and model accuracy
+\end{itemize}
+Some examples of hyperparameters:
+\begin{center}
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Hyperparameters} \\ \hline
+    Linear regression & Ridge/Lasso penalties \\
+    Logistic regression & L1, L2 regularization penalties \\
+    Decision Tree & Splitting criterion, pruning cost, max depth \\
+    $k$-Nearest Neighbors & $k$, weights, metric, abstention threshold \\
+    Support Vector Machines & C, kernel, gamma \\
+    Neural Networks & Activation function, learning schedule, layer size \\ \hline
+\end{tabular}
+\end{center}
+\textbf{Hyperparameter tuning is a special case of algorithm selection in Machine Learning}
+
+\subsection*{Hyperparameter Tuning and Transfer}
+Hyperparameter tuning is important across ML
+\begin{itemize}
+	\item Data prep + hyperparameter tuning take up most of the applied ML researcher hours
+	\item Takes up to 90\% of compute
+	\item Critical in high-stakes and large-scale applications
+\end{itemize}
+Hyperparameter transfer is crucial today!
+\begin{itemize}
+	\item Unavoidable in LLMs where each of the above is magnified multifold!
+\end{itemize}
+
+\subsection*{Algorithm Design for Machine Learning}
+\begin{itemize}
+	\item \textbf{Hyperparameter tuning} is poorly understood and yet of critical importance
+	\begin{itemize}
+	    \item why?  ML works on data
+	    \item Data $\rightarrow$ Machine Learning $\rightarrow$ Predictions
+	    \item There is NO single best algorithm + hyperparameter!
+	    \item Must tune / configure for the best performance on \textbf{domain-specific data}
+    \end{itemize}
+    \item Current practices require incredible amounts of \textbf{compute} and \textbf{engineering} efforts, and yet with no guarantees!
+    \item Understanding how the performance actually varies with the hyperparameter is crucial for \textbf{principled tuning}
+\end{itemize}
+
+\subsection*{Hyperparameter Tuning Set-Up}
+\begin{itemize}
+	\item Tune hyperparameters such as learning rate, batch size, weight decay
+	\item $f(\alpha)$ = val\_loss
+	\item Baselines: grid search, random search
+	\item Blackbox optimization (zeroth-order optimization)
+	\begin{itemize}
+	    \item No gradient info; treat function as a ``black box''
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_2.png} 
+\end{center}
+
+\subsection*{Hyperparameter Tuning as Bayesian Optimization}
+\begin{itemize}
+	\item Gaussian Process:
+	\begin{itemize}
+	    \item A collection of (infinitely many) random variables that are jointly Gaussian
+	    \item A distribution over functions - models noisy evaluation of some $f(\alpha)$
+	    \item Given by a mean function $m(\alpha)$ and covariance $k(\alpha, \alpha')$
+    \end{itemize}
+    \begin{align*}
+        E[f(\alpha)] &= m(\alpha) \\
+        E[(f(\alpha) - m(\alpha))(f(\alpha') - m(\alpha'))] &= k(\alpha, \alpha')
+    \end{align*}
+    \item Since all finite collections of function values are assumed jointly Gaussian, the conditional distribution of any new point given the observed points is also Gaussian, i.e., posterior predictive mean and variance at $\alpha^*$, given observed points $A$ is:
+    \begin{align*}
+        \mu(\alpha^*) &= K(\alpha^*, A) K(A, A)^{-1} f(A) \\
+        \sigma^2(\alpha^*) &= K(\alpha^*, \alpha^*) - K(\alpha^*, A) K(A, A)^{-1} K(A, \alpha^*)
+    \end{align*}
+\end{itemize}
+Acquisition function
+\begin{itemize}
+	\item Trade off exploration vs. exploitation
+\end{itemize}
+\[EI(\alpha) = E[\max(0, f_{best} - f(\alpha))]\]
+Bayesian optimization:
+\begin{verbatim}
+for i in {0, ..., n}:
+    // use GP to compute EI
+    select a* = max_a EI(a)
+    compute val_loss of a*
+\end{verbatim}
+
+\subsubsection*{Example: Neural Architecture Search}
+Define the search space as a DAG with architecture components (e.g., conv\_3x3, conv\_5x5, pool, fc)
+\begin{itemize}
+	\item The search space is a critical decision
+\end{itemize}
+
+\subsection*{Biochemical Motivation}
+\subsubsection*{Example 1}
+Optimizing High Performance Liquid Chromatography (HPLC) parameters
+\begin{itemize}
+	\item Chromatography:a family of techniques used in analytical chemistry for separating, identifying, and quantifying the components in a mixture
+	\item HPLC is faster, more sensitive, and higher resolution than traditional column chromatography, but also more expensive
+	\item The HPLC experiment has a number of \textbf{adjustable parameters} which can affect the \textbf{resolution} of the resulting chromatogram
+	\begin{itemize}
+	    \item Parameters include: size and contents of column, type and concentration of the solvents, type and concentration of buffers, flow rate, temperature, mass and volume of the sample
+    \end{itemize}
+    \item Let $x$ be a vector encoding a set of HPLC parameters: $f \::\: \mathcal{X} \rightarrow \mathbb{R}^d$ be an \textbf{unknown function} that maps $x$'s to chromatograms, and $g \::\: \mathbb{R}^d \rightarrow \mathbb{R}$ be a function that computes the resolution of a chromatogram
+\end{itemize}
+In this case, we can write the objective function as
+\[x^* = \argmax_{x \in \mathcal{X}} g\left(f(x)\right)\]
+Note that $g\left(f(x)\right)$ is a black-box function, because $f$ is a black-box function
+
+\subsubsection*{Example 2}
+Designing Peptides
+\begin{itemize}
+	\item Suppose that we want to design a \textbf{neoantigen vaccine} to direct a patient's immune system to attack tumor cells (\textbf{immunotherapy})
+	\item Let $x \in \{Ala, \cdots, Tyr\}^k$ be a peptide sequence of length $k$; $h \::\: \mathcal{X} rightarrow \mathbb{R}$ be \textbf{a unknown function} that maps sequences to \textbf{therapeutic activities}
+	\item Objective: $x^* = \argmax_{x \in \{Ala, \cdots, Tyr\}^k} h(x)$
+\end{itemize}
+Note: function $h$ is a black-box function that represents a multitude of factors, ranging from the physics of the interaction between the peptide(s) and key molecules (e.g., MHCs) to processes that occur in dendritic and T cells, which are not completely understood
+
+\subsection*{Optimizing Black Box Functions}
+\begin{itemize}
+	\item Clearly, HPLC parameter adjustment and peptide design are \textit{very} different tasks, but both involve optimizing unknown (\textbf{black box}) functions
+	\begin{itemize}
+	    \item HPLC optimization:
+	    \[x^* = \argmax_{x \in \mathcal{X}} g\left(f(x)\right)\]
+        \item Peptide design:
+        \[x^* = \argmax_{x \in \{Ala, \cdots, Tyr\}^k} h(x)\]
+    \end{itemize}
+    \item Moreover, evaluating the functions is expensive, since doing so involves running experiments, which take time and money
+    \begin{itemize}
+	    \item Assume that we can't afford to simply perform a brute-force search over designs
+	    \item Instead, we will discuss strategies for optimizing black box functions that select designs to test experiments using a \textbf{surrogate model} (a.k.a., surrogate function)
+	    \begin{itemize}
+	        \item For example, learn a regression model of the form $g'\::\: \mathcal{X} \rightarrow \mathbb{R}$ and use it to find $\hat{x}^*$.  We will \textbf{assume} that learning and evaluating $g'$ is much faster than evaluating $g\left(f(x)\right)$
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Active Learning vs. Model-based Optimization}
+\begin{center}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Approach} & \textbf{Goal} & \textbf{The Role of the Current Model} & \textbf{Query Selector Goal} \\ \hline
+    Active Learning & Find a good model & \begin{tabular}[c]{@{}c@{}}Representative(s) from the\\  current version space\end{tabular} & \begin{tabular}[c]{@{}c@{}}Shrink the version space, using\\ the current model(s)\end{tabular} \\ \hline
+    \begin{tabular}[c]{@{}c@{}}Model-based\\ Optimization\end{tabular} & Find a good design & Point us towards better designs & \begin{tabular}[c]{@{}c@{}}Find potentially optimal designs,\\ using the current model(s)\end{tabular} \\ \hline
+    \end{tabular}
+\end{center}
+
+\subsection*{High-Level Query Selection Criteria: Exploration vs. Exploitation}
+\textbf{Exploration}
+\begin{itemize}
+	\item Select designs that are from unexplored regions of the design space, $\mathcal{X}$
+	\begin{itemize}
+	    \item \textbf{Strength:} We gain knowledge that might help us build a better model (i.e., one that is better at directing us towards optimal designs)
+	    \item \textbf{Weakness:} We may waste effort (opportunity loss)
+    \end{itemize}
+\end{itemize}
+\textbf{Exploitation}
+\begin{itemize}
+	\item Select designs that are predicted to be optimal under the current model, $h$
+	\begin{itemize}
+	    \item \textbf{Strength:} Leverage the information we have
+	    \item \textbf{Weakness:} We may get stuck in a local optimum (opportunity loss)
+    \end{itemize}
+\end{itemize}
+Effective model-based optimization methods make an explicit tradeoff between exploration and exploitation
+
+\subsection*{Regret}
+We can define the regret of a query selection strategy with respect to the difference in the expected \textbf{rewards} relative to the optimal strategy\\\\
+Example Scenario: Neoantigen vaccine design
+\begin{itemize}
+	\item Let $\mu^*$ be the expected number of tumor cells killed per day using optimal design, $d^*$
+	\item Let $\mu_d$ be the expected number of tumor cells killed per day using arbitrary design, $d$
+	\item The single-day regret is $\mathbb{E}_{d \in D}[\mu^* - \mu_d]$
+	\item The total regret (opportunity loss) after $T$ days is $R = \Sigma_t^T \mathbb{E}_{d \in D} [\mu^* - \mu_d]$
+\end{itemize}
+It can be shown that:
+\begin{itemize}
+	\item If we use \textbf{exploration-only}, then the regret is linear in $T$
+	\item If we use \textbf{exploitation-only}, then the regret is linear in $T$
+	\item \textit{Some} strategies that balance exploration and exploitation are no-regret (i.e., sublinear in $T$)
+\end{itemize}
+
+\subsection*{Sequential Model-based Optimization}
+The need to optimize expensive black box functions arises in many contexts
+\begin{itemize}
+	\item For example, \textbf{Hyper-parameter Optimization} in Machine Learning
+	\begin{itemize}
+	    \item Hyper-parameters refer to any parameter that must be set \textbf{before} learning
+	    \item Typical examples:
+	    \begin{itemize}
+	        \item The number of trees to use when learning a Random Forests
+            \item Regularization parameters (e.g., Lasso or Ridge regression)
+            \item The topology and size of neural networks (including deep models)
+            \item Learning rates and dropout rates for neural networks
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+Any method for optimizing expensive black box functions can also be used to solve design problems in biology and chemistry. For example, HPLC experiment configuration, or the residues in a peptide’s primary sequence can be treated as hyper-parameters.
+
+\subsubsection*{Algorithm}
+Generic algorithm for sequential model-based optimization (SMBO)
+$SMBO(f, \hat{f}_0, T, S)$
+\begin{enumerate}
+	\item $D = \{\}$
+	\item For $t = 1$ to $T$:
+	\item \quad $x^* = optimize_x S(x, \hat{f}_{t - 1})$
+	\item \quad evaluate $f(x^*)$
+	\item \quad $D = D \cup \{x^*, f(x^*)\}$
+	\item \quad $\hat{f}_t = learn(D)$
+	\item Return best design in $D$
+\end{enumerate}
+Here,
+\begin{itemize}
+	\item $f$ is the true model (i.e., the oracle)
+	\item $\hat{f}_t$ is the \textbf{surrogate model}
+	\item $T$ is the experiment budget
+	\item $S$ is the \textbf{selection function} (aka., acquisition function), that defines a tradeoff between \textbf{exploring} the domain, and \textbf{exploiting} the knowledge we already have
+\end{itemize}
+
+\subsubsection*{Surrogate Models}
+\begin{itemize}
+	\item Since we are usually trying to optimize a numeric objective (for example, chromatogram resolution or therapeutic activity), it makes sense to use a regression model, $\hat{f}\::\: \mathcal{X} \rightarrow \mathbb{R}$, to map the adjustable (hyper) parameters, $\mathcal{X}$ to the objective
+	\begin{itemize}
+	    \item Naturally, $\hat{f}$ is just an approximation to the true, unknown function, $f$
+	    \item Again, assume that learning and finding the (approximate) maximum of $\hat{f}$ can be performed much faster than the time needed to evaluate $f$
+    \end{itemize}
+    \item The choice of surrogate model is partially determined by the nature of the selection function $S$
+    \item If the selection function simply finds the $x$ maximizes $\hat{f}(x)$ (that is, 100\% exploitation), then we are free to use \textit{any} regression model
+    \item More sophisticated selection functions make a trade-off between \textbf{exploiting} the current model, and \textbf{exploring} the design space (i.e., selecting points in regions where the value $\hat{f}(x)$ is uncertain)
+    \item Such selection functions require models that not only make predictions, but also quantify the confidence of those predictions
+\end{itemize}
+\begin{center}
+    \begin{tabular}{cc}
+        \textbf{Optimization} & \textbf{Active Learning} \\
+        Exploitation = Testing/Validation & Exploitation = Search Boundaries \\
+        Exploration = Improving model & Exploration = Search new areas
+    \end{tabular}
+\end{center}
+
+\subsubsection*{Surrogate Models: Quantifying Uncertainty}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W10_3.png} 
+\end{center}
+Here, the grey regions illustrate the uncertainty of the surrogate model, $\hat{f}(x)$.
+\begin{itemize}
+	\item Sophisticated selection functions take both the current model (the red line) and the uncertainty into account when selecting the next design to text
+\end{itemize}
+\textbf{Option 1: Random Forest Regression}
+\begin{itemize}
+	\item Random Forests (and other ensemble methods) can be used as a fast (although perhaps crude) means to quantify uncertainty using the variance of the predictions made by the trees in the forest
+	\item Random Forests are very versatile, because they can handle mixed feature types (numeric, categorical, etc.)
+\end{itemize}
+\textbf{Option 2: Gaussian Process Regression} (aka. Kriging)
+Gaussian process regression (GPR) is a nonparametric, Bayesian approach to regression
+\begin{itemize}
+	\item Informally, a Gaussian Process (GP) extends the concept of a \textbf{multivariate Gaussian probability distribution} over $d$-dimensional vectors, to a probability distribution over continuous \textit{functions}
+	\item Key idea: Any $d$-dimensional continuous function, $f \::\: \mathbb{R}^d \rightarrow \mathbb{R}$, can be interpreted as the realization of an \textbf{infinite} number of random variables, one for each point in $\mathbb{R}^d$
+    \item A GP is completely specified by two parameters, $m$ and $K$
+    \[f \sim \mathcal{GP}(m, K)\]
+    \begin{itemize}
+	    \item $m(x) = \mathbb{E}[f(x)]$ is the \textbf{mean fucntion}
+	    \item $K(x, x')$ is the \textbf{covariance function}, which can be used to compute the uncertainty (the grey area)
+	    \item $K$ is a \textbf{kernel}, that is, it is a measure of how similar points $x$ and $x'$ are.
+    \end{itemize}
+    \item Given training data (i.e., measurements of the function at various points in the domain) and a prior, $f \sim \mathcal{GP}(m, K)$, it is possible to compute
+    \begin{itemize}
+	    \item The posterior distribution
+	    \item The expected function
+	    \item Uncertainties
+    \end{itemize}
+\end{itemize}
+\textbf{Option 3: Tree-Structured Parzen Estimator (TPE)}
+\begin{itemize}
+	\item The Random Forest and Gaussian Process models encode $P(y | x)$, where $y$ corresponds to the output of $f(x)$
+	\item In contrast, the TPE method encodes the distributions $P(x | y)$ and $P(y)$
+	\begin{itemize}
+	    \item Recall that $P(y | x) \propto P(x | y) P(y)$ via Bayes' Theorem
+    \end{itemize}
+    \item This strategy is used because it facilitates making the trade-off between exploration and exploitation and finding the best value of $x$
+\end{itemize}
+
+\subsection*{Selection (Acquisition) Functions ($S$)}
+Assuming that we have chosen a surrogate model capable of quantifying its confidence in its own predictions (e.g., Random Forests, Gaussian Processes, TPEs), there are various strategies we can use to select the next design to test
+\subsubsection*{Approach 1}
+Select the point with the maximum of the GP mean
+\begin{itemize}
+	\item Magenta line highlights where we want to sample next based (i.e., maximum of GP mean)
+	\item Red dot shows the maximum of the true (unknown) function
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_4.png} 
+\end{center}
+
+\subsubsection*{Approach 2}
+Select the point with maximum of the GP variance
+\begin{itemize}
+	\item Magenta line highlights where we want to sample next based (i.e., maximum of GP mean)
+	\item Red dot shows the maximum of the true (unknown) function
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_5.png} 
+\end{center}
+
+\subsubsection*{Approach 3}
+Upper Confidence Boudn (UCB) defined as
+\[a(x; \lambda) = \mu(x) + \lambda \sigma(x)\]
+\begin{itemize}
+	\item With UCB, the \textbf{exploitation vs exploration} tradeoff is straightforward and easy to tune via the parameter $\lambda$
+	\item Concretely, UCB is a weighted sum of the expected performance captured by $\mu(x)$ of the Gaussian Process, and of the uncertainty $\sigma(x)$, captured by the standard deviation of the GP
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W10_6.png} 
+\end{center}
+
+\subsubsection*{Approach 4}
+Probability of Improvement (PI)
+\begin{itemize}
+	\item Suppose we want to maximize $f(x)$, and the best solution we have so far is $x^*$.  Then, we can define \textit{improvement}, $I(x)$, as:
+	\[I(x) = \max(f(x) - f(x^*), 0) = \max(\mu(x) + \sigma(x)z - f(x^*), 0) z \sim \mathcal{N}(0, 1)\]
+    \item For some point $x$, we assign a value $I(x)$
+    \[\text{PI}(x) = \text{Pr}(I(x) > 0) \Leftrightarrow \text{Pr}(f(x) > f(x^*))\]
+\end{itemize}
+
+
+\end{document}

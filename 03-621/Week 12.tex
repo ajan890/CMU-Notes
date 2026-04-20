@@ -1,0 +1,257 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usepackage[dvipsnames]{xcolor}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\dd}{\text{d}}
+
+
+\graphicspath{{./assets/images/Week 12}}
+
+\title{03-621 Week 12 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Epigenetics and Epigenomics}
+\subsection*{Parts of Genes}
+\subsubsection*{Promoters}
+\begin{itemize}
+	\item Major on-off switches in genes
+	\item Recruit transcription initiation complexes and RNA polymerase
+	\item Most elements are upstream of the start site
+	\item Some promoters lack these core elements
+\end{itemize}
+\subsubsection*{Enhancers}
+\begin{itemize}
+	\item Sequences that interact with activator proteins to boost transcription
+	\item Frequently tissue-, stage-, or condition-specific
+	\item Usually <20bp long
+	\item Usually upstream of the promoter, but can be \textbf{far} upstream, downstream, or within a gene (in introns)
+\end{itemize}
+\subsubsection*{Insulator Elements}
+\begin{itemize}
+	\item Long-range looping can occur due to tissue-specific enhancers interacting long range
+	\item Insulator elements prevent enhancer-promoter interactions
+	\item Can restrict the activity of enhancers to defined chromatin domains (don't activate nearby genes).
+\end{itemize}
+\subsubsection*{Locus Control Regions}
+Can affect the transcription of multiple, distantly located genes, ``choosing between them''
+\begin{itemize}
+	\item For example, in the $\beta$-globin gene cluster, the same LCR can associate with different $\beta$-globin genes at different times in development, activating them sequentially.
+\end{itemize}
+
+\subsection*{Transcriptional Condensates: A New Regulatory Layer}
+\begin{itemize}
+	\item Transcriptional condensates are phase-separated clusters of transcription factors, mediator, and RNA Pol II
+	\item Driven by intrinsically disordered regions (IDRs) and multivalent interactions
+	\item Responsible for concentrating transcription machinery at active loci
+	\item Enhancers nucleate condensates to regulate gene expression
+	\item Highly dynamic: assmeble/disassemble in response to signals
+\end{itemize}
+
+\subsection*{Chromatin}
+\begin{itemize}
+	\item Chromatin compacts the DNA so it fits and remains organized in the nucleus. 
+	\item This structure also makes it hard for transcription factors and transcriptional machinery to access DNA
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W12_1.png} 
+\end{center}
+
+\section*{Epigenetics}
+\begin{itemize}
+	\item Regulation of Gene Expression at the level of chromatin structure, histone modification and DNA methylation
+	\item ON/OFF epigenetic states can be established in response to:
+	\begin{itemize}
+	    \item Developmental program (cell type differentiation)
+	    \item Environmental factors
+    \end{itemize}
+    \item Epigenetic regulatory states (ON/OFF) can be inherited through somatic cell divisions
+    \begin{itemize}
+	    \item Provides a ``cellular memory'' of previous decisions in the cell lineage
+    \end{itemize}
+\end{itemize}
+\textbf{Chromatin states arise from DNA and chromatin modifications.}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W12_2.png} 
+\end{center}
+Different types of histone methylation are associated with open and condensed chromatin.\\\\
+\textbf{Contributions by DNA and Histone modification to different chromatin states}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W12_3.png} 
+\end{center}
+Histones H3 and H4 undergo many modifications on their positively charged N-terminal tails.  H3 Lysines K9 and K27 can be:
+\begin{itemize}
+	\item Methylated (inactive genes)
+	\item Acetylated (active genes)
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W12_4.png} 
+\end{center}
+\subsubsection*{Examples of Histone Modifications Characteristic of different Chromatin States}
+\begin{center}
+\begin{tabular}{|c|ccccc|cc|}
+\hline
+\rowcolor[HTML]{CBCEFB} \cellcolor[HTML]{CBCEFB} & \multicolumn{5}{c|}{\cellcolor[HTML]{CBCEFB}\textbf{Euchromatin}} & \multicolumn{2}{c|}{\cellcolor[HTML]{CBCEFB}\textbf{Heterochromatin}} \\ \cline{2-8} 
+\rowcolor[HTML]{EAEBFF} \cellcolor[HTML]{CBCEFB} & \multicolumn{2}{c|}{\cellcolor[HTML]{EAEBFF}Promoters} & \multicolumn{2}{c|}{\cellcolor[HTML]{EAEBFF}Enhancers} & Gene Bodies & \multicolumn{1}{c|}{\cellcolor[HTML]{EAEBFF}} & \cellcolor[HTML]{EAEBFF} \\ \cline{2-6}
+\rowcolor[HTML]{EAEBFF} \cellcolor[HTML]{CBCEFB}\multirow{-3}{*}{\begin{tabular}[c]{@{}c@{}}\cellcolor[HTML]{CBCEFB}\textbf{Amino}\\ \cellcolor[HTML]{CBCEFB}\textbf{Acid}\end{tabular}} & \multicolumn{1}{c|}{\cellcolor[HTML]{EAEBFF}Active} & \multicolumn{1}{c|}{\cellcolor[HTML]{EAEBFF}Inactive} & \multicolumn{1}{c|}{\cellcolor[HTML]{EAEBFF}Active} & \multicolumn{1}{c|}{\cellcolor[HTML]{EAEBFF}Inactive} & Inactive & \multicolumn{1}{c|}{\cellcolor[HTML]{EAEBFF}\multirow{-2}{*}{Facultative}} & \multirow{-2}{*}{\cellcolor[HTML]{EAEBFF}Constitutive} \\ \hline
+H3K4 & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}H3K4me2,\\ H3K4me3\end{tabular}} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}H3K4me1,\\ H3K4me2\end{tabular}} & \multicolumn{1}{c|}{} &  & \multicolumn{1}{c|}{} &  \\ \hline
+H3K9 & \multicolumn{1}{c|}{H3K9ac} & \multicolumn{1}{c|}{H3K9me3} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}H3K9me2,\\ H3K9me3\end{tabular}} & \begin{tabular}[c]{@{}c@{}}H3K9me2,\\ H3K9me3\end{tabular} & \multicolumn{1}{c|}{H3K9me2} & H3K9me3 \\ \hline
+H3K27 & \multicolumn{1}{c|}{H3K27ac} & \multicolumn{1}{c|}{H3K27me3} & \multicolumn{1}{c|}{H3K27ac} & \multicolumn{1}{c|}{} &  & \multicolumn{1}{c|}{H3K27me3} &  \\ \hline
+H4K12 & \multicolumn{1}{c|}{H4K12ac} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{} &  & \multicolumn{1}{c|}{H4K12ac} & H4K12ac \\ \hline
+H4K20 & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{} &  & \multicolumn{1}{c|}{} & H4K20me3 \\ \hline
+\end{tabular}
+\end{center}
+
+\subsubsection*{CpG density and DNA methylation levels across a typical gene}
+\begin{center} 
+	[insert 15]
+\end{center}
+\textbf{CpG Islands:}
+\begin{itemize}
+	\item 300-3000 nucleotides long, with high G/C content.
+	\item Methylation of C leads to silencing of gene expression
+	\item Often found in transposons (suppresses hopping).
+	\item 60-70\% of CpGs are methylated in human somatic cells.
+\end{itemize}
+
+\section*{Epigenetics}
+\begin{itemize}
+	\item Heritable change in something ``in addition to'' or ``on top of'' DNA sequence.
+	\item Methylation of C's in CpG islands by DNA Methyltransferase (DNMT)
+	\item Results in local silencing of transcription
+	\item Methylation is inherited through somatic cell divisions, through the action of ``maintenance'' methylases
+\end{itemize}
+\begin{center} 
+	[insert 16]
+\end{center}
+
+\subsection*{DNA Methylation and Demethylation at CpG in Mammalian Cells}
+\begin{enumerate}
+	\item \textbf{De novo methylation} can establish a repressed state in response to developmental program or environmental factors
+	\item Methylation can be lost through subsequent rounds of cell division
+	\item \textbf{Maintenance methylation} maintains repressed state through somatic cell divisions.  Accounts for cellular ``memory'' of past regulatory decisions
+\end{enumerate}
+\begin{center} 
+	[insert 19]
+\end{center}
+
+\subsection*{DNA Methylation in Neanderthals}
+We suspect that neanderthals diverged from humans through epigenetic evolution.
+\begin{itemize}
+	\item Neanderthal genome sequenced in 2010
+	\item 5-methyl-cytosine naturally deaminates to thymidine.
+	\item Methylation sites ``look'' like mutations, compared to modern human genome sequences.
+	\item The C $\rightarrow$ T ``mutation'' shows the methylation status in Neanderthals
+	\item Over 99\% of genome shows no methylation different from present-day humans
+\end{itemize}
+Comparing the HOXD genes in DNA of osteoblasts (bone cells)
+\begin{itemize}
+	\item Neanderthals had \textit{more} methylation at HOXD9 and HOXD10 genes.
+	\item This may have led to \textit{less} expression, accounting for differences in bone structure.
+	\item LOF mutations in these genes lead to similar differences in mouse, human
+\end{itemize}
+
+\subsection*{Methylation Paradox}
+If methylation silences gene expression, and it is heritable through cell divisions, how can new progeny develop?\\\\
+Answer: Methylation status is controlled dynamically
+\begin{itemize}
+	\item Erased during development of germ cells
+	\item Reset (where appropriate) during subsequent differentiation of gametes, fertilization, and development
+	\item The repressed state is \textbf{reversible} in response to the developmental program (e.g., during gamete differentiation and early embryonic development, or in response to environmental factors)
+\end{itemize}
+
+\subsection*{Changes in DNA Methylation During Mammalian Development}
+\begin{center} 
+	[insert 26]
+\end{center}
+\begin{itemize}
+	\item CpG islands are demethylated in PGCs and in preimplantation embryos
+	\item CpG islands become methylated during development for differentiation (as appropriate for sperm, oocytes, embryo, and adult somatic cells).
+	\item Deficient DNA methylation is associated with Neural Tube Defects (folic acid vitamin supplement increases methylation - reduces risk)
+\end{itemize}
+
+\subsection*{Examples of Regulation by DNA Methylation During Development}
+\begin{center} 
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \multirow{4}{*}{\textbf{\begin{tabular}[c]{@{}c@{}}Independent of \\ parent of origin\end{tabular}}} & \textbf{\begin{tabular}[c]{@{}c@{}}X-inactivation in\\ somatic cells\end{tabular}} & \begin{tabular}[c]{@{}c@{}}Random inactivation of most genes on either the \\ paternal or maternal X\end{tabular} \\ \cline{2-3} 
+    & \textbf{\begin{tabular}[c]{@{}c@{}}Production of\\ cell-specific\\ Ig and T-cell receptors\end{tabular}} & \begin{tabular}[c]{@{}c@{}}Each mature B or T cell makes Ig or T-cell receptor\\ chains using only one allele.  Once a functional chain\\ is made by gene rearrangement at one randomly \\ selected allele, a feedback mechanism inhibits\\ further rearrangements\end{tabular} \\ \cline{2-3} 
+    & \textbf{\begin{tabular}[c]{@{}c@{}}Production of\\ cell-specific olfactory\\ receptors\end{tabular}} & \begin{tabular}[c]{@{}c@{}}Each olfactory neuron expresses a single allele of just\\ a single olfactory receptor (OR) gene (selected from\\ several hundred OR genes) so that it fires in\\ response to one specific odorant only.  Depends on\\ competition for a single monoallelic enhancer.\end{tabular} \\ \cline{2-3} 
+    & \textbf{\begin{tabular}[c]{@{}c@{}}Stochastic and\\ environmentally induced\end{tabular}} & \begin{tabular}[c]{@{}c@{}}May be quite common?  Intense interest in context \\ of cancer, obesity, and diabetes.\end{tabular} \\ \hline
+    \multirow{2}{*}{\textbf{\begin{tabular}[c]{@{}c@{}}Dependent on\\ parent of origin\end{tabular}}} & \textbf{\begin{tabular}[c]{@{}c@{}}X-inactivation in\\ placenta\end{tabular}} & Paternal X is always inactivated \\ \cline{2-3} 
+    & \textbf{Genomic imprinting} & \begin{tabular}[c]{@{}c@{}}Some genes are expressed only from the paternally\\ inherited homolog and some only from the maternally\\ inherited homolog.  Examples: IGF2, H19, 15q11, etc.\end{tabular} \\ \hline
+    \end{tabular}
+\end{center}
+
+\subsection*{Imprinting Occurs During Germ Cell Differentiation}
+\begin{itemize}
+	\item In mammals, we would not expect trans-generational inheritance of epigenetic changes acquired in response to environmental factors.
+	\item But some specific epigenetic marks are transferred through the sperm or egg $\rightarrow$ \textbf{Imprinting}: parent-of-origin silencing / expression
+\end{itemize}
+
+\subsection*{Imprinting}
+\begin{itemize}
+	\item Imprinted genes are methylated differentially in maternally and paternally-derived chromosomes.
+	\item Silenced loci remain off during development.
+	\item Exhibited by several hundred human genes.
+	\item Therefore, we only have one \textbf{active} copy of those genes.  It is either the maternal or paternal copy, but it depends on the gene.
+	\item The silenced allele can \textbf{switch} as it passes through a new germline.
+\end{itemize}
+
+\subsection*{Some Phenotypic Traits Exhibit Imprinted Transmission}
+\begin{center} 
+	[insert 33]
+\end{center}
+\begin{itemize}
+	\item \textbf{Parent-of-origin effects:} the disease phenotype associated with a DNA sequence variant is only observed when that variant is inherited from the parent of a particular sex (in this case, the female parent).
+\end{itemize}
+
+\subsection*{Pathogenesis Can Result from Underexpression \textit{or} Overexpression of Imprinted Genes}
+\begin{center} 
+    \begin{tabular}{|lllll|}
+    \hline
+    \multicolumn{1}{|c|}{\multirow{2}{*}{\textbf{Syndrome}}} & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Clinical Features}}} & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{\begin{tabular}[c]{@{}c@{}}Molecular Basis of \\ Imprinting Disorder\end{tabular}}}} & \multicolumn{2}{c|}{\textbf{Cause}} \\ \cline{4-5} 
+    \multicolumn{1}{|c|}{} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{\textbf{UPD$^*$}} & \multicolumn{1}{c|}{\textbf{Other}} \\ \hline
+    \multicolumn{5}{|l|}{\textbf{Pathogenesis due to under-expression of imprinted genes}} \\ \hline
+    \multicolumn{1}{|l|}{Prader-Willi} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Developmental delay\\ hypotonia, hyperphagia,\\ obesity, heart disease\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Lack of active alleles \\ for imprinted snoRNA \\ genes at 15q11.2\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Mat. chr 15\\ $\sim 25\%$\end{tabular}} & \begin{tabular}[c]{@{}l@{}}Del pat. 15q11-13  \\ $\sim 70\%$\end{tabular} \\ \hline
+    \multicolumn{1}{|l|}{Angelman} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Developmental delay (severe)\\ no speech\\ epilepsy; ataxia\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Lack of active allele for \\ imprinted UBE3A gene \\ at 15q11.2\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Pat. chr 15\\ $\sim 25\%$\end{tabular}} & \begin{tabular}[c]{@{}l@{}}Del mat. 15q11-13 \\ $\sim 75\%$\end{tabular} \\ \hline
+    \multicolumn{5}{|l|}{\textbf{Pathogenesis due to over-expression of imprinted genes}} \\ \hline
+    \multicolumn{1}{|l|}{\begin{tabular}[c]{@{}l@{}}Beckwith-\\ Wiedeman\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Macrosomia/overgrowth;\\ macroglossia\\ umbilical defect\end{tabular}} & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}Biallelic expression of IGF2 \\ at 11p15.5 (normally silenced \\ on maternal 11) Biallelic \\ expression of ncRNA that \\ silences CDKN1C growth \\ suppressor\end{tabular}} & \multicolumn{1}{l|}{Pat. 11} & \begin{tabular}[c]{@{}l@{}}Loss of maternal ICR2$^{**}$\\ methylation $\sim 50\%$\\ Gain of maternal ICR1$^{**}$\\ methylation $\sim 5\%$\\ CDKN1C mutation $\sim 5\%$\end{tabular} \\ \hline
+    \end{tabular}
+\end{center}
+
+
+
+
+\end{document}
