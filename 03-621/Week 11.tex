@@ -1,0 +1,232 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[table,xcdraw]{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+\usepackage[dvipsnames]{xcolor}
+
+% code blocks
+\usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\dd}{\text{d}}
+
+\graphicspath{{./assets/images/Week 11}}
+
+\title{03-621 Week 11 \\ \large{Advanced Quantative Genetics}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Finding the Genes}
+What is the actual genetic architecture of complex traits?
+\begin{itemize}
+	\item \textbf{Ronald Fisher's Infinitesimal Model (1918)}
+	\item Large number of genes, with common alleles each contributing a small additive effect.
+\end{itemize}
+Does this model hold up in the face of modern GWAS evidence, especially for common threshold disease traits?  How important are rare alleles with large effect?  How important are non-additive effects?
+
+\subsection*{Attempts to Account for a Greater Proportion of Heritability}
+We want to account for:
+\begin{itemize}
+	\item Type II error
+	\item Infinitesimal hypothesis
+\end{itemize}
+Methods:
+\begin{itemize}
+	\item The basic concept is to combine the effects of \textbf{all} of the SNPs in the study (not just significant SNPs).  Is any $h^2$ really missing?
+    \item Several software packages available.  (e.g., GCTA: as random effects by a mixed linear model)
+\end{itemize}
+The SNP genotypes are used to calculate genetic similarities among unrelated individuals and this is regressed on phenotypic similarities.  Strongly criticized as severely overestimating or underestimateing $h^2$ due to multiple flaws and sensitivities to data imperfections (e.g., population structure due to admixture)
+
+\subsection*{False Positives due to Population Admixture}
+When two populations with different trait prevalence intermix, failure to take mixed genetic background into account can lead to false positives in GWAS.
+\begin{itemize}
+	\item The reason: any allele(s) that distinguish the two populations will appear to be associated with the trait
+\end{itemize}
+
+\subsection*{From Mapping to Identifying Genes}
+\textbf{General strategies}
+\begin{itemize}
+	\item Follow-up mapping and association studies at higher resolution
+	\item Extend analysis to rare variants in delimited regions
+	\item Establish causation
+\end{itemize}
+\textbf{Some special approaches:} Sometimes useful for monogenic traits and some complex traits
+\begin{itemize}
+	\item Exome sequencing
+	\item Cytological Mapping using chromosome abnormalities
+\end{itemize}
+
+\subsection*{Route to Pinpointing the Responsible Gene and Mutations}
+\begin{enumerate}
+    \item Extend Association Studies to tracing inheritance in families
+    \begin{itemize}
+        \item Known common and rare alleles from databases
+        \item New rare alleles identified by sequencing the candidate genes in patients and controls
+    \end{itemize}
+    \item Predict effect of mutation on gene function
+    \begin{itemize}
+        \item From first principles (null alleles, frameshifts, missense mutations)
+        \item From knowledge or modeling of structure and functional domains
+    \end{itemize}
+    \item Verify effect on gene function
+    \begin{itemize}
+        \item In vitro assays of purified wild type and mutant proteins
+        \item In vivo assays in cell lines or model organisms
+    \end{itemize}
+    \item Verify effect on phenotype
+    \begin{itemize}
+        \item Gene knockout or replacement in cell lines or model organisms
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Cytological Mapping Using Chromosomal Abnormalities}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W11_1.png} 
+\end{center}
+The banding patterns of chromosomes allow us to identify the location of breakpoints in chromosome abnormalities that may \textbf{inactive} or \textbf{inappropriately activate} a gene.  Useful for specific cases of:
+\begin{itemize}
+	\item Rare disease traits with insufficient number of informative pedigrees
+	\item Highly deleterious dominant traits
+	\begin{itemize}
+        \item Not transmitted
+        \item All cases are new sporadic mutations
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Abnormalities 1: Inversions and Deletions}
+Genes at the junctions may be \textbf{inactivated} or \textbf{fused}.  Fusing is a common mechnanism of activation of cancer-promoting genes.
+\begin{center} 
+	\includegraphics*[width=0.75\textwidth]{W11_2.png} 
+\end{center}
+
+\subsubsection*{Abnormalities 2: Translocations}
+Result from breaks on different chromosomes.
+\begin{center} 
+	\includegraphics*[width=0.75\textwidth]{W11_3.png} 
+\end{center}
+
+\subsection*{Examples of Copy Number Polymorphisms (CNPs) Associated with Complex Diseases}
+\begin{center}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{CNP Allele} & \textbf{Disease} \\ \hline
+        \begin{tabular}[c]{@{}l@{}}Deletion upstream of \textit{IRGM}\\ (innate immune response)\end{tabular} & Crohn's disease \\ \hline
+        Low-copy of repeat in Lipoprotein A gene & Coronary artery disease \\ \hline
+        \begin{tabular}[c]{@{}l@{}}Extra copies of the $\beta$-defensin multigene family\\ (antimicrobial peptides)\end{tabular} & Psoriasis \\ \hline
+        Deletion of 1 copy of the complement \textit{C4} gene & \multirow{2}{*}{Systemic lupus erythematosus} \\ \cline{1-1}
+        Reduced copies of \textit{FCGR3A} (Fc portion of IgG) &  \\ \hline
+    \end{tabular}
+\end{center}
+
+\subsection*{Examples of Loci that Exhibit Copy Number Variation in Autism Spectrum Disorder}
+\begin{center}
+    \begin{tabular}{|l|l|l|l|l|}
+        \hline
+        \textbf{Locus Size} & \textbf{Genes} & \textbf{Location} & \textbf{Pathogenic Allele} & \textbf{Frequency in ASD (\%)} \\ \hline
+        0.7 Mb & 30 genes & 16p11.2 & deletions and duplications & 0.8 \\ \hline
+        $\sim 1$ Mb & \begin{tabular}[c]{@{}l@{}}\textit{PTCHD1AS}\\ \textit{PTCHD1}\end{tabular} & Xp22.1 & \begin{tabular}[c]{@{}l@{}}deletions affecting \textit{PTCHD1AS}\\ (upstream antisense ncRNA)\end{tabular} & 0.5 \\ \hline
+        Variable & \textit{NRXN1} & 2p16.3 & mostly deletions & 0.4 \\ \hline
+        1.4 Mb & 22 genes & 7q11.2 & duplication & 0.2 \\ \hline
+        2.5 Mb & 56 genes & 22q11.2 & deletions and duplications & 0.2 \\ \hline
+        1.5 Mb & 14 genes & 1q21.1 & duplications & 0.2 \\ \hline
+        Variable & \textit{shank2} & 11q13.3 & deletions & 0.1 \\ \hline
+    \end{tabular}
+\end{center}
+Note that the copy number variations each account for only a \textbf{small} percentage of ASD cases
+
+\section*{Exome Sequencing}
+Also useful for single-gene disorders that are:
+\begin{itemize}
+	\item Very rare disease traits with an insufficient number of informative pedigrees for mapping
+	\item Highly deleterious dominant traits
+	\begin{itemize}
+        \item not transmitted
+        \item therefore, all cases are \textit{new} sporadic mutations
+        \item therefore, cannot be mapped
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Exome sequencing method}
+Targets sequencing to exons.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W11_4.png} 
+\end{center}
+Exon-seq reads are aligned to the genome and compared to identify mutations (e.g., rare dominant)
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W11_5.png} 
+\end{center}
+
+\subsection*{Examples of Successful Exome Sequencing}
+Very rare recessive or severe dominant monogenic diseases
+\begin{center}
+    \vspace{-1em}
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \multicolumn{1}{|c|}{\textbf{Disease}} & \textbf{Inheritance} & \textbf{Type of Disorder} & \textbf{\begin{tabular}[c]{@{}c@{}}Exomes\\ Sequenced From\end{tabular}} \\ \hline
+        Miller Syndrome & AR & \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}congenital disorders\\ of development\end{tabular}} & \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}unrelated\\ sporadic cases\end{tabular}} \\ \cline{1-2}
+        Kabuki Syndrome & AD &  &  \\ \cline{1-2}
+        Schinzel-Giedion Syndrome & AD &  &  \\ \hline
+        Osteogenesis imperfecta Type VI & AR & connective tissue disorder & \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}affected siblings\\ born to consanguineous\\ parents\end{tabular}} \\ \cline{1-3}
+        Spastic paraplegia 30 & AD & \begin{tabular}[c]{@{}c@{}}early-onset neuromuscular\\ disorder\end{tabular} &  \\ \hline
+    \end{tabular}
+\end{center}
+
+\subsubsection*{Exome Sequencing of Siblings to Find the Genetic Basis of the Miller Syndrome}
+\begin{enumerate}
+    \item Find variants in patients
+    \item Filter for homozygous alleles (trait is recessive)
+    \item Remove common variants found in many people.
+    \item Compare to mutations in other unrelated affected children
+\end{enumerate}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W11_6.png} 
+\end{center}
+11 different LOF mutations in the \textit{DHODH} gene found among 6 families with high rate of Miller syntdrome
+\begin{itemize}
+	\item \textit{DHODH}: Biosynthesis of pyrimidine nucleotides: C, T, U for DNA, RNA
+\end{itemize}
+
+\subsection*{Other Uses of Exome-Seq}
+Exome-seq is also useful for phenotypes with \textbf{extremely heterogeneous genetics}.  e.g., Autosomal Recessive Intellectual Disabilities (ARID)
+\begin{itemize}
+	\item Note the involvement in shared functional networks:
+	\begin{itemize}
+        \item additional proof of relevance
+        \item clues to identify additional relevant genes
+        \item clues to underlying molecular pathology
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Limitations of Exome Sequencing}
+\begin{itemize}
+	\item Relevant mutations are \textbf{not necessarily} in Exons!
+	\item Relevant mutations are \textbf{not necessarily} in protein-coding genes at all!
+	\item Generally, not useful for complex traits
+\end{itemize}
+
+\end{document}
