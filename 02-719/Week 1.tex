@@ -1,0 +1,114 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 1}}
+
+\title{02-719 Week 1 \\ \large{Genomics and Epigenetics of the Brain}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Logistics}
+\begin{itemize}
+	\item Office hours: Wed. 1-2 PM, GHC 7711
+	\item Email: \texttt{apfenning@cmu.edu}
+\end{itemize}
+
+\section*{Motivation of Neurogenomics}
+\textbf{Alzheimer's Disease}
+\begin{itemize}
+	\item More than 7 million Americans are currently living with Alzhiemer's.  (Projected to increase to 13 Million by 2050)
+	\item 1 in 3 older adults dies with Alzheimer's or another dementia.  It kills more than breast and prostate cancer combined.
+	\item \$409 Billion dollars on Alzheimer's spendings in 2026, projected to be \$1 Trillion in 2050
+	\item The lifetime risk for Alzheimer's at age 45 for women is 1 in 5, and for men it is 1 in 10.  (Unknown reason)
+\end{itemize}
+\textbf{Parkinson's Disease}
+\begin{itemize}
+	\item Lower prevalence than Alzheimer's (1 in 100 over age 60)
+	\item 1M people in the United States, and 5M people worldwide affected
+\end{itemize}
+\textbf{Addiction}
+\begin{itemize}
+	\item 46.3M people in the US have a substance use disorder in 2021.
+	\item 105k drug overdose deaths per year
+\end{itemize}
+\textbf{Major Depressive Disorder}
+\begin{itemize}
+	\item 13.8M - 15.4M adults affected
+	\item One of the leading causes of suicide
+\end{itemize}
+
+\subsection*{Disease Categories}
+Most of these diseases fall into one of these following categories:
+\begin{itemize}
+	\item No cure
+	\item No effective long-term treatment (Alzheimer's, Parkinson's, other neurodegenerative diseases)
+	\item Treatment comes with severe side effects (Bipolar, Major Depressive Disorder, ADHD, other psychiatric disorders)
+\end{itemize}
+
+\subsection*{Why are Brain Disorders So Hard to Treat?}
+The primary issue: What do you target when you treat a brain disorder?
+\begin{itemize}
+	\item Target a specific brain region
+	\item Specific cell types
+	\item Specific hormones and neurotransmitters
+	\item Specific proteins
+	\item Specific section of DNA (gene therapy)
+	\item Specific neural pathway
+\end{itemize}
+The problem is that modern medicines for brain diseases are like sledge hammers.  One protein might influence the disease, but also regulate many other brain functions.  Same goes with neurotransmitters, genes, etc.  There isn't a single gene, protein, brain region, or biochemical pathway that equates to a single behavior.
+
+\section*{Cellular Diversity of the Brain}
+The cellular diversity of the brain is overwhelming.
+\begin{itemize}
+	\item Purkinje
+	\item Microglia
+	\item Astrocytes
+	\item Bipolar
+	\item Oligodendrocytes
+	\item Schwann
+\end{itemize}
+
+\section*{Brief History of Neuroscience}
+\begin{itemize}
+	\item Santiago Ramon y Cajal (1852 - 1934): Traced neuron morphology and noticed there were different sub-types.  Nobel prize winner.
+	\item Cajal had a modern Zeiss microscope, which scientific discovery would not be possible without.
+	\item Cajal's work was more ``data-driven'' than ``hypothesis-driven''.  Rather than designing an experiment to test a specific theory of the brain, Cajal sought to characterize the diversity of neural cell types
+	\item His work led to the neuron doctrine: ``The brain is made of many different types of neurons.''
+\end{itemize}
+
+\subsection*{Distinguishing Subtypes of Neurons}
+\begin{itemize}
+	\item Shape
+	\item Firing
+	\item Neurotransmitter
+	\item Marker Genes
+	\item Genomics
+\end{itemize}
+Single Neuron RNA-Seq measures genome-wide gene expression in single cells.
+
+\end{document}
