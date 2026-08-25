@@ -1,0 +1,94 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 1}}
+
+\title{02-741 Week 1 \\ \large{Generative AI for Biomedicine}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction to Molecular and Cell Biology}
+We don't quite understand ourselves.  In the human body, there are tens of trillions of cells, and dozens of different cell types.  (Just neurons have over ten different types.)  However, we do not understand how cells differentiate.  For example, why a muscle cell originally grew into a muscle cell, or why a neuron originally grew into a neuron.  Additionally, we don't know how to change one cell type into another cell type.  (e.g., Skin cell $\rightarrow$ Stem cell $\rightarrow$ Neuron.)\\\\
+One domain of current research is with gene expression.  Since all cells have the same DNA, what features (or activation of genes) would cause a stem cell to become a certain cell type?  Given some information on which genes are activated, can we predict what cell type the cell is?  This is where AI comes in.
+
+\subsection*{Decoding the ``Language'' of Genomes, Cells, and Tissues}
+Biology is multi-scale.  We can observe gene sequences, cell structure, and cell function, all of which are at different scales.  As a result, our models must also be multi-scale.
+
+\subsection*{Central Dogma of Biology}
+Proteins do most of the work in biology, and are encoded by subsequences of DNA, known as genes.
+\begin{center}
+\begin{tikzpicture}
+    \node[draw, thick] at (0, 0) (a) {DNA};
+    \node[draw, thick] at (4, 0) (b) {mRNA};
+    \node[draw, thick] at (8, 0) (c) {Protein};
+
+    \draw[->, thick] (a) -- node[above] {Transcription} (b);
+    \draw[->, thick] (b) -- node[above] {Translation} (c);
+\end{tikzpicture}
+\end{center}
+
+\subsection*{The Human Genome: the ``Blueprint'' of Our Body}
+\begin{itemize}
+    \item $10^{13}$ different cells in an adult human
+    \item The cell is the basic unit of life
+    \item DNA = linear molecule inside the cell that carries instructions needed throughout the cell's life - long string(s) over a small alphabet
+    \item Alphabet of four nucleotides / bases.  (A, C, T, G)
+\end{itemize}
+DNA organizes into chromatin, which form into nucleosomes, which condenses into chromosomes.  Humans have 22 pairs of chromosomes, plus the two sex chromosomes.
+
+\subsection*{Genomes}
+\begin{itemize}
+    \item A genome is an organism's complete set of DNA (including its genes)
+    \item In humans, less than 2\% of the genome actually encodes for genes
+    \item [FILL]
+\end{itemize}
+In recent years (2001 - Present), high throughput DNA sequencing allows for cheap sequencing of human DNA.  In 2001, one genome costs over \$100,000,000.  Now (2026), it costs less than \$800 per genome.  High-throughput DNA sequencing is one of the most disruptive technologies in the past decade.
+
+\subsubsection*{Understanding the Genome}
+\begin{itemize}
+    \item View from 2000
+    \begin{itemize}
+        \item Protein coding regions: 35000-120000
+        \item Regulatory sequence: Less than protein-coding information
+        \item Transposons: Junk DNA
+        \item (All of these assumptions are wrong!)
+    \end{itemize}
+    \item We now know\dots
+    \begin{itemize}
+        \item Protein coding regions: 20000.  (Fewer than fish!)
+        \item Regulatory sequences: More regulatory sequences than protein-coding regions
+        \item Transposons: Make up half of the human genome
+        \item Gene numbers do not correlate with organism complexity
+        \item 5\% of genes are conserved between different species, but only 1.5\% actually codes for proteins
+    \end{itemize}
+
+\end{itemize}
+
+
+
+\end{document}
