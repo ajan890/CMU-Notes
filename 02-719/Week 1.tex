@@ -60,6 +60,7 @@
 \begin{itemize}
 	\item 13.8M - 15.4M adults affected
 	\item One of the leading causes of suicide
+	\item Costs employers\$78.7 Billion per year
 \end{itemize}
 
 \subsection*{Disease Categories}
@@ -103,12 +104,72 @@ The cellular diversity of the brain is overwhelming.
 
 \subsection*{Distinguishing Subtypes of Neurons}
 \begin{itemize}
-	\item Shape
-	\item Firing
-	\item Neurotransmitter
-	\item Marker Genes
+	\item Shape (Cytoarchitecture)
+	\item Firing (Electrophysiology)
+	\item Neurotransmitter (Glutamatergic vs. Gabaergic)
+	\item Marker Genes (Somatostatin)
 	\item Genomics
 \end{itemize}
 Single Neuron RNA-Seq measures genome-wide gene expression in single cells.
+
+\subsubsection*{Epigenetics}
+There is an extraordinary diversity of neural cells within the brain that have different molecular and physiological properties.  Differences in gene expression are caused by \textbf{epigenetic differences} in enhancers across neural cell types.  
+\begin{itemize}
+	\item There are differences in the genome sequence of enhancers that influence the evolution of complex traits (and human disease).
+	\item Typical computational methods do not capture cell type-specific evolution at enhancer sequences.
+	\item Machine learning has the potential to trace the evolution of neural cell type-specific enhancers across evolution.
+\end{itemize}
+
+\section*{Studying the Brain}
+There are many challenges of studying the brain posed by cell types.
+\begin{itemize}
+	\item Deep brain stimulation / optogenetics - How do you selectively stimulate the desired cell type in a given brain region
+	\item Neurological / Psychiatric disorders - What cell type(s) are underlying the disorder?  How do you target them?
+	\item How do distinct subtypes of neurons form neural circuits for learning/memory?
+\end{itemize}
+
+\subsection*{Different Views of the Genome}
+Computer scientists see the genome as a sequence of A's, T's, C's, and G's, and focus on identifying specific DNA sequences that might correlate with diseases. However, this view often does not capture the true complexity of cell types since it dismisses epigenetics completely.  Biologists not only see the genome, but also consider which parts might code for proteins, which might be transcriptionally active, which might be repressed.  Epigenetics, enhancers, and other regulatory elements are considered.
+
+\subsection*{Epigenetic Mechanisms of Gene Regulation}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W1_1.png} 
+\end{center}
+Different cell types might have the same gene, but regulated by different enhancers.  A given gene might have anywhere between 2 to over 100 enhancers regulating it.
+\begin{itemize}
+	\item The combination and spacing of \textbf{transcription factor binding sites} determines activation.
+	\item Enhancers have a `grammer' to be able to operate correctly.
+	\begin{itemize}
+	    \item Their spacing, orientation, and order all matter.
+	    \item Proteins bind to enhancer sequences on the DNA.  Two enhancers too close together or facing the wrong direction may cause the binding of one protein to inhibit the binding of the other protein.
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W1_2.png} 
+\end{center}
+\begin{itemize}
+	\item There are hundreds of thousands of enhancers across the human brain (and millions across the body)
+	\item Most of these enhancers are cell type-specific
+	\item Promoter regions and the genes themselves are much less specific
+\end{itemize}
+
+\subsection*{Conservation through Evolution}
+Conservation methods are protein-centric.
+\begin{itemize}
+	\item If something has been maintained over millions of years of evolution, then there must be evolutionary constraint selecting against mutations in these regions.
+	\item In protein-coding regions, every third base pair has a higher rate of mutating than the first two due to the \textbf{third codon wobble}; when observing the codons for different amino acids, the identity of the amino acid depends less on the third base pair compared to the first two.
+	\item Conservation can be measured by PhyloP / PhastCons.  (Pollard et al., 2010)
+\end{itemize}
+Below is an example of how an enhancer might be linked to a physical trait.  
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W1_3.png} 
+\end{center}
+\begin{itemize}
+	\item The ZRS enhancer was discovered to be related to limb development when observing different organisms.  Snakes have the enhancer sequence deleted.
+	\item When scientists deleted the same sequence from mice DNA, they ``Serpentized'' the mice, causing their limbs to not develop at birth.
+\end{itemize}
+
+
+
 
 \end{document}
