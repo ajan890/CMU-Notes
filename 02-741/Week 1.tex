@@ -1,6 +1,7 @@
 % document formatting
 \documentclass[10pt]{article}
-\usepackage[utf8]{inputenc}
+% \usepackage[UTF8]{inputenc}
+\usepackage[UTF8, scheme=plain]{ctex}
 \usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{xcolor}
@@ -95,10 +96,226 @@ In recent years (2001 - Present), high throughput DNA sequencing allows for chea
 % \textbf{Variation} & \textbf{Rearrangement Type}
 % \end{tabular}
 % \end{center}
-[FILL]
+[FILL 21]
 
+\section*{Sequence Modeling and Generation with Transformer}
+Can we use GenAI to design molecules with desired functions?
+\begin{itemize}
+	\item Medicine
+	\item Vaccines
+	\item Enzymes (Biocatalysts)
+	\item Biosensors (e.g., GFP)
+	\item New materials
+\end{itemize}
+Molecule generation is somewhat similar to language generation.
+\begin{itemize}
+	\item Both are sequences of discrete tokens.  (In language it's words, in molecules, it is atoms or amino acids.)
+	\item Both have discrete structures.  (In language it's grammar, in molecules it's chemistry)
+	\item Geometry (Unique for molecules)
+\end{itemize}
+For proteins, they can be roughly represented as sequences of amino acids.
+\begin{itemize}
+	\item Proteins are building blocks of life
+	\item Responsible for important biological functions
+	\item Built by sequences of amino acids.
+	\begin{itemize}
+	    \item GFP (Green Fluorescent Protein) = VLLPDNHYLSTQSALSKDPNEKRDHMVLLEFVTAAGIT
+    \end{itemize}
+\end{itemize}
 
+\section*{Language Models}
+A language model is a probabilistic model of discrete sequences, including human languages and biological languages.  e.g.,
+\begin{align*}
+    &\text{Probability}(\text{``Pittsburgh is a city of bridges''})\\
+    &\text{Probability}(\text{``VLLPDNHYLSTQSALSKDPNEKRDHMVLLEFVTAAGIT''})
+\end{align*}
+Each next token can be defined as a probability based on previous tokens.
+\[P(\text{next word } y_t | \text{Prompt } x, \text{previous words } y_{1\::\: t - 1})\]
+For example,
+\begin{itemize}
+	\item Santa Barbara has very nice \underline{\hspace{2cm}}
+	\begin{itemize}
+	    \item ``beach'' = 0.5 
+	    \item ``weather'' = 0.4
+	    \item ``snow'' = 0.01
+    \end{itemize}
+    \item Pittsburgh is a city of \underline{\hspace{2cm}}
+    \begin{itemize}
+	    \item ``bridges'' = 0.6
+	    \item ``corn'' = 0.02
+    \end{itemize}
+\end{itemize}
+To calculate the probabilities, the probability of each word (or each amino acid) depends on all the previous tokens.
+\begin{align*}
+    &P(\text{``Pittsburgh is a city of bridges''}) \\
+    &= P(\text{``Pittsburgh''}) \cdot P(\text{``is''} | \text{``Pittsburgh''}) \cdot P(\text{``a''} | \text{``Pittsburgh is''}) \cdot P(\text{``city''} | \dots) \\
+    &\cdot P(\text{``of''} | \dots) \cdot P(\text{``bridges''} | \dots)
+\end{align*}
+Or simply,
+\[P(x_{1\dots T}) = \prod_{t = 1}^T P(x_{t + 1} | x_{1\dots t})\]
+We can predict the $P(x_{t + 1} | x_{1 \dots t})$ part using neural networks (e.g., CNNs, RNNs)
 
+\subsection*{Types of Language Models}
+\begin{itemize}
+	\item \textbf{Encoder-only Model} (or Masked LM, Non-autoregressive)
+	\begin{itemize}
+	    \item Examples: BERT, RoBERTa, ESM (for protein)
+    \end{itemize}
+    \item \textbf{Encoder-decoder}
+    \begin{itemize}
+	    \item Example: T5
+    \end{itemize}
+    \item \textbf{Decoder-only} (Autoregressive)
+    \begin{itemize}
+	    \item Examples: GPT, LLaMA, ProGen (for proteins)
+    \end{itemize}
+\end{itemize}
 
+\subsection*{Encoder-Decoder Paradigm}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw, rectangle, thick] at (0, 0) (e) {Encoder};
+    \node[draw, rectangle, thick] at (6, 0) (d) {Decoder};
 
+    \draw[->] (e) -- (d);
+    \node at (0, -0.5) (e_) {Input: 我喜欢唱歌和跳舞。};
+    \node at (6, -0.5) (d_) {Target: I like singing and dancing.};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Sequence to Sequence Learning}
+\begin{itemize}
+	\item Conditional text generation: directly learning a function mapping from source sequence to target sequence
+	\[p_\theta(y | x) = \prod_t p(y_t | x, y_{1: t - 1}; \theta)\]
+    \item Previous encoder / decoder: LSTM or GRU
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W1_1.png} 
+\end{center}
+We use the encoder-decoder architecture because it is
+\begin{itemize}
+	\item Full context and parallel: use Attention in both encoder and decoder
+	\item Not recurrent $\Rightarrow$ concurrent encoding
+\end{itemize}
+
+\subsection*{Motivation of Attention: Translation between Different Alignment of Words}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W1_2.png} 
+\end{center}
+Different languages have different orderings for words.
+
+\subsection*{Transformer-based Models for Biomolecules}
+\begin{itemize}
+	\item Protein Language Models:
+	\begin{itemize}
+	    \item ESM, ESM-Fold
+	    \item ProGen
+	    \item AlphaFold (with EvoFormer)
+    \end{itemize}
+    \item Genomics
+    \begin{itemize}
+	    \item DNABERT / DNABERT2
+	    \item Evo, Evo2
+	    \item ENABERT
+    \end{itemize}
+    \item Single Cell: scGPT, scFoundation
+\end{itemize}
+
+\section*{Transformers}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W1_3.png} 
+\end{center}
+What is Embedding?
+\begin{itemize}
+	\item Token Embedding: 
+	\begin{itemize}
+	    \item token index $\rightarrow$ vector
+	    \item Shared (tied) input and output embedding from lookup table
+    \end{itemize}
+    \item Positional Embedding
+    \begin{itemize}
+	    \item to distinguish words in different positions, map position labels to embedding, dimension is same as token embedding
+	    \item For $t$-th position, $i$-th dimension, the equation is:
+    \end{itemize}
+    \begin{align*}
+        PE_{t, 2i} &= \sin \left(\frac{t}{1000^{2i / d}}\right) \\
+        PE_{t, 2i + 1} &= \cos \left(\frac{t}{1000^{2i / d}}\right)
+    \end{align*}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W1_4.png} 
+\end{center}
+
+\subsection*{Multi-head Attention}
+\begin{itemize}
+	\item Instead of one vector for each token, we break it into multiple heads
+	\item Each head performs attention.
+\end{itemize}
+\begin{align*}
+    \text{Head}_i &= \text{Attention}(QW_i^Q, KW_i^K, VW_i^V) \text{MultiHead}(Q, K, V) \\
+    &= \text{Concat}(\text{Head}_1, \text{Head}_2, \dots, \text{Head}_h) W^O
+\end{align*}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W1_5.png} 
+\end{center}
+The $\sqrt{d_k}$ is a regularization coefficient, where $d_k$ is the dimensionality of the attention (number of heads).  This coefficient makes it softmax is a range from 0 to 1.
+
+\subsubsection*{Multihead Attention and FFN}
+\begin{align*}
+    \text{Attention}(Q, K, V, x) = \text{Softmax}\left(\frac{(Qx)^T Kx}{\sqrt{d}}\right) \cdot (Vx)^T \\
+    \text{FFN}(x) &= max(0, x \cdot W_1 + b_1)\cdot W_2 + b_2
+\end{align*}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W1_6.png} 
+\end{center}
+
+\subsubsection*{Attention Variant: Grouped-Query Attention (GQA)}
+\begin{align*}
+    \text{Head}_i = \text{Attention}(XW_h^Q, XW_{g(h)}^K, XW_{g(h)}^V) \\
+    \text{MultiHead}(Q, K, V) = \text{Concat}(\text{Head}_1, \text{Head}_2, \dots, \text{Head}_h)W^O
+\end{align*}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W1_7.png} 
+\end{center}
+Grouping the queries can speed up the inference since there are less overall matrix multiplications.
+
+\subsubsection*{Attention Variant: Multi-head Latent Attention (MLA)}
+\begin{itemize}
+	\item Keys and values occupy large GPU memory
+	\begin{itemize}
+	    \item $2 \cdot len \cdot n_h \cdot d_h$
+    \end{itemize}
+    \item instead of caching $d_h$ vector (for each $t_k$, head), reduce to a latent space with rank $r$.
+    \begin{center} 
+	    \includegraphics*{W1_8.png} 
+    \end{center}    
+    \item First proposed in Deepseek-V2, used in all modern LLMs
+    \item Key and Value share down-projection, and across all heads
+\end{itemize}
+\begin{align*}
+&MLA(x)_h\\
+&= \text{Softmax}\left(\frac{X \cdot W_Q^D \cdot W_{Q, h}^U \cdot \left(X \cdot W_{KV}^D \cdot W_{K, h}^U\right)^T}{\sqrt{d_h}}\right)\cdot X \cdot W_{KV}^D \cdot W_{V, h}^U \\
+&= \text{Softmax}\left(\frac{C_Q \cdot W_{QK, h} \cdot C_{KV}^T}{\sqrt{d_h}}\right) \cdot C_{KV} \cdot W_{V, h}^U
+\end{align*}
+We can precompute and cache the following:
+\begin{align*}
+    W_{QK, h} &= W_{Q, h}^U \cdot (W_{K, h}^U)^T \\
+    C_Q &= X \cdot W_Q^D \\
+    C_{KV} &= X \cdot W_{KV}^D
+\end{align*}
+
+\subsection*{Decoder Self-Attention Mask}
+\begin{itemize}
+	\item Encoder uses bidirectional attention
+	\item Decoder uses unidirectional attention
+	\begin{itemize}
+	    \item Maskout right side before softmax (-inf)
+        \begin{center} 
+	        \includegraphics*[width=0.4\textwidth]{W1_9.png} 
+        \end{center}
+    \end{itemize}
+\end{itemize}
+
+\subsection*{FFN with SwiGLU}
+[Fill]
 \end{document}

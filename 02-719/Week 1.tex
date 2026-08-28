@@ -169,6 +169,65 @@ Below is an example of how an enhancer might be linked to a physical trait.
 	\item When scientists deleted the same sequence from mice DNA, they ``Serpentized'' the mice, causing their limbs to not develop at birth.
 \end{itemize}
 
+\subsection*{Alignment of Individual Nucleotides is not Conservation}
+Is Nucleotide-level conservation the exception or the rule?
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W1_4.png} 
+\end{center}
+\begin{itemize}
+	\item It turns out that nucleotide-level conservation is \textbf{not} the rule.  Genes are selected for, not base pairs.
+	\item In the different species on the diagram, they all share a Scaper enhancer which enhances a gene called Islet.  It turns out that this combination is present in all the species listed, and their nucleotide motifs are conserved, albeit appearing in different orders.
+\end{itemize}
+Nucleotide alignment does not capture regulatory evolution.
+\begin{itemize}
+	\item There is no strong difference in nucleotide-level evolution between enhancers that are conserved and divergent.
+\end{itemize}
+
+\section*{Machine Learning for Enhancer Prediction}
+Studies have been done on training machine models on Motif scores, k-Mers, and raw sequences of nucleotides.  It turns out that raw sequence has by far the best performance.
+\begin{itemize}
+	\item Alternatively, use tissue-specific regulatory code.
+\end{itemize}
+
+\subsection*{How do we find Conserved Segments of the Genome?}
+\begin{itemize}
+	\item Convolutional neural network (deep learning) has revolutionized image analysis.
+	\item We can adapt this method to make predictions of genome sequence function.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W1_5.png} 
+\end{center}
+Alternatively, use tissue-specific regulatory code
+\begin{itemize}
+	\item We can measure activity correlated with certain enhancer sequences in some species\dots
+	\item and use it to predict activity in orthologous regions of other species.
+\end{itemize}
+
+\subsubsection*{The Zoonomia Consortium}
+\begin{itemize}
+	\item A series of papers sequencing DNA in brains (motor cortex) from multiple species, and predicting activity in motor cortex enhancers
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W1_6.png} 
+\end{center}
+\begin{itemize}
+	\item The Y-axis are the open chromatin regions.
+	\item The X-axis are different species.
+	\item The input is the top graph, where only a few species are sampled for enhancer activity.
+	\item The output is the bottom graph, essentially extrapolating from the input species.
+	\item The CNN models are accurate, with >80\% validation accuracy.
+\end{itemize}
+The above project is called TACIT-ML (Tissue Aware Conservation Inference Through Machine Learning), and it outperforms previous models, such as PhyloP and PhastCons.
+\begin{itemize}
+	\item TACIT (predicted open chromatin) does a better job at identifying which mutations are associated with human disease and what cells they function in.
+	\item TACIT can be used to identify part of the genome associated with the evolution of complex traits
+\end{itemize}
+
+\subsection*{Brain Size has Convergently Evolved}
+There is an incredible diversity of mammalian brains.
+\begin{itemize}
+	\item It turns out that when plotted on a logarithmic scale graph (both axes), body correlates linearly with brain weight
+\end{itemize}
 
 
 

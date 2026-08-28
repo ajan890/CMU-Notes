@@ -73,5 +73,68 @@ Assume we have computed $Z_2, \dots, Z_{k - 1}$, and $\ell$ and $r$, where $\ell
     \end{enumerate}
 \end{enumerate}
 
+\subsection*{Knuth-Morris-Pratt (KMP) Algorithm (With Z-Values)}
+Similar to the Z-algorithm, we are going to define an auxiliary data structure that gives us the answer to the problem.  For this solution, we will define an \texttt{spm[i]} array, where 
+\begin{itemize}
+    \item[] \texttt{spm[i]} $:=$ length of the longest substring of $P$ that ends at $i$ and that matches a prefix of $P$, and where \texttt{P[i + 1]} $\neq$ \texttt{P[spm[i] + 1]}.
+\end{itemize}
+If we know the entire \texttt{spm[i]} array, then if we reach a mismatch, we don't have to check every character like the string matching, since the \texttt{spm} array
+
+\subsubsection*{Runtime}
+Every time we get a mismatch, we shift our window by at least 1.  This bounds the number of mismatches at $|T|$.  Since the KMP algorithm only checks each matched character once, the maximum number of matches is also bounded by $|T|$.  Therefore, there must be less than $2|T|$ iterations since every character must be a match or a mismatch.  The runtime is $O(|T|)$.  
+
+\subsubsection*{Computing \texttt{spm[i]}}
+Recall the definition of the $Z$-value, which is $Z_i$ is the length of the longest substring of $P$ that starts at $i$ and matches a prefix of $P$.  This is very similar to \texttt{spm} values.\\\\
+Now, define $f(i)$ as the right end of the Z-box starting at $i$.  Note that it is possible for multiple $Z$-boxes end at the same position.  For this, we define $g(j)$ as the smallest $i$ where $f(i) = j$.  In other words, $g(j)$ picks the longest $Z$-box that ends at a given position.\\\\
+\textbf{Theorem:}\\
+For each $i$, \texttt{spm[i]} = $Z_{g(i)}$ if $Z_{g(i)} > 0$ otherwise $\texttt{spm[i]} = 0$.  In other words, if no $Z$-box ends at $i$, then the \texttt{spm} value for that position is $0$.
+
+\subsection*{Knuth-Morris-Pratt (KMP) Algorithm (Without Z-Values)}
+The traditional KMP algorithm is defined without $Z$-values, but instead, using DFAs.  (Deterministic Finite Automaton)\\\\
+The first step is to generate a DFA for pattern matching for $P$.  Suppose we do; the process of building it will be described later.  Then, use $T$ as instructions to traverse the DFA for matches.  Following is an example for $P$ = ``001'' and $T$ = ``1100010''.
+\begin{center}
+\begin{tikzpicture}
+    \node[circle, draw, minimum size=0.8cm] at (0, 0) (0) {$\varepsilon$};
+    \node[circle, draw, minimum size=0.8cm] at (3, 0) (1) {$0$};
+    \node[circle, draw, minimum size=0.8cm] at (6, 0) (2) {$00$};
+    \node[circle, double, double distance=1, draw, minimum size=0.8cm] at (9, 0) (3) {$001$};
+
+    \node[font=\small] at (0, -0.6) (0_) {\textbf{0}};
+    \node[font=\small] at (3, -0.6) (1_) {\textbf{1}};
+    \node[font=\small] at (6, -0.6) (2_) {\textbf{2}};
+    \node[font=\small] at (9, -0.6) (3_) {\textbf{3}};
+
+    \draw[->, thick] (0) -- node[above] {0} (1);
+    \draw[->, thick] (1) -- node[above] {0} (2);
+    \draw[->, thick] (2) -- node[above] {1} (3);
+    
+    \path (0) edge [in=60, out=120, looseness=8, loop, ->] node[above] {1} (0);
+    \path (1) edge [bend left, ->] node[below] {1} (0);
+    \path (2) edge [in=60, out=120, looseness=8, loop, ->] node[above] {0} (2);
+    \path (3) edge [bend right=45, ->] node[above] {1} (0);
+    \path (3) edge [bend left=30, ->] node[below] {0} (1);
+\end{tikzpicture}\\
+Steps in order: $0 \rightarrow 0 \rightarrow 1 \rightarrow 2 \rightarrow 2 \rightarrow 3 \text{ (Print match!) } \rightarrow 1$
+\end{center}
+However, in this case, the DFA might be hard to build.  This is because the number of edges in the DFA scales on the size of the alphabet.  To circumvent this, the KMP DFA only uses two types of edges, ``Match'' and ``Mismatch''.  For a binary alphabet, the graph would look basically exactly the same, but in a case where it is not, we need some more definitions.\\\\
+Let \texttt{memo[k]} be the length of the longest proper suffix of \texttt{P[1, \dots, k]}, and also the definition of the mismatch edges.  Note that this is very similar to the \texttt{spm} definition.
+
+\subsubsection*{Pseudocode for KMP}
+Here, we first assume we have the \texttt{memo[k]}.
+\begin{verbatim}
+def KMP(P, T):
+    j = 0  // our current state in the DFA
+    for every position i = range(1, |T|) do:
+        while j > 0 and T[i] != P[j + 1] do:
+            j = memo[j]
+        if T[i] == P[j + 1] then:
+            j++
+        if j == |P|:
+            print match
+            j = memo[j]
+\end{verbatim}
+
+
+
 
 \end{document}
