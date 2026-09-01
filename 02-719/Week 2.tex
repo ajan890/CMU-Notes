@@ -1,0 +1,143 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+\usepackage[colorlinks=true, urlcolor=blue]{hyperref}
+
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 2}}
+
+\title{02-719 Week 2 \\ \large{Genomics and Epigenetics of the Brain}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Basic Experiment Setup}
+Suppose we are running an experiment with 3 different animals, in two conditions.  Let $A$, $B$, $C$ be in condition A and $D$, $E$, $F$ be in condition B.  Let a scale from 0 to 10 define the amount of open chromatin.  Suppose we run our experiment, and we get:
+\begin{center}
+\begin{tabular}{c|c}
+Species x Condition & Open Chromatin \\ \hline
+$A$ & 2 \\
+$B$ & 4 \\
+$C$ & 3 \\
+$D$ & 7 \\
+$E$ & 10 \\
+$F$ & 8 \\
+\end{tabular}
+\end{center}
+From this, we can then compare the effects on the two different conditions on epigenetics.  Some statistics we can use to quantify the difference are
+\begin{itemize}
+	\item Mean and Std. Dev
+	\item t-test
+	\item Linear Regression
+	\item etc.
+\end{itemize}
+Now, if today we want to understand the conditions' effects on multiple genes, we can create matrix where there are $g$ rows, where $g$ is the number of genes we care about, and $c$ number of columns, where $c$ is the number of species x conditions.  Data can then be compared and processed efficiently using a computer program.
+
+\section*{Introduction to R Programming Language}
+\begin{itemize}
+	\item Very similar to Matlab
+	\item Handles matrix operations very well
+	\begin{itemize}
+	    \item For loops are quite slow
+    \end{itemize}
+    \item R is open source
+    \begin{itemize}
+	    \item The underlying code is available
+	    \item No license required
+    \end{itemize}
+    \item Many people have put together statistical and genomic packages in for R
+    \begin{itemize}
+	    \item \href{http://bioconductor.org/}{Bioconductor} - Open source software for bioinformatics
+	    \item Limma - linear models for microarray (and RNA-Seq)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Data / Class Types in R}
+\begin{itemize}
+	\item Boolean, Integer, Numeric (double), String, Factor
+	\item Vector - 1D, every element same data type
+	\item List - 1D, every element can be different type
+	\item Matrix - 2D, every element same data type
+	\item DataFrame - 2D, every column same data type
+	\item Factor - Used for representing qualitative variables in statistical operations
+\end{itemize}
+
+\subsection*{Assigning Different Types}
+\begin{itemize}
+	\item \texttt{x <- 1}: assignment operator
+	\item \texttt{class(x)}: identify data type with class function
+	\item \texttt{x <- c(1, 2, 3)}: assign a vector
+	\item \texttt{x <- matrix(c(1, 2, 3, 4, 5, 6), 2, 3)}: assign a matrix.  This example makes a matrix of 3 rows, 2 cols.  Numbers fill rows first (1, 2, 3) in col 1.
+	\item \texttt{f <- data.frame(num=c(1, 2, 3, 4), letter=c("a", "b", "c", "d"));}: sets data in a data frame.  column name is the key.
+	\item \texttt{rownames(f) <- c("first", "second", "third", "fourth");}: sets row names for a dataframe
+\end{itemize}
+
+\section*{Gene Ontology}
+\begin{itemize}
+	\item When we perform a ChIP-Seq experimnet, have peaks (signal) that can potentailly cover any part of the entire genome, not just genes.
+	\item The GREAT gene ontology analysis tool is designed to handle this case.
+\end{itemize}
+
+\subsection*{Expected Counts}
+\textbf{Problem:}  We have a genome that contains 100 genes.
+\begin{itemize}
+	\item 10 of those genes are involved in DNA replication
+	\item We conduct an experiment where key replication gene is knicked out
+	\item As a result, 20 genes change in expression
+	\item 8 of those genes are involved in replication
+	\item What is the significance?
+\end{itemize}
+To solve:  Let $n$ be number of genes (20), $k$ be number of genes in category (8), and $p$ be probability that any given gene is in the category:  (10/100 = 0.1).\\\\
+By simple probability, we would expect that (20 genes $\times$ 0.1 probability = ) 2 genes are in the category.  What we observe was 8 genes, which is much higher than the predicted 2 genes.  $P_{\text{binom}} = 0.0004$.
+
+\subsection*{Binomial P-value}
+\begin{itemize}
+	\item We can do statistical enrichments based on groups of genes:
+	\begin{itemize}
+	    \item How many genes do I see in a category?
+	    \item How many genes would I expect by chance?
+    \end{itemize}
+    \[\text{Pr}(k;n,p) = {n \choose k} \cdot p^k \cdot (1 - p)^{n - k}\]
+    \item In the formula above,
+    \begin{itemize}
+	    \item $n$ = number of trials  (number of genes)
+	    \item $k$ = number of successes  (number of genes in category)
+	    \item $p$ = probability of success  (probability that any given gene is in the category)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Mapping Regulatory Elements to Genes}
+The assumptions of the binomial test may not be valid.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W2_1.png} 
+\end{center}
+
+\subsection*{GREAT}
+Solution: Partition the genome based on the gene ontology category of the nearest gene.  Then, adjust the probability of a hit based on the proportion of the genome that is covered, not the total number of genes in the category.
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W2_2.png} 
+\end{center}
+\end{document}
