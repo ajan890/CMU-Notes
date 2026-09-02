@@ -1,0 +1,115 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 2}}
+
+\title{02-614 Week 2 \\ \large{String Algorithms}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Seminumerical String Algorithms}
+\subsection*{Rabin-Karp Fingerprinting}
+This is an exact matching algorithm exploiting the fact that characters are stored in a computer as binary.  This makes it a \textit{seminumerical} string algorithm.\\\\
+Recall the exact matching problem: text $T$, pattern $P$.  Find all occurrences of $P$ in $T$.\\\\
+For Rabin-Karp Fingerprinting, let
+\begin{itemize}
+	\item $\Sigma = \{\text{``0'', ``1'', \dots, ``9''}\}$.  (Note these are strings, not integers.)
+	\item $T = \text{``4278931''}$  (Note this is a string, not a integer.)
+	\item $P = \text{``78''}$
+\end{itemize}
+Now, since $P$ has length 2, consider every substring of $T$ of length 2.  $t_i=$ (``42'', ``27'', \dots, ``31''.)  If we convert all substring in $T$ to integers (so we have an integer array), and we convert $P$ to an integer, $p$, then doing the matching is trivial.  This problem essentially becomes finding when an integer appears in a string.  The issue is that generating that integer array is not trivial.
+
+\subsubsection*{Converting $P$ to $p$}
+Let $m = |P|$.  Then, (assume 1-indexed),
+\[p = P[m] + 10(P[m - 1] + (10P[m - 2] + \dots + P[1]))\]
+This formula is known as \textit{Horner's rule}.
+\begin{itemize}
+	\item Note that none of the numbers in this formula is larger than the size of our alphabet.
+	\item Each character in the string using this formula is $O(1)$ work, since it is a single multiplication in the recursive formula.
+	\item Therefore, $P \rightarrow p$ runs in $O(|P|)$ time.
+\end{itemize}
+
+\subsubsection*{Converting $T$ to $t$}
+Let
+\[t_i = 10 \times (t_{i - 1} - 10^{m - 1} T[i - 1]) \times T[s + m - 1]\]
+This formula is similar to Horner's rule; it essentially does:
+\begin{itemize}
+	\item Calculate the first integer substring, $t_1$
+	\item Subtract the leading digit of the first integer, multiply by 10 (or size of alphabet), and add the next integer to generate $t_2$
+	\item Repeat until the end of the string to calculate all the $t_i$ values.
+\end{itemize}
+This makes the array of integers in $O(|T|)$ time, since each $t_i$ value occurs in constant time.  Once again, it is a single multiplication per character.
+\begin{itemize}
+	\item Note that this would be even faster in binary, where the alphabet size is $2$.  In this case, multiplications become bit shifts.
+\end{itemize}
+
+\subsection*{Issues With This Method}
+The primary issue is that we did not state when computers are good at multiplication.  If $T$ is a billion base-pair genome and $P$ is a thousand base-pair read, then the computer will struggle to multiply anything.\\\\
+\textbf{Problem:} $t_i$ and $p$ could be huge numbers.  Instead, we can do the following:
+\begin{itemize}
+	\item Define $t_i' \equiv t_i \mod 8$
+	\item Define $p' \equiv p \mod 8$
+	\item $P$ occurs at point $i$ in $T$ implies $t_i' = p'$.  Unfortunately, this implication only goes one direction, and we cannot assume the opposite.
+	\item $t_i' = p'$ does \textbf{NOT} imply that $P$ occurs at $i$.  We will now have false positives.
+\end{itemize}
+
+\subsubsection*{Dealing with False Positives}
+Let $q$ be a prime number less than or equal to $M$.  Let $M$ be a number that we pick such that any $q$ less than $M$ is small enough to fit into our computer's registers.  Now, choose a $q$ randomly.
+\begin{itemize}
+	\item We deal with the false positive issue by adding some randomness.  So essentially, false positives would only occur if we get really unlucky.
+\end{itemize}
+\textbf{Theorem:} if $M$ is big enough, then
+\[\text{Pr}_q[t_i' = p'] \leq 0.2 \text{ when } T[i\dots] \neq P\]
+This is essentially, ``given our choice of $q$, what is the probability we get a false positive?''  $t$ and $p$ are given by the input, and have nothing to do with the probability.\\
+\textbf{Proof:} 
+\begin{enumerate}
+    \item Think of $P$ and $T$ as binary strings.  Define $S = T[i\dots]$, a substring of length $P$.
+    \item $p \leq 2^N$ and $t_i \leq 2^N$, where $N = |P|$ (We have two symbols for the length of $P$ now.)  Basically the numbers represented in less than $N$ bits.  These are our un-\textit{mod}'ed numbers.
+    \item Define a false positive (FP) when $t_i' = p'$ if and only if $(t_i - p) \equiv 0 \mod q$.  In other words, $q$ divides $|t_i - p|$.  Let $|t_i - p| = D$.  Now, we rephrase the question: given $D$, how many prime $q$'s can divide it evenly?
+    \item $D \leq 2^N$.  This must be true because $D = |t_i - p|$, which both numbers must be smaller than $2^N$.  Now, we write $D = q_1 q_2 q_3 \dots q_k$, where $q_i \forall i < k$ are primes.  This is a prime factorization of $D$.  $k$ is the number of prime factors.  We know that $k \leq N$ since $D \leq 2^N$, and the prime factorization of $D$ is maximal when every factor is a $2$.  This places an upper bound on the number of numbers that divide $D$.
+    \item The probability we picked a ``bad'' $q$ is the number of (bad choices / possible choices).  This fraction must be less than $\frac{N}{\text{number of primes less than }M} \leq M$.
+    \item Pick $M$ so there are $5N$ primes less than or equal to $M$.  
+    \[\Rightarrow \frac{\text{\# bad}}{\text{\# choices}} \leq \frac{N}{5N} = 0.2\]
+    \item QED.
+\end{enumerate}
+The theorem allows us to pick an $M$, so we do so.  We could pick the theorem to be any arbitrary number by changing our decision of $M$.  However, we want $M$ to be big for the theorem, but also we cannot make it too big.  We now need a practical way to pick $M$.\\\\
+\textbf{Fact:} If we want $n \geq 4$ primes between $1$ and $M$, it suffices to choose $M \geq 2n \log_2 n$.  We will not be proving this.
+\begin{itemize}
+	\item In our application, we need $5N$ primes less than $M$.  Therefore, we need $M \geq 2 \cdot (5N) \log_2 (5N) = 10N \log_2 (5N)$.  This is an upper bound on the size of $M$.
+	\item This implies that we need $O(\log M)$ bits to represent our $q$.  Since $q \leq M$, all our numbers are bounded by $M$ bits.
+	\item Plugging in, we get $O(\log(10 N \log (5N))) = O((\log 10N) + (\log \log 5N)) = O(\log N)$.  $N$ is the length of our pattern!
+	\item This is definitely fast enough to be feasible for our use case of trying to fit all the computation in a register, because just to index $T$ (e.g., write down $T[i]$), at least $\log N$ bits are required.
+\end{itemize}
+The last thing we want to address is the size of the constant, $0.2$.  It is a \textit{constant}, but it is also large enough that $20\%$ false positives is kind of bad.  There are two ways to decrease the constant: increase $M$, or repeat picking a prime $R$ times instead of just once.
+\begin{itemize}
+	\item Increasing $M$ increases the constant in front of the space complexity, which might not be possible if we are trying to fit registers.
+	\item However, we can roll more times at a constant time cost instead.
+\end{itemize}
+
+
+\end{document}

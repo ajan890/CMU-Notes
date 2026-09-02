@@ -1,0 +1,325 @@
+% document formatting
+\documentclass[10pt]{article}
+% \usepackage[UTF8]{inputenc}
+\usepackage[UTF8, scheme=plain]{ctex}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage[table,xcdraw]{xcolor}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 2}}
+
+\title{02-741 Week 2 \\ \large{Generative AI for Biomedicine}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Modeling Structure with Graph Neural Networks}
+Graphs are everywere!
+\begin{itemize}
+	\item Molecular graphs
+	\item Gene graphs
+	\item Brain graphs
+	\item Web graphs
+	\item Transportation graphs
+	\item Social graphs
+\end{itemize}
+There are a few common tasks we can do on graph data:
+\begin{itemize}
+	\item Node-level:
+	\begin{itemize}
+	    \item Link prediction: is there a bond between two atoms?
+	    \item Node classification: is this atom C or N?
+	    \item Structure prediction: what are 3D coordinates of atoms / residues?
+    \end{itemize}
+	\item Graph-level:
+	\begin{itemize}
+	    \item Predicting properties of a graph: Is a molecule toxic to animals?
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Graph Representation}
+\begin{itemize}
+	\item Graph: $G = \{V, E\}$
+	\item Nodes: $V = \{v_1, v_2, \dots, v_N\}$
+	\item Edges: $E = \{e_1, e_2, \dots, e_M\} \subset V \times V$
+\end{itemize}
+
+\subsection*{Atom-level Molecule Graph}
+\begin{itemize}
+	\item Node: heavy (non-hydrogen) atoms
+	\item Edge: bond
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W2_1.png} 
+\end{center}
+
+\subsubsection*{Node Embedding}
+\[Enc(\cdot): V \rightarrow \mathbb{R}^d\]
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W2_2.png} 
+\end{center}
+A \textbf{``shallow''} node embedding is just a lookup table.
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W2_3.png} 
+\end{center}
+
+\subsection*{Graph Neural Network}
+\begin{itemize}
+	\item Input is a graph.
+	\item There are many hidden GNN layers.
+	\item Output is an embedding matrix for nodes for further downstream tasks: e.g., node property prediction.
+\end{itemize}
+
+\subsection*{GNN-based Foundation Models for Biomedicine}
+\begin{itemize}
+	\item Predicting docking
+	\begin{itemize}
+	    \item EquiDock
+	    \item EquiBind
+    \end{itemize}
+	\item Property prediction
+	\begin{itemize}
+	    \item EnviroDataNet
+	    \item TorchMD-NET
+    \end{itemize}
+	\item Modeling protein
+	\begin{itemize}
+	    \item GearNet
+    \end{itemize}
+	\item Gene regulator network
+	\begin{itemize}
+	    \item DeepSEM
+    \end{itemize}
+	\item Drug design
+	\begin{itemize}
+	    \item JT-VAE
+	    \item GraphAF
+    \end{itemize}
+\end{itemize}
+
+\section*{Message Passing Neural Network}
+Every node receives message from its neighbors, aggregate, and update
+\begin{itemize}
+	\item $h_i$: node embedding vector.  Aggregates information from its neighbors
+	\[h_i^{k + 1} = U^k \left(\text{Aggregate}_{v_j \in N(v_i)} m_{j \rightarrow i}^k\right), \forall v_i \in V\]
+	\item $N(v_i)$: Neighbors of the node $V_i$
+	\item $m_{j \rightarrow i}^k$: message from node $j$ to $i$ at $k$-th layer.  Aggregate can be average, sum, max/min, etc.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W2_4.png} 
+\end{center}
+
+\subsubsection*{MPNN Message Computation}
+\begin{itemize}
+	\item Each node will create a message $m_{j \rightarrow i} = M^k (h_i^k, h_j^k, e_{ij})$
+	\begin{itemize}
+	    \item Dependent on incoming node $(h_j^k)$, target node $(h_i^k)$, edge feature
+    \end{itemize}
+    \item e.g., Linear projection or FFN $\sigma(W_k \cdot [h_i^k, h_j^k, e_{ij}])$
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W2_5.png} 
+\end{center}
+
+\subsubsection*{Message Aggregation / Pooling}
+\begin{itemize}
+	\item Each node will aggregate messages from its neighbors
+	\item Aggregate function can be:
+	\begin{itemize}
+	    \item Sum, Mean, Max operator
+	    \item $m_i^{k + 1} = \sum_{v_j \in N(v_i)}M^k(h_i^k, h_j^k, e_{ij})$
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W2_6.png} 
+\end{center}
+
+\subsubsection*{Message Update}
+\begin{itemize}
+	\item Combine message and current node embedding
+	\item Apply FFN
+	\begin{itemize}
+	    \item $h_i^{k + 1} = U^k (h_i^k, m_i^{k + 1})$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Generic Framework: Message Passing NN}
+\begin{itemize}
+	\item MPNN = Message passing + Aggregation + Update
+	\begin{itemize}
+	    \item propagate nonlinear messages along graph topology
+	    \item flexible and generic design choices under this framework
+	    \item Graph convolutional network (GCN)
+	    \item GraphSAGE
+	    \item Graph Attention Network (GAT)
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W2_7.png} 
+\end{center}
+
+\subsection*{A Simple Graph Convolutional Network}
+\begin{itemize}
+	\item Averaging neighbor's message and apply nonlinear transformation
+	\begin{itemize}
+	    \item Initial embedding: $h_i^0 = x_i$
+	    \item Computing next layer: 
+        \[h_i^{k + 1} = \sigma \left(W_k \frac{1}{|N(v_i)} \sum_{v_j \in N(v_i)} h_j^k + B_k h_i^k \right)\]
+    \end{itemize}
+\end{itemize}
+Consider the example graph:
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W2_4.png} 
+\end{center}
+\begin{itemize}
+    \item Example: $h_1^2 = \tanh \left(W_1 \cdot \frac{1}{3} (h_3^1 + h_5^1 + h_8^1) + B_1 h_1^1\right)$
+    \item Next layer: $h_1^{(3)} = \tanh \left(W_2 \cdot \frac{1}{3} (h_3^{(2)} + h_5^{(2)} + h_8^{(2)}) + B_2 h_1^{(2)}\right)$
+\end{itemize}
+
+\subsection*{Matrix Representations of Graphs}
+We typically use an adjacency matrix:
+\begin{itemize}
+	\item $A[i, j] = 1$ if $v_i$ is adjacent to $v_j$.
+	\item $A[i, j] = 0$, otherwise.
+	\item Adjacency matrices for undirected graphs are symmetrical over the main diagonal.
+\end{itemize}
+
+\subsection*{Matrix Representation of GCN}
+\begin{itemize}
+	\item Neighbor Aggregation can be performed efficiently using matrix operations
+	\[H^k = [h_1^k, \dots, h_{|V|}^k]^T\]
+    \item Then,
+    \[\sum_{v_j \in N(v_i)} h_j^k = A_{i, :} H^k\]
+    \item Let $D$ be diagonal matrix $D_{i, i} = \text{Degree}(v_i) = \sum_j A_{i, j}$
+    \begin{itemize}
+	    \item The Degree function returns the number of neighbors a given node has.
+    \end{itemize}
+    \item Then, 
+    \[\frac{1}{|N(v_i)|} \sum_{v_j \in N(v_i)} h_j^k = D^{-1} AH^k\]
+\end{itemize}
+
+\subsection*{Aggregation of Neighbor's Information in Matrix Form}
+Neighbor aggregation can be performed efficiently using matrix operations
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W2_8.png} 
+\end{center}
+
+\subsubsection*{Graph Convolution in Matrix Form}
+\begin{align*}
+    H^k &= [h_1^k, \dots, h_{|V|}^k]^T \\
+    \tilde{A} &= D^{-1} A \\
+    H^{k + 1} &= \sigma(\tilde{A} H^k \cdot W_k^T + H^k B_k^T) \\
+    h_i^{k + 1} &= \sigma \left(W_k \frac{1}{|N(v_i)|} \sum_{v_j \in N(v_i)}h_j^k + B_k h_i^k\right)
+\end{align*}
+
+\subsection*{(Better) Graph Convolutional Network}
+To make $\tilde{A}$ symmetric, we keep the definition of $H^k$:
+\[H^k = [h_1^k, \dots, h_{|V|}^k]^T\]
+But, 
+\[\tilde{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}\]
+We also keep the same definition of $H^{k + 1}$:
+\[H^{k + 1} = \sigma(\tilde{A} H^k \cdot W_k^T + H^k B_k^T)\]
+
+\subsection*{Prediction Layer}
+To predict, we apply softmax functions
+\begin{itemize}
+	\item For node classification, (e.g. predicting atom type)
+	\[o_i = \text{Softmax}(h_i^{(m)})\]
+    \item For graph classification, (e.g., predicting toxicity)
+    \[o = \text{Softmax}(\frac{1}{N} \sum_i h_i^{(m)})\]
+\end{itemize}
+
+\subsection*{Property of GCN: Equivariant}
+The embeddings computed from graph convolution layers is \textbf{invariant} to node order permutation.
+
+\subsection*{Training GCN}
+\begin{itemize}
+	\item Parameters: weight matrix for each layer
+	\item Supervised training: e.g., Node classification
+	\begin{itemize}
+	    \item Cross entropy loss
+	    \[L = -\sum y_i \log f(h_i^K)\]
+        \[f_i = \text{Softmax}(h_i^{(K)})\]
+        \item $y_i$ is node label (in one-hot vector or smoothed version)
+    \end{itemize}
+    \item Unsupervised training:
+    \begin{itemize}
+	    \item Linked nodes have similar embedding
+	    \[L = \sum_{i, j} CE(y_{i, j}, Sim(h_i^K, h_j^K))\]
+        \item $y_{i, j} = 1$ if there is an edge from $v_i$ to $v_j$
+        \item Similarity can be defined in many ways: e.g., inner product $h_i \cdot h_j$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{GraphSAGE}
+Also a special case of MPNN
+\[h_i^{k + 1} = \sigma(W_k \cdot \text{CONCAT}(h_i^k, \text{AGG}(\{h_j^k, \forall v_j \in N(v_i)\})))\]
+AGG is the aggregate function and can be designed in multiple ways, like pooling (sum, avg, max).
+
+\subsection*{Graph Attention Network (GAT)}
+Not strictly MPNN, but a generalized one:
+\[h_i^{k + 1} = \sigma \left(\sum_{v_j \in N(v_i)} \alpha_{ij} W_k h_{v_j}^k\right)\]
+Attention weights:
+\[\alpha_{ij} = \text{Attention}(W_k h_i, W_k h_j) = \frac{\exp(W_h h_i)^T W_k h_j}{\sum_{j'} \exp(W_k h_i)^T W_k h_{j'}}\]
+Multi-head attention can also be used on GAT.
+
+\subsection*{Relation between GNN and CNN}
+A CNN (convolutional neural network) can be viewed as a special GNN on a grid graph.  Essentially, one node has 8 nodes surrounding it, four adjacent, four diagonal.
+
+\subsection*{GNN vs. Transformer}
+A transformer is a special GNN on a fully-connected graph.
+
+\section*{Equivariant Graph Neural Network}
+\subsection*{Structure and Geometry of Molecules}
+\begin{itemize}
+	\item Matrix of 3D coordinates, in addition to node features
+	\item Equivariance: translation, rotation invariant
+\end{itemize}
+
+\subsection*{Equivariance in Embedding Transformation}
+\begin{itemize}
+	\item $f$ is Equivariant (SE3 invariant):
+	\[f(R(x) + z) = f(x)\]
+    \item No matter how we rotate and move the molecule, the NN will compute the same embeddings.
+    \item $X$ are coordinates
+    \item $H$ are features
+    \item $g$ is the rotation / translation.
+    \[F(H, g(X)) = F(H, X)\]
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W2_9.png} 
+\end{center}
+A \textbf{Equivariant Graph Neural Network (EGNN)} is an equivariant MPNN, optionally updating coordinates.
+
+\begin{align*}
+    d_{ij} &= |x_i - x_j|_2 \\
+    m_{j \rightarrow i} &= M^k (h_i^k, h_j^k, d_{ij}) \\
+    m_i^{k + 1} &= \sum_{v_j \in N(v_i)} m_{j \rightarrow i} \\
+    h_i^{k + 1} &= U^k (h_i^k, m_i^{k + 1})
+\end{align*}
+
+
+
+
+\end{document}
