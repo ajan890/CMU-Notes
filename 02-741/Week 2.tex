@@ -319,6 +319,209 @@ A \textbf{Equivariant Graph Neural Network (EGNN)} is an equivariant MPNN, optio
     h_i^{k + 1} &= U^k (h_i^k, m_i^{k + 1})
 \end{align*}
 
+\section*{Auto-Encoder}
+Learning representations so that data can be reconstructed!
+[FILL 4]
+Need to avoid learning an identity mapping
+\begin{itemize}
+	\item Simple instance:
+	\begin{itemize}
+	    \item encoder is linear projection
+	    \item decoder is linear projection
+	    \item weight typing
+    \end{itemize}
+	\item Other constraints:
+	\begin{itemize}
+	    \item Robust construction to noise, (Denoising Auto-Encoder)
+	    \item Hidden representations conform to a distribution (Variational Auto-Encoder)
+    \end{itemize}
+\end{itemize}
+[Fill 5]
+The box with $h$ is a probability function (to provide the variability for the Variational Auto-Encoder)
+
+\subsection*{Training Auto-Encoder}
+\begin{itemize}
+	\item Real-valued data (e.g., images)
+	\begin{itemize}
+	    \item MSE loss
+	    \item $\text{MSE} = ||f(x) - x||$
+    \end{itemize}
+    \item Categorical data (e.g., sentences)
+    \begin{itemize}
+	    \item Cross-Entropy
+	    \item $\text{CE} = -\sum x_i \log f(x)_i$
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Denoising Auto-Encoder}
+\begin{itemize}
+	\item Encoder takes a noised data to produce the hidden representation
+	\item Decoder needs to recover original data from hidden representation
+	\item Make the auto-encoder robust
+\end{itemize}
+[Fill 9]
+
+\subsection*{Ovoercomplete Representation}
+\begin{itemize}
+	\item If hidden representation is larger than input data dimension
+	\item Need to enforce additional constraints (e.g., sparsity)
+	\begin{itemize}
+	    \item [FILL loss]  
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Variational Auto-Encoder (VAE)}
+\begin{itemize}
+	\item Input, intermediate, and output values are no longer deterministic vectors, but are probabilistic variables
+	\item Using probabilistic graphical model (PRG) to represent dependencies
+\end{itemize}
+
+\section*{Probabilistic Graphical Model}
+\begin{itemize}
+	\item Models describe how the world works
+	\item Models are always simplifications
+	\begin{itemize}
+	    \item May not account for every variable
+	    \item May not account for all interactions between variables
+    \end{itemize}
+    \item We=hat do we do with probabilistic models?
+    \begin{itemize}
+	    \item We (or our agents) need to reason about unknown variables, given evidence
+	    \item Example: explanation (diagnostic reasoning)
+	    \item Example: prediction (causal reasoning)
+	    \item Example: value of information
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Directed PGM - Bayesian Networks}
+\begin{itemize}
+	\item One type of PGM with directed graph
+	\item Nodes: random variables (with domains)
+	\begin{itemize}
+	    \item Can be assigned (observed) or unassugned (unobserved)
+    \end{itemize}
+    \item Arcs: interactions
+    \begin{itemize}
+	    \item Indicate ``direct influence'' between variables
+	    \item Formally: encode conditional independence (more later)
+    \end{itemize}
+    \item For now: imagine that arrows mean direct causation (in general, they don't!)
+\end{itemize}
+
+\subsection*{Bayesian Network Semantics}
+\begin{itemize}
+	\item A set of nodes, one per variable $X$
+	\item A directed, acyclic graph (DAG)
+	\item A conditional distribution for each node
+	\begin{itemize}
+	    \item A collection of distributions ovver $X$, one for each combination of parents' values
+	    \[P(X | a_1, \dots, a_n)\]
+        \item CPT: conditional probability table
+        \item Description of a noisy ``causal'' table
+    \end{itemize}
+    \item Directed graphical models
+\end{itemize}
+
+\subsubsection*{Example: Rain and Traffic}
+\begin{itemize}
+	\item Variables: 
+	\begin{itemize}
+	    \item $R$: if it rains (1) otherwise (0)
+	    \item $T$: if there is traffic (1) otherwise (0)
+    \end{itemize}
+    \item Model 1: independence.
+    \item Model 2: rain causes traffic
+    [FILL tables + image]
+\end{itemize}
+
+\subsubsection*{Example: Traffic II}
+\begin{itemize}
+	\item Variables:
+	\begin{itemize}
+	    \item T: Traffic
+	    \item R: It rains
+	    \item U: Umbrella
+    \end{itemize}
+    \item Q: What is the probability of rain if we observe traffic but no umbrella?
+    \begin{itemize}
+	    \item $P(R = 1 | T = 1, U = 0)$
+    \end{itemize}
+\end{itemize}
+
+\section*{Variational Auto-Encoders}
+[FILL (before 20)]
+\subsection*{Deep Latent Model}
+\begin{itemize}
+	\item $z$ follows a prior distribution, e.g., Gaussian(0, I)
+	\item $p(x | z)$ is defined by a deep neural network $f(z; \theta)$
+	\begin{itemize}
+	    \item We use a deep neural network to simulate the probability functions.
+    \end{itemize}
+	\item To learn $\theta$, use $E_{(Z|X)} [\log p(X, Z;\theta)]$
+\end{itemize}
+
+\subsection*{Probabilistic Graphical Model for VAE}
+\begin{itemize}
+	\item Assuming data $X$ is generated from a latent variable $Z$
+	\item Generation process:
+	\begin{itemize}
+	    \item draw $Z \sim N(\mu, \Sigma)$
+	    \item draw $X | Z \sim p(f(Z))$, defined by a neural network $f$ with parameter $\sigma$
+    \end{itemize}
+    \begin{center} 
+        [FILL 21]
+    \end{center}
+\end{itemize}
+
+\subsection*{Derivation of VAE}
+Objective: maximize the data log-likelihood
+\begin{align*}
+    \max \ell(\theta) &= \sum_n \log p(x_n; \theta) \\
+    &= \sum_n \log \int p(x_n | z_n; \theta) p(z_n; \theta) \text{ d} z_n
+\end{align*}
+\begin{itemize}
+	\item Hard to optimize over $\theta$, if $f(Z)$ is very complex, due to the integration in the log.  (i.e., $p(x_n | z_n; \theta)$ is very complex)
+	\item Examples of complex $f(Z)$ include CNNs, RNNs, GNNs, Transformers
+\end{itemize}
+
+\subsubsection*{Variational Posterior Distribution}
+\begin{itemize}
+	\item See equations above
+	\item $\log p(x; \theta)$ is intractable.
+	\item For any distribution $q(z | x, \phi)$:
+	\[\log p(x; \theta) \geq E_{q(z|x; \phi)} \left[\log \frac{p(x, z; \theta)}{q(z|x; \phi)}\right] = \text{ELBO}\]
+    \item Derivation via Jensen's inequality.
+    \begin{itemize}
+	    \item If we want to find $f(E(x))$, where $E(x)$ is an expectation (e.g., average value), and $f$ is a \textit{concave} function, then $E[f(x)] < f(E(x))$.
+	    \item It turns out in the ELBO equation, we are essentially maximizing a lower bound for our equation.
+    \end{itemize}
+    \item Maximizing the ELBO instead of maximizing $\log p(x; \theta)$
+\end{itemize}
+
+\subsubsection*{Understanding ELBO}
+\begin{align*}
+    \log p(X; \theta) &\geq E_q\left[\log \frac{p(X, Z; \theta)}{q(Z | X; \phi)}\right] \\
+    &= \sum_n E_q \left[\log \frac{p(x_n | z_n; \theta) p_0(z_n)}{q(z_n | x_n; \phi)}\right] \\
+    &= E_q [\log p(x_n | z_n; \theta)] - KL(q(z_n|x_n; \phi) || p_0(z_n))
+\end{align*}
+\begin{itemize}
+	\item The first term (before subtraction) is reconstruction loss
+	\item The second term is regularization.  (KL = Kullback-Leibler divergence)
+\end{itemize}
+
+\subsection*{Variational Auto-Encoder with Neural Network}
+Let $q(z | x; \phi)$ and $p(x | z; \theta)$ share the same parameter $\theta$
+[FILL 25]
+
+\subsection*{Training VAE}
+\begin{itemize}
+	\item Gradient Descent
+	\item [FILL]
+\end{itemize}
+
+[FILL]
+
+\subsection*{VAE for Sequence Data}
 
 
 

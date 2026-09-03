@@ -111,5 +111,129 @@ The last thing we want to address is the size of the constant, $0.2$.  It is a \
 	\item However, we can roll more times at a constant time cost instead.
 \end{itemize}
 
+\subsection*{The Shift-And Algorithm}
+Another algorithm for exact matching.  For this algorithm, we create a matrix $M = \{0, 1\}^{m \times n}$, where $m$ is the length of $P$ and $n$ is the length of $T$.  
+\begin{itemize}
+	\item The rule for filling out the matrix is $M[i, j] = 1$ if and only if $P[i] == T[j]$ and $P[1, i - 1] == T[\text{ending at }j - 1]$.
+	\item The answer is the bottom row of the matrix.
+	\item This is reminiscent of dynamic programming; the box at $M[i, j]$ depends on $M[i - 1, j - 1]$ and whether the characters in the string match.
+	\item Unfortunately, a naive method of filling in this matrix is slow.  ($O(|T|^2)$).  We need a faster way.
+\end{itemize}
+
+\subsubsection*{Filling in the Matrix Fast}
+If instead of filling out the cells one at a time, we filled it using vectorized operations instead, then we can make this run in $O(|T|)$.
+\begin{itemize}
+	\item Notice that each column in the matrix looks at the same ending character in $T$.
+	\item Since every cell is based on it's up-left diagonal, we can do a Shift-And.  Essentially, take the column to the left, shift the entire column down and right by one, and AND the entire binary vector.
+	\item We can now write the fill-out operation as
+	\[M[\cdot, j] = U(T[j]) \texttt{ \& } (M[i, j - 1] >> 1)\]
+    \begin{itemize}
+	    \item where $U(x)$ is a $|P|$-long bit vector, such that $U(x)[i] == 1$ if and only if $P[i] == x$. 
+	    \item Example: if $P = AACCTGA$, then $U("A") = 1100001$.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Time Complexity}
+Even when we vectorize the algorithm, does bitwise-AND run in constant time?
+\begin{itemize}
+	\item The answer depends on how big $P$ is.  If the entire binary vector is less than length 32 (e.g., $P$ is 32 characters long), then the entire vector may fit into a single register.
+	\item This allows the algorithm to be hardware-optimized, and run in $O(n)$ time if $P$ is short enough.
+	\item In practice, this algorithm runs as efficiently as (or even better than) the others of the conditions are met.
+\end{itemize}
+
+\section*{Approximate Matching}
+$\ell$-mismatch problem: Given $T$, $P$, and $L$, find all places in $T$ where $T$ == $P$, up to $L$ disagreements.
+\begin{itemize}
+	\item $L$ is the budget of how many mismatches we get.
+	\item $\ell$ is how many mismatches we have.
+\end{itemize}
+
+\subsection*{Variation of Shift-And for Approximate Matching}
+Similar to the normal Shift-And, we also create a matrix, but in 3-dimensions.  Every $\ell$ receives its own matrix, where
+\begin{itemize}
+	\item $M^\ell[i, j] := 1$ if $P[1 \dots i] = T[\text{ending at }j]$ using $\leq \ell$ mismatches.
+	\item This time, our answer would be the bottom row of the $L$-th matrix.  $M^L[|P|, \cdot]$
+\end{itemize}
+We have a similar recursion algorithm for dynamic programming:
+\[M^\ell[j] = M^{\ell - 1}[j] \texttt{ OR } \left(M^\ell[j - 1] >> 1 \texttt{ AND } U(T[j])\right) \texttt{ OR } \left(M^{\ell - 1}[j - 1] >> 1\right)\]
+\begin{itemize}
+	\item There are three cases:
+	\item The middle one is what we did before, just on one matrix of the $\ell$ matrices.
+	\item The left one is the case where we use up a mismatch.
+	\item The right one is the case where we add to our mismatch ``budget'' and use it on the next character.
+\end{itemize}
+
+\section*{Searching for Multiple Patterns}
+The problem statement: find every occurance in $T$: $P_1, P_2, \dots, P_k$.
+\begin{itemize}
+	\item If we ran KMP invididually, (each string takes $O(|T| + |P|)$), then the total would be $O(|T| + |P_1| + |T| + |P_2| + \dots + |T| + |P_k|) = O(K|T| + \sum_i |P_i|)$
+	\item The $\sum_i |P_i|$ part isn't a problem, but the $K|T|$ is.  We want to reduce the section of scanning over the input multiple times.
+	\item However, there is a runtime caveat though, which is with multiple strings, the number of occurrences we print out at the end scales quadratically with the length of $T$.  This is unavoidable since patterns can overlap.
+\end{itemize}
+
+\subsection*{Aho-Corasick Algorithm}
+We will define a keyword tree.  Start with $K(P_1, P_2, \dots, P_k)$.
+\begin{itemize}
+	\item For an example, let $P = \{\text{``abandon'', ``abduct'', ``abacus''}\}$.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}
+    \node[circle, draw] at (0, 0) (r) {};
+    \node[circle, draw] at (0, -1) (a1) {};
+    \node[circle, draw] at (0, -2) (b) {};
+    
+    \node[circle, draw] at (1, -3) (d1) {};
+    \node[circle, draw] at (2, -4) (u1) {};
+    \node[circle, draw] at (3, -5) (c) {};
+    \node[circle, draw] at (4, -6) (t) {};
+
+    \node[circle, draw] at (-1, -3) (a2) {};
+    
+    \node[circle, draw] at (-2, -4) (c1) {};
+    \node[circle, draw] at (-3, -5) (u2) {};
+    \node[circle, draw] at (-4, -6) (s) {};
+    
+    \node[circle, draw] at (0, -4) (n1) {};
+    \node[circle, draw] at (1, -5) (d2) {};
+    \node[circle, draw] at (2, -6) (o) {};
+    \node[circle, draw] at (3, -7) (n2) {};
+
+    \draw[->] (r) -- node[left] {a} (a1);
+    \draw[->] (a1) -- node[left] {b} (b);
+    \draw[->] (b) -- node[left] {a} (a2);
+    \draw[->] (b) -- node[right] {d} (d1);
+    \draw[->] (d1) -- node[right] {u} (u1);
+    \draw[->] (u1) -- node[right] {c} (c);
+    \draw[->] (c) -- node[right] {t} (t);
+    
+    \draw[->] (a2) -- node[left] {c} (c1);
+    \draw[->] (c1) -- node[left] {u} (u2);
+    \draw[->] (u2) -- node[left] {s} (s);
+
+    \draw[->] (a2) -- node[right] {n} (n1);
+    \draw[->] (n1) -- node[right] {d} (d2);
+    \draw[->] (d2) -- node[right] {o} (o);
+    \draw[->] (o) -- node[right] {n} (n2);
+\end{tikzpicture}
+\end{center}
+
+\begin{itemize}
+	\item Let $L(v)$ be the string spelled out from the root to $v$.
+	\item Let $\ell_p(v)$ be the longest proper suffix of $L(v)$ that is a prefix of \textit{some} pattern
+	\item Let $f(v)$ be the node representing $\ell_{p(v)}$
+	\begin{itemize}
+	    \item $f(v)$ is essentially a ``failure node'' or ``failure path'' that points backwards up the keyword tree.  Usage of this will be seen later.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Using the Keyword Tree}
+Starting at the root node, use $T$ as instructions as which branch of the tree to move down, similar to KMP.
+\begin{itemize}
+	\item If we reach the bottom node, then it is an accept state for one of the strings in $P$.
+	\item If we ever reach a point where we cannot take a path, then we take the ``failure path'' to jump backwards up the tree to an earlier node.
+	\item Now, we just have to compute $f$.
+\end{itemize}
+
+
 
 \end{document}
