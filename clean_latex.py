@@ -47,8 +47,12 @@ def clean_latex_aux_files(directory: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) == 1:
+        clean_latex_aux_files(".")
+    elif len(sys.argv) == 2:
+        clean_latex_aux_files(sys.argv[1])
+    else:
         print(f"Usage: python {sys.argv[0]} <directory>")
-        sys.exit(1)
+    sys.exit(1)
 
-    clean_latex_aux_files(sys.argv[1])
+    
