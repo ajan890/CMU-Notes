@@ -1,0 +1,513 @@
+% document formatting
+\documentclass[10pt]{article}
+% \usepackage[UTF8]{inputenc}
+\usepackage[UTF8, scheme=plain]{ctex}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage[table,xcdraw]{xcolor}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 3}}
+
+\title{02-741 Week 3 \\ \large{Generative AI for Biomedicine}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Diffusion Models}
+Diffusion models are state-of-the-art models for (continuous) data generation
+\begin{itemize}
+	\item Time series data
+	\item Audio / speech
+	\item 3D objects (coordinates), e.g., Molecule structures
+\end{itemize}
+
+\subsection*{Data Representation}
+\begin{itemize}
+	\item Images: $x \in \mathbb{R}^{w \times h}$
+	\item Speech: $x \in \mathbb{R}^t$
+	\item Molecular structure: $x \in \mathbb{R}^{N \times 3}$
+\end{itemize}
+In each case, we want a probabilistic model $p(x)$ to fit the data and generate samples
+
+\subsection*{Probabilistic Generative Process}
+\begin{itemize}
+	\item Start from initial distribution $p_T(x_T)$ (e.g., Gaussian $N(0, I)$).  This is just noise.
+	\item Generate sligntly improved data: $x_{t - 1} \sim p_{t - 1}(x_{t - 1} | x_t)$
+	\item Final data: $x_0 \sim p_0 (x_0 | x_1)$
+\end{itemize}
+The generation process is a Markov chain.
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_1.png} 
+\end{center}
+Learning the generative model is equivalent to learning the parameters for each $p_{t - 1}(x_{t - 1} | x_t)$.
+\begin{itemize}
+	\item It is difficult to directly construct a series of probability distributions
+\end{itemize}
+
+\section*{Diffusion Model}
+\begin{enumerate}
+	\item Forward Noising Process
+	\begin{itemize}
+	    \item Synthesize data for training by repeatedly adding noise each step
+    \end{itemize}
+	\item Reverse Generation Process
+	\begin{itemize}
+	    \item Start from complete noise, generate clean data
+	    \item Also known as denoising
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{(Forward) Noising Process}
+\begin{itemize}
+	\item Adding Gaussian noise at each time step $t$
+	\[x_t \sim q(x_t | x_{t - 1}) = N(\sqrt{\alpha_t} x_{t - 1}, \beta_t I), \alpha_t = 1 - \beta_t\]
+    equivalently,
+    \[x_t = \sqrt{\alpha_t} x_{t - 1} + \sqrt{\beta_t} \epsilon, \epsilon \sim N(0, I)\]
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_2.png} 
+\end{center}
+Consequence: with sufficient large $T$, the result will be Gaussian noise.
+
+\subsection*{(Reverse) Generation / Denoising Process}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_3.png} 
+\end{center}
+Learning problem: how to find parameters of $p$ to match the sequence of noised images?
+
+\subsubsection*{Graphical Model for Diffusion}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_4.png} 
+\end{center}
+
+\subsection*{Denoising Diffusion Probabilistic Models (DDPM)}
+\begin{itemize}
+	\item Reverse Process (Generation), aka. denoising
+	\begin{align*}
+        p_\theta &= \prod_{t = 1}^T p_\theta (x_{t - 1} | x_t) \\
+        p_\theta(x_{t - 1}|x_t) &= N(x_{t - 1}; \mu_\theta (x_t, t), \Sigma_\theta(x_t, t))
+    \end{align*}
+    the $\mu_\theta$ and $\Sigma_\theta$ functions are predicted by neural network
+    \item Forward Process (Diffusion), aka noising
+    \begin{align*}
+        q(x_{1 \::\: T} | x_0) &= \prod_{t = 1}^T q(x_t | x_{t - 1}) \\
+        q(x_t | x_{t - 1}) &= N(x_t; \sqrt{1 - \beta_t} x_{t - 1}, \beta_t I)
+    \end{align*}
+    noising schedule: $\beta_t \in [0, 1]$, and follows a predefined schedule
+\end{itemize}
+
+\subsection*{DDPM Training}
+For each data sample $x_0$ (e.g., image), pick random step $t$
+\begin{enumerate}
+	\item sample a noise from standard Gaussian $N(0, I) \rightarrow \epsilon$
+	\item Noise data at step $t$: $x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon, \bar{\alpha}_t = \prod_{s = 1}^t (1 - \beta_s)$
+	\item Estimate noise using neural network: $\hat{\epsilon}_\theta = \text{NN}_{\text{forward}}(x_t, t)$
+	\item Compute MSE loss: $L = \Vert \epsilon - \hat{\epsilon}_\theta\Vert^2$
+	\item Compute gradient via backward through NN
+	\item Update model parameters using optimization algorithm (e.g., Adam)
+\end{enumerate}
+\textbf{DDPM training is essentially predicting the noise based on image}.
+
+\subsection*{DDPM Inference}
+\begin{enumerate}
+	\item Randomly sample from Gaussian(0, I)
+	\item For step $t = T$ to 1:
+	\begin{itemize}
+	    \item Estimate noise using neural network: $\hat{\epsilon}_\theta = NN_{\text{forward}}(x_t, t)$
+	    \item Generate noise from $N(0, I) \rightarrow \eta$
+	    \item Estimate data mean: $\tilde{\mu}_{t - 1} = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \hat{\epsilon}_\theta\right)$
+	    \item Update data: $x_{t - 1} = \tilde{\mu}_{t - 1} + \sqrt{\beta_t} \eta$
+    \end{itemize}
+\end{enumerate}
+\textbf{DDPM inference is essentially iteratively removing predicted noise.}
+
+\subsection*{Intuition and Theory}
+\begin{itemize}
+	\item Training objective:
+\end{itemize}
+\begin{align*}
+    L &= -\log p_\theta(x_0) \\
+    &\geq -E \left[\log \frac{p_\theta(x_{0 \::\: T})}{q(x_{1 \::\: T} | x_0)}\right] = L_{elbo} \\
+    &= \sum_{t = 1}^T \text{KL}(q(x_{t - 1} | x_t, x_0) || p_\theta(x_{t - 1} | x_t)) + \text{KL}(q(x_T | x_0) || p_\theta(x_T)) - E \log p_\theta(x_0 | x_1)
+\end{align*}
+\begin{itemize}
+	\item $L_{elbo}$ is ELBO loss. 
+	\item We can use Jensen's inequality, posterior for linear Gaussian distribution
+\end{itemize}
+\begin{align*}
+    q(x_t | x_0) &= N(x_t; \sqrt{\bar{\alpha}_t} x_0, (1 - \bar{\alpha}_t)I) \\
+    \bar{\alpha}_t &= \prod_{s = 1}^t (1 - \beta_s) \\
+    & \\
+    q(x_{t - 1} | x_t, x_0) &= N(x_{t - 1}; \tilde{\mu}_t, \tilde{\beta}_t I) \\
+    \tilde{\mu}_t &= \frac{1}{\sqrt{\alpha_t}} \left(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon\right) \\
+    \tilde{\beta}_t &= \frac{1 - \bar{\alpha}_{t - 1}}{1 - \bar{\alpha}_t} \\
+    & \\
+    \intertext{What about $p_\theta(x_{t - 1} | x_t)$?  Just set:}
+    p_\theta(x_{t - 1} | x_t) &= N(\mu_\theta(x_t, t), \sigma_t^2 I)\\\\
+\end{align*}
+\begin{align*}
+    &\text{KL}(q(x_{t - 1} | x_t, x_0) || p_\theta(x_{t - 1} | x_t)) \\
+    &= \text{KL}(N(x_{t - 1}; \tilde{\mu}_t, \tilde{\beta}_t I) || N(\mu_\theta(x_t, t), \sigma_t^2 I)) \\
+    \intertext{let $\sigma_t^2 = \tilde{\beta}_t$, and let}
+    \mu_\theta(x_t, t) &= \frac{1}{\sqrt{\alpha_t}} \left(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \hat{\epsilon}_\theta (x_t, t)\right) \\
+\end{align*}
+\[\min \Vert \tilde{\mu}_t - \mu_\theta(x_t, t) \Vert^2\]
+is equivalent to
+\[\min \frac{\beta_t^2}{\alpha_t (1 - \bar{\alpha}_t)} \Vert \epsilon - \hat{\epsilon}_\theta(x_t, t) \Vert^2\]
+
+Essentially, DDPM is using NN to predict noise given noised data
+
+\subsection*{Summary}
+Diffusion models:
+\begin{itemize}
+	\item is a probabilistic generative model by iteratively removing noise
+	\item construct a sequence of corrupted data by applying Gaussian noises
+	\item use a neural network to estimate the noise given the corrupted data (without knowing the original clean data)
+	\item once estimate the noise, use posterior estimation to remove noise
+	\item can use any suitable NN (e.g., UNet)
+	\item much better than VAE, but much slower
+\end{itemize}
+
+\section*{Multi-Objective Drug Molecule Generation via MARS}
+Drug discovery and development is a long and risky process.  The successful launch of a new drug cost \$1.3 Billion on average and more than 10 years.
+
+\subsection*{In silico Drug Discovery}
+\begin{itemize}
+	\item Using computers to predict drug activities.
+	\item Faster and cheaper.
+	\item But drug candidates are either existing molecules or manually designed ones.
+\end{itemize}
+
+\subsubsection*{Discovering Treatment for COVID-19}
+\begin{itemize}
+	\item Paxlovid
+	\item Nirmatrelvir (by modifying prior protease inhibitor)
+	\item Ritonavir: originally for HIV
+	\item Remdesivir: originally for hepatitis C
+\end{itemize}
+
+\subsubsection*{AI Powered Drug Discovery}
+\begin{itemize}
+	\item AI can generate drug-like molecules with desired properties.
+	\item Using deep generative model (GENTRL) to design novel and biological active drug candidates in 46 days.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_5.png} 
+\end{center}
+
+\subsubsection*{Generative Models for Molecules}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_6.png} 
+\end{center}
+
+\subsection*{Perspective 1: Molecule Sequence Generation}
+\textbf{Transformer based:}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_7.png} 
+\end{center}
+\[p(x) = p(x_1) p(x_2 | x_1) p(x_3 | x_1, x_2) \cdots\]
+\textbf{Generation from Latent Space:}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_8.png} 
+\end{center}
+\textbf{Reinforcement-Learning based:}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_9.png} 
+\end{center}
+\textbf{RationaleRL}
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_10.png} 
+\end{center}
+
+\subsubsection*{Challenges}
+\begin{itemize}
+	\item Current generative models can only find molecules with high similarities comparing to existing drugs / potential drug candidates.
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_11.png} 
+\end{center}
+
+\subsection*{Practical Drug Discovery}
+Broader exploration of chemical space
+\begin{itemize}
+	\item Chemical space is huge but under-explored.
+	\item About 85\% drug candidates fail at clinical trials
+	\item Finding diverse drug candidates can improve the success rate in clinical trials.
+\end{itemize}
+
+\subsection*{Multi-Objective Optimization for Drug Discovery}
+\begin{itemize}
+	\item Successful drugs need to meet multiple requirements, e.g., bioactivity, safety, and etc.
+	\item In drug discovery, these properties should also be optimized.
+\end{itemize}
+\textbf{Goal: Finding Diverse Molecules Satisfying Multiple Objectives}
+\begin{itemize}
+	\item Satisfy multiple properties with high scores
+	\item Produce diverse and novel molecules
+	\item Does not rely on lab measured data
+\end{itemize}
+
+\subsection*{MARS: Markov Molecule Sampling}
+\begin{itemize}
+	\item MCMC sampling from
+	\[\pi(x) = s_1(x) \circ s_2(x) \circ s_3(x) \circ \cdots \circ s_K(x)\]
+    \begin{itemize}
+	    \item Where each $s_1, s_2, \dots$ represent desired properties.
+	    \item $s_k(x)$ is a scoring function for a given desired property.
+	    \begin{itemize}
+	        \item QED: drug-likeness
+	        \item SA: possibility to synthesize
+        \end{itemize}
+        \item $\pi(x)$ is the unnormalized distribution over molecule space.
+    \end{itemize}
+\end{itemize}
+MARS does \textbf{Iterative Graph Editing}.
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_12.png} 
+\end{center}
+\begin{itemize}
+	\item Start from initial molecule (e.g., Ethane)
+	\item For each step, propose a new molecule $x'$ by modifying existing one, $x' \sim q(x' | x^{(t - 1)})$
+	\item Accept wrt ratio:
+	\[\mathcal{A}(x, x') = \min \left\{\frac{\pi^\alpha (x') q(x | x')}{\pi^\alpha(x) q(x' | x)}\right\}\]
+\end{itemize}
+
+\subsubsection*{Adaptive Proposal Learning in MARS}
+\begin{itemize}
+	\item MCMC sampling
+	\item Markov-chain annealing scheme to find optimal samples
+	\item Adaptive MCMC proposal: MPNN learned on sampled molecular graphs
+\end{itemize}
+
+\subsection*{Molecular Graph Editing}
+\begin{itemize}
+	\item Adding fragment
+	\begin{center} 
+	    \includegraphics*[width=0.65\textwidth]{W3_13.png} 
+    \end{center}
+    \item Deleting fragment
+    \begin{center} 
+	    \includegraphics*[width=0.65\textwidth]{W3_14.png} 
+    \end{center}
+\end{itemize}
+
+\subsection*{Learning Proposal Network (MPNN)}
+Modeling editing actions as node, edge, and graph prediction problems
+\begin{center} 
+	\includegraphics*[width=0.7\textwidth]{W3_15.png} 
+\end{center}
+
+\subsection*{MARS with Docking Score}
+Grade MARS molecules by how well it binds to protein targets
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W3_16.png} 
+\end{center}
+
+\subsubsection*{Integrating 3D Structures}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_17.png} 
+\end{center}
+
+\subsubsection*{Adaptive Proposal Training}
+\begin{verbatim}
+Initialize molecules x_i^{(0)} for i = 1 to N
+Initialize molecular editing model M_theta
+Create an empty editing model training dataset D = {};
+for t = 1, 2, ..., do
+    for i = 1, 2, ..., N, do
+        calculate probability distributions (p_add, p_frag, p_del) = M_theta(x_i^{t - 1})
+        Sample a candidate molecule x' from the proposal distribution
+            q(x' | x_i^{t - 1}) defined with probability distributions p_add, p_frag, p_del
+        if u < A(x_i^{t - 1}, x') where u ~ U_{[0, 1]} then
+            Accept the candidate molecule x_i^t = x'
+        else
+            Refuse the candidate molecule x_i^t = x^{t - 1}
+        end
+        if the candidate improves, i.e., pi(x') > pi(x_i^{t - 1}) then
+            adding the editing record (x_i^{t - 1}, x') into the dataset D
+        end
+    end
+    Update model M_theta with the current dataset D in a MLE manner
+end
+\end{verbatim}
+
+\subsubsection*{MARS Generates Better Molecules}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_18.png} 
+\end{center}
+\begin{itemize}
+	\item Generation Objectives
+	\begin{itemize}
+	    \item GSK3$\beta$, JNK3: biological inhibition
+	    \item QED: drug-likeness score
+	    \item SA: synthetic accessibility score
+    \end{itemize}
+    \item Evaluate with Product score = success\_rate $\times$ novelty $\times$ diversity
+\end{itemize}
+
+\subsubsection*{MARS Explores Large Chemical Space}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W3_19.png} 
+\end{center}
+
+\subsection*{Novel Compounds Found}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W3_20.png} 
+\end{center}
+
+\subsection*{Key Takeaways}
+\begin{itemize}
+	\item Challenges in Drug discovery: multi-objective, novel and diverse, lack of data
+	\begin{itemize}
+	    \item Modeled as a molecule generation problem
+	    \begin{itemize}
+	        \item Based on MCMC sampling
+	        \item Self-adaptive proposal trained on the fly $\Rightarrow$ no need for data
+	        \item Generates better molecules and explores larger chemical space
+        \end{itemize}
+        \item $\Rightarrow$ can discover novel and diverse drug-like molecules
+        \item Challenges remaining:
+        \begin{itemize}
+	        \item More properties
+	        \item Larger molecule, peptide, protein
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\section*{Decoding Single-Cell Spatial Genomics and Epigenomics with AI/ML}
+\subsection*{Introduction}
+Genome function in different cell types
+\begin{itemize}
+	\item Numerous different cell types with distinct functions in our body
+	\item Same genome but different gene regulation and epigenome
+	\item Development of single cell technology provides closer look at cell types and cell states
+\end{itemize}
+Multiscale cellular structure and function
+\begin{itemize}
+	\item Single-cell 3D epigenome and gene regulation
+	\item Cellular spatial organization and interaction
+	\item Graph / hypergraph neural network, self-supervised, latent embedding, metagene, attention, (foundation model)
+\end{itemize}
+Large-scale genome organization in the nucleus
+[FILL 4]
+
+\subsubsection*{Hi-C Contact Map}
+[FILL 5]
+
+\subsubsection*{Multiscale 3D genome organization}
+[FILL 6]
+
+\subsubsection*{Challenges for Single-cell 3D genome analysis using scHi-C data}
+\begin{itemize}
+	\item High dimensionality
+	\item Sparse and noisy data
+	\item Multiscale 3D genome features
+\end{itemize}
+What do 3D genome look like in \textbf{single cells}, and how do multiscale 3D features vary in individual cells and different cell types?
+
+\subsection*{Hypergraphs for Higher-Order Interactions}
+\begin{itemize}
+	\item Hypergraphs are used to represent higher-order interactions
+	\begin{itemize}
+	    \item Example: events (human, location, activity)
+    \end{itemize}
+    \item A \textbf{hypergraph} $H = (V, E)$
+    \begin{itemize}
+	    \item $V / E$: the set of nodes / \textbf{hyperedges}
+	    \item $e \in E$: a hyperedge connects two or more nodes
+	    \item $\forall e \in E, |e| = k$, $H$ is a $k$-uniform hypergraph
+    \end{itemize}
+    \item \textbf{Hyper-SAGNN} - hypergraph representation learning
+    \begin{itemize}
+	    \item Input: a hypergraph with features for each node (non-uniform heterogeneous hypergraph)
+        \item We aim to:
+        \begin{itemize}
+	        \item Learn embeddings for the nodes in the hypergraph
+	        \item Learn to predict the existence of hyperedges given the node embeddings
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+[FILL 8, rearrange]
+
+\subsubsection*{Higashi - modeling scHi-C data as a hypergraph}
+[FILL 9]
+[FILL 10]
+
+\textbf{Higashi separates complex cell types in the human prefrontal cortex}
+\begin{itemize}
+	\item Higashi embeddings separate neuron subtypes using only scHi-C part of sn-m3c-seq (data from Lee et al. \textit{Nat Methods} 2019)
+	\item Cell type-specific 3D chromatin structures near marker genes
+\end{itemize}
+[FILL 11, rearrange]
+
+\subsection*{Mechanisms of Genome Folding}
+[FILL 12, all]
+
+\subsection*{Patterns of Chromosome Spatial Segregation based on Hi-C data}
+\begin{itemize}
+	\item Chromosomes are segregated into A and B compartments
+	\item High-coverage Hi-C in GM12878 identified \textbf{subcompartments} by clustering inter-chromosomal contact maps
+\end{itemize}
+[FILL 13]
+
+\subsection*{SNIPER - Inferring Hi-C Subcompartments}
+\begin{itemize}
+	\item Autoencoder compresses sparse inter-chromosomal Hi-C contacts into embeddings and imputes missing contacts
+	\item A classifier then uses embedded interchromosomal Hi-C data to predict subcompartments
+\end{itemize}
+
+\subsection*{scGHOST: Identifying Single-Cell 3D Genome Subcompartments}
+\begin{itemize}
+	\item scHi-C contact maps as \textbf{graphs}
+	\item Cell embeddings define k-NN cells.  \textbf{Genomic locus embeddings} lead to subcompartments
+	\item A unique \textbf{random sampling} procedure that filters noise in imputed scHi-C data
+\end{itemize}
+[FILL 15]
+[FILL 16]
+\begin{itemize}
+	\item Sampling based on both first-order random walks and second-order random walks
+	\item Graph node embedding using NN
+\end{itemize}
+
+\subsubsection*{Single-Cell Subcompartments of Human Prefrontal Cortex}
+[FILL 17]
+
+\subsubsection*{Spatial Organization of Genomes and Cells}
+[FILL 18]
+
+\subsubsection*{Spatial Transcriptomic Technologies}
+Imaging-based - single cell resolution
+\begin{itemize}
+	\item STARmap / STARmap PLUS (Wang et al. \textit{Science} 2018 / Zeng et al. \textit{Nat Neurosci} 2023)
+	\item seqFISH+ (Eng et al. \textit{Nature} 2019)
+	\item MERFISH / Vizgen MERSCOPE (Moffitt et al. \textit{Science} 2018)
+\end{itemize}
+Sequencing-based - full transcriptome
+\begin{itemize}
+	\item Visium (Stahl et al. \textit{Science} 2016)
+	\item Slide-seq / Slide-seq V2 (Rodriques et al. \textit{Science} 2019 / Stickels et al. \textit{Nat Biotech} 2021)
+	\item Stereo-seq (Chen et al. \textit{Cell} 2022)
+\end{itemize}
+
+\end{document}

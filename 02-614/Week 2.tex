@@ -185,18 +185,18 @@ We will define a keyword tree.  Start with $K(P_1, P_2, \dots, P_k)$.
     \node[circle, draw] at (1, -3) (d1) {};
     \node[circle, draw] at (2, -4) (u1) {};
     \node[circle, draw] at (3, -5) (c) {};
-    \node[circle, draw] at (4, -6) (t) {};
+    \node[circle, draw, fill=gray!50] at (4, -6) (t) {};
 
     \node[circle, draw] at (-1, -3) (a2) {};
     
     \node[circle, draw] at (-2, -4) (c1) {};
     \node[circle, draw] at (-3, -5) (u2) {};
-    \node[circle, draw] at (-4, -6) (s) {};
+    \node[circle, draw, fill=gray!50] at (-4, -6) (s) {};
     
     \node[circle, draw] at (0, -4) (n1) {};
     \node[circle, draw] at (1, -5) (d2) {};
     \node[circle, draw] at (2, -6) (o) {};
-    \node[circle, draw] at (3, -7) (n2) {};
+    \node[circle, draw, fill=gray!50] at (3, -7) (n2) {};
 
     \draw[->] (r) -- node[left] {a} (a1);
     \draw[->] (a1) -- node[left] {b} (b);
@@ -231,7 +231,63 @@ Starting at the root node, use $T$ as instructions as which branch of the tree t
 \begin{itemize}
 	\item If we reach the bottom node, then it is an accept state for one of the strings in $P$.
 	\item If we ever reach a point where we cannot take a path, then we take the ``failure path'' to jump backwards up the tree to an earlier node.
+	\begin{itemize}
+	    \item Note that this is very similar to the \texttt{memo} array from KMP. In fact, if our keyword tree only had one pattern to match, it would be exactly the same.
+    \end{itemize}
 	\item Now, we just have to compute $f$.
+\end{itemize}
+
+\subsubsection*{But First, a Bug}
+What happens if $P_i \subseteq P_j$?  That is, what if one pattern $P_i$ is a substring of another pattern $P_j$.  In this case, we could follow the path for $P_j$ and completely miss $P_i$.
+\begin{itemize}
+	\item To solve this problem, all we need to do is follow the failure function.  Or rather check it.  At any given point, if a pattern ends at the current character in $T$ we are traversing, the pattern would be a suffix.  The failure links have the purpose of matching suffixes to prefixes.
+	\item However, there is a slight problem: The failure-links point to the \textit{longest suffix} that matches the prefix.  What if our pattern is not the longest?
+	\begin{itemize}
+	    \item In this case, we can follow the failure link again, and continue doing this until we reach the root.
+    \end{itemize}
+\end{itemize}
+Now this introduces a new issue: if we have to follow all the failure links backwards to the root on each iteration, traversing them would take linear time\dots, for a total of quadratic time when iterating over the entire string.  
+\begin{itemize}
+	\item This is slow!
+\end{itemize}
+We can solve this problem by pre-processing the tree.  In addition to the failure links (F-links), we introduce output links (O-links), which act like F-links but skip all nodes that are not leaves.  In other words, they point from every node to all of the pattern matches.  Note that we can derive the O-links from the F-links list.
+\begin{itemize}
+	\item Now, we don't have to traverse the F-links on every iteration, we traverse the O-links instead.
+	\item This might still take quadratic time in the worst case, but it is okay, because every node visited in the O-link represents an index that needs to be output.
+	\item Our output, as established at the start, is un-improvably quadratic.  Therefore, traversing O-links do not take extra time.
+\end{itemize}
+
+\subsubsection*{Runtime}
+This algorithm runs in $O(|T| + \sum_i |P_i| + z)$, where $|T|$ is the length of the string, $\sum_i |P_i|$ is the sum of the lengths of all the pattern strings, and $|z|$ is the size of our output. 
+\begin{itemize}
+	\item The $z$-term is quadratic by nature.
+	\item This algorithm reads every character in our string $T$ once.  Building the keyword tree is in the $\sum_i |P_i|$ time, and traversing the tree is included in the $|z|$ term.
+\end{itemize}
+
+\subsubsection*{Computing the Failure Links, $f$}
+Suppose we can compute the failure links in levels $1, \dots, f(v)$, where $v$ is a node somewhere in the tree, $u$ is the child of $v$, and $f(x)$ refers to the level of $x$.  Essentially, if we had F-links of all the nodes up to level $f(v)$, can we derive the F-links for node $u$ in constant time?
+\begin{itemize}
+	\item It turns out we can, and quite easily.  Consider the string segments $u$ and $v$ in $T$, where $u$ is one character longer than $v$.  By definition, the last $f(v)$ characters of $v$ match the first $f(v)$ characters of $v$.
+	\item When we add a letter to the end of $v$ to form $u$, $x$ (the last character of $u$), we want to know the longest pattern in $v$ that is extendable by $x$.
+	\item Notice that this is the purpose of the failure link of $v$!  By definition, the failure link of $v$ would give a prefix of $v$, so we can follow the failure links backwards until finding a pattern extendable by $x$.
+\end{itemize}
+\begin{center}
+\textbf{Algorithm:} To compute $f(u)$, follow $f^*(\text{parent}(u))$ until you find a node extendable by label of edge $(v, u)$.
+\end{center}
+Now, the inductive hypothesis is complete; we only need the base case.  The base case happens to be the first character off of the root, in which case, the F-link of that node would point to the root.\\\\
+What about the runtime?
+\begin{itemize}
+	\item We might have to follow multiple F-links from $v$ in order to find a node extendable by $x$.
+\end{itemize}
+Consider path $Q$ spelling pattern $P_i$.  We want to prove the total time to compute $f(u)$ for all $u$ on $Q$ is $O(|P_i|)$.
+\begin{itemize}
+	\item First, note that $|Q| = |P_i|$.
+	\item Define $\ell_p(u) = L(f(u))$.  $\ell_p(u)$ is the string represented by $f(u)$.  $L(f(u))$ is the label of $f(u)$.  What we care about now is the length of the string, $|\ell_p(u)|$.  Since $u$ is parent of $v$, the length to $v$ is at most 1 larger.  That is, $\Delta |\ell_p| \leq 1$.  For simplicity, we will measure length in $\ell_p$ (and $\Delta |\ell_p|$) in dollars.
+	\begin{itemize}
+	    \item Going down the path gains \$1.  Following a F-link loses \$1.  Suppose we traverse the entire path normally.  If there are $q$ nodes in path $Q$, we gain at most $q$ dollars.  However, when we follow F-links backwards, we can never go past the root of the tree.  This implies the total amount of dollars at the end of a given path is \$0.
+	    \item This in turn implies that the amortized amount spent on following all F-links equals the amount gained following the path $Q$.  Therefore, the total time to compute all F-links must be within $O(\sum_i |P_i|)$.
+	    \item In implementation, we don't compute the patterns one at a time.  Rather, we compute all the patterns at the same time, following BFS order traversing the tree.  However, since all paths are amortized to their length, the entire tree would run in linear time.
+    \end{itemize}
 \end{itemize}
 
 
