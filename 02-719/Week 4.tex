@@ -1,0 +1,188 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+\usepackage[colorlinks=true, urlcolor=blue]{hyperref}
+
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 4}}
+
+\title{02-719 Week 4 \\ \large{Genomics and Epigenetics of the Brain}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Diversity of Neuron Subtypes}
+Neuroscience in 2024:
+\begin{itemize}
+    \item 15$+$ types of cortical interneurons with distinct morphologies, firing patterns, and connectivity
+    \item 49 cortical cell populations with distinct transciptomes
+    \item Just beginning to understnad the diversity of neurons on the epigenetic levevl and we are seeing vastly different epigenetic landscapes
+\end{itemize}
+
+\subsection*{Major Cell Types of the Brain}
+\begin{itemize}
+	\item Oligodendrocytes
+	\begin{itemize}
+	    \item Form the myelin sheath around axons, allowing for fast signal propagation
+    \end{itemize}
+	\item Microglia
+	\begin{itemize}
+	    \item Immune cells that detect damaged or unhealthy neurons and protect against foreign bacteria and viruses
+    \end{itemize}
+	\item Astrocytes
+	\begin{itemize}
+	    \item Provide structure to hold neurons in place
+	    \item Supply nutrients
+	    \item Digest debris from dead cells
+    \end{itemize}
+	\item Neurons
+	\begin{itemize}
+	    \item Facilitate information transfer through propagation of electrical signal
+    \end{itemize}
+\end{itemize}
+\begin{center} 
+	\includegraphics*[width=0.8\textwidth]{W4_1.png} 
+\end{center}
+
+\subsubsection*{Types of Neurons}
+Neurons can be divided into two groups:
+\begin{itemize}
+	\item \textbf{Glutamatergic Pyramidal Neurons:} excitatory neurons.
+	\begin{itemize}
+	    \item Use glutamate as a chemical messenger to increase brain activity.  Receiving cells are more like to fire an electral signal
+	    \item Drive most rapid signaling, thinking, learning, and memory.
+	    \item Hyperactive glutamatergic neurons leads to conditions like epilepsy.
+    \end{itemize}
+	\item \textbf{GABAergic Interneurons:} inhibitory neurons
+	\begin{itemize}
+	    \item Use gamma-aminobutyric acid (GABA) as a chemical messenger to calm brain activity.  Receiving cells are less likely to fire an electrical signal
+	    \item Prevent runaway seizures and balance brain signals.
+    \end{itemize}
+\end{itemize}
+Each group contains more different types of neurons.
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W4_2.png} 
+\end{center}
+
+\subsection*{Cellular Diversity in the Cortex}
+Excitatory Neurons: ``Principal Cells''
+\begin{itemize}
+	\item \textbf{Intracortical:}
+	\begin{itemize}
+	    \item Predominantly in Layer 2 / 3
+	    \item Projections stay within the cortex
+	    \item Can be \textit{associative} (project to the same hemisphere, area, or column that the cell body is in) or \textit{commissural} (project to the opposite hemisphere)
+    \end{itemize}
+	\item \textbf{Corticofugal:}
+	\begin{itemize}
+	    \item Mainly in Layer 5 / 6
+	    \item Project to brain regions outside of the cortex
+	    \item Can be \textit{corticalthalamic} (project to the thalamus, important for processing sensory information) or \textit{subcerebral} (project to the brainstem or spinal cord)
+    \end{itemize}
+\end{itemize}
+Molecular interrogation reveals additional heterogeneity within subtypes of excitatory neurons.  Subtypes can be defined by characteristic expression levels of a set of genes
+
+\subsection*{Different Views of Diversity}
+\begin{center} 
+	\includegraphics*[width=\textwidth]{W4_3.png} 
+\end{center}
+
+\section*{Issues with Bulk Tissues}
+\begin{center} 
+	\includegraphics*[width=0.6\textwidth]{W4_4.png} 
+\end{center}
+Signals from rare cell types can often be missed entirely.
+
+\section*{Searching for the Genetic Basis of Disease}
+\begin{itemize}
+	\item We can run GWAS (genome-wide association study) to correlate SNPs with certain diseases.
+	\item With enough reads, we can determine which peaks (SNPs) represent mutations that correlate with the presence of diseases
+	\item Cell type-specific peaks overlap key disease SNPs, which might lead to problems.  Is a mutation a cause for a disease, or is it normal for a different cell type?
+\end{itemize}
+
+\section*{Single Cell Experiments}
+To do sequencing studies, the vast majority of the data comes from single cell experiments.
+
+\subsection*{Tissue Source}
+\begin{itemize}
+	\item \textbf{Fresh tissue:}
+	\begin{itemize}
+	    \item Best cell viable - best quality RNA
+	    \item Requires direct access to tissue, lower throughput
+    \end{itemize}
+	\item \textbf{Young (embryonic) tissue:}
+	\begin{itemize}
+        \item Less myelinated tissue to dissociate
+        \item Age is experimental confounder
+    \end{itemize}
+	\item \textbf{Cryo-preserved frozen:}
+	\begin{itemize}
+        \item Better cell viability, higher throughput
+        \item Freeze-thaw effects in sample
+    \end{itemize}
+	\item \textbf{Flash frozen}
+	\begin{itemize}
+        \item Human brain repositories usually flash freeze tissue
+        \item Worst cell viability
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Enzymatic Dissociation of Single Cells}
+\begin{enumerate}
+	\item Tissue is dissected and cut into thin slides.
+	\item Tissue is rinsed with PBS (Phosphate Buffered Saline), then minced.
+	\item Digestive enzymes are added (which might include collagenase, hyaluronidase, DNAse, Papain, etc.)
+	\item Mixture is incubated to ensure tissue is digested
+	\item Sample is inspected and filtered (so only nuclei are left)
+	\item Nuclei can by input through a machine for cell counting and sequencing
+\end{enumerate}
+
+\subsection*{Differences Between Single Cell and Single Nuclei}
+As it turns out, the amount of RNA from cells is more than the RNA in nuclei
+\begin{itemize}
+	\item This is because RNA is present in cytoplasm
+\end{itemize}
+However, the number of cell types detected from cells is equal to types detected from nuclei
+\begin{itemize}
+	\item Essentially, a cell's DNA sequence (and epigenetic markers) can be used to determine cell type
+\end{itemize}
+Both preparations can detect similar cell types.
+
+\subsection*{Fresh Nuclei from Fresh Brain Tissue}
+\begin{itemize}
+	\item Less size bias in nuclei vs. cells
+	\item Pestle mechanically break up extracellular matrix
+	\item Iso/hypotonic buffer solution maintain organelle membranes (e.g., nuclei, mitochondria, etc.)
+\end{itemize}
+Nuclei are then purified using a density gradient.
+\begin{itemize}
+	\item Use solutions of 40\% iodixanol, 30\% iodixanol, and 25\% iodixanol.  Higher percentages are denser than lower percentages, and will therefore sink.
+	\item Nuclei, being more dense, will sink to between the 30\% and 40\% layers.  Meanwhile, all the junk will float at the 25\% layer.
+	\item A needle can be used to extract the nuclei.
+\end{itemize}
+
+
+\end{document}

@@ -104,6 +104,25 @@ Suppose we knew somehow where in $y$, $x[|x| / 2]$ aligned.  In this case, reduc
 	\item However, we can do \textit{something} about it.  Considering a given column (a character in $x$) on the DP table, we know for a fact at some point the backtracking arrows must pass through that column.  Since the backtrack can only move left and up, we can discard the bottom left and top right of the matrix if we know where that path passes through.
 	\item Conveniently, we have a quadratic-time, linear space algorithm to find exactly that.
 \end{itemize}
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+    \draw (0, 0) rectangle (8, -10);
+    \draw (4, 0) rectangle (5, -10);
+    \draw (4, -5) rectangle (5, -6);
+    \node at (4.5, -5.5) (q) {$q$};
+    \draw[red] (0.1, -0.1) rectangle (4.9, -5.9);
+    \draw[blue] (5.1, -5.1) rectangle (7.9, -9.9);
+    \node[red] at (2.5, -3) (opt_red) {\texttt{Opt}};
+    \node[blue] at (6.5, -7.5) (opt_blue) {\texttt{Opt}};
+    \node at (4, 0.5) (x) {$x$};
+    \node at (-0.5, -5) (y) {$y$};
+\end{tikzpicture}
+\begin{itemize}
+	\item $q$ is the cell of the DP table that we know the backtrack will pass through.
+	\item We can then split the problem into two subproblems, red \texttt{Opt} and blue \texttt{Opt}.
+	\item The linear space strategy of only storing two rows or columns still works.
+\end{itemize}
+\end{center}
 Linear space algortihm:
 \begin{verbatim}
 def linearSpaceAlgorithm(x, y):
@@ -131,7 +150,33 @@ Or, the time for one run through the algorithm is equal to the $cmn$ (time for f
 \begin{itemize}
 	\item If we assume that $q$ is always half the length of the array, and $m = n$, then
 	\[T(n) \leq 2T(\frac{n}{2}) + cn^2\]
-    \item By the master's theorem, it simplifies to $n^2$.
+    \item By the master's theorem, it simplifies to $n^2$.  This is because we can prove that $2T\left(\frac{n}{2}\right)$ is linear time.  (See below)
 \end{itemize}
-
+We know that if we fix either $m$ or $n$ to be a constant (i.e., a given row or column), then we can further constrain the runtime.
+\begin{align*}
+    T(m, 2) &\leq cm \\
+    T(2, n) &\leq cn
+\end{align*}
+\textbf{Theorem:} $T(m, n) \leq kmn$ for some constant $k$. \\\\
+\textbf{Proof:} We can use a proof by induction.
+\begin{itemize}
+	\item \textbf{Base Case:}
+	\begin{itemize}
+	    \item Pick some $k \geq c$.  Then, $T(m, 2) \leq cm \leq km \leq kmn$.
+    \end{itemize}
+    \item \textbf{Inductive Case:}
+    \begin{itemize}
+	    \item Assume $T(m', n') \leq km'n' \:\forall\: m' \times n' \leq mn$.
+	    \begin{align*}
+            T(m, n) &\leq kmn + T(\frac{m}{2}, q) + T(\frac{m}{2}, n - q) &\text{By definition}\\
+            &\leq cmn + k \left(\frac{m}{2}\right)q + k\left(\frac{m}{2}\right)(n-q) &\text{By inductive hypothesis} \\
+            &= cmn + \frac{kmn}{2} &\text{Combine like terms and cancel}\\
+            &= \left(c + \frac{k}{2}\right) mn
+            \intertext{Since $k$ is an arbitrary constant, we can pick its value.  We set $k = 2c$.}
+            &= \left(c + \frac{(2c)}{2}\right) mn \\
+            &= 2cmn \\
+            &= kmn
+        \end{align*}
+    \end{itemize}
+\end{itemize}
 \end{document}

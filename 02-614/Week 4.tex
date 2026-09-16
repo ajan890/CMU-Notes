@@ -1,0 +1,192 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{enumitem}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 4}}
+
+\title{02-614 Week 4 \\ \large{String Algorithms}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+\section*{Four Russian's Speedup}
+There is a faster way to do edit distance than Hirschberg's algorithm that also keeps the same space complexity.
+\begin{itemize}
+	\item \textbf{Goal:} Edit distance faster than $O(m, n)$ with no increase in space (asymptotically).
+\end{itemize}
+
+\subsection*{Idea 1:}
+Imagine we can tile our dynamic programming table with tiles of size $t$.  Instead of calculating every cell individually (and take up $mn$ time to do so), we can compute in larger chunks.
+\begin{center}
+% 0.8 size cells, 3.0 size tiles.
+\begin{tikzpicture}[scale=0.8]
+    % shading
+    \fill[green!25] (3.2, 0) rectangle (4.0, 4.0);
+    \fill[green!25] (0, 3.2) rectangle (3.2, 4.0);
+    \fill[pink!50] (3.2, 6.4) rectangle (4.0, 10.4);
+    \fill[pink!50] (4.0, 6.4) rectangle (7.2, 7.2);
+    \fill[blue!50] (9.6, 12.8) rectangle (10.4, 13.6);
+    % matrix
+    \draw (0, 0) rectangle (10.4, 13.6);
+        % vertical
+        \draw (0.8, 0) -- (0.8, 13.6); \draw (3.2, 0) -- (3.2, 13.6);
+        \draw (4.0, 0) -- (4.0, 13.6); \draw (6.4, 0) -- (6.4, 13.6);
+        \draw (7.2, 0) -- (7.2, 13.6); \draw (9.6, 0) -- (9.6, 13.6);
+        % horizontal
+        \draw (0, 0.8) -- (10.4, 0.8); \draw (0, 3.2) -- (10.4, 3.2);
+        \draw (0, 4.0) -- (10.4, 4.0); \draw (0, 6.4) -- (10.4, 6.4);
+        \draw (0, 7.2) -- (10.4, 7.2); \draw (0, 9.6) -- (10.4, 9.6);
+        \draw (0, 10.4) -- (10.4, 10.4); \draw (0, 12.8) -- (10.4, 12.8);
+
+    % t arrow
+    \draw[<->, thick] (-0.5, 0) -- node[left] {$t$} (-0.5, 4.0);
+
+    % x / y labels
+    \node at (5.2, 14.4) (x) {x};
+    \draw[->, thick] (x) -- (5.9, 14.4);
+    \node at (-0.8, 6.8) (y) {y};
+    \draw[->, thick] (y) -- (-0.8, 7.5);
+
+    % finish label
+    \node[blue] at (12.4, 13) (fin) {Answer};
+    \draw[blue, ->, thick] (fin) -- (10.6, 13.2);
+
+\end{tikzpicture}
+\begin{itemize}
+	\item Each tile overlaps the other tiles by 1 row and 1 column on each side.
+	\item We start from the bottom left corner (which we call cell $(0, 0)$).  Consequently, our answer is the top right.
+\end{itemize}
+\end{center}
+First, we have to make a few assumptions:
+\begin{itemize}
+	\item $m = n$, or in other words, $|x| = |y|$.
+	\item Our tiles exactly tile the DP matrix.
+\end{itemize}
+
+\subsection*{Idea 2:}
+With this tile setup, only the edges of the tiles matter.
+\begin{itemize}
+	\item If we know the edges, then we don't need the centers of the tiles.
+\end{itemize}
+We want:
+\begin{itemize}
+	\item A function $f(\texttt{red shaded edges}, x', y') \rightarrow \texttt{green shaded edges}$.  In other words, take in the bottom and left edges of each tile and output the values of the top and right edges.
+\end{itemize}
+It turns out that we can do this using the Hirschberg or the Na\"{i}ve dynamic programming algorithm.  Therefore, a tile would take $O(t^2)$ time.  Can we compute that faster?
+
+\subsubsection*{Computing $f$ Faster}
+\textbf{Lemma:} In the edit distance (number of operations) DP matrix $D$, adjacent cells in a row, column, or diagonal differ by at most 1.
+\begin{center}
+\begin{tikzpicture}
+    % shading
+    \fill[pink!50] (0, 0) rectangle (1, 4);
+    \fill[pink!50] (1, 0) rectangle (4, 1);
+    % table
+    \draw (0, 0) rectangle (4, 4); 
+    \draw (0, 1) -- (4, 1); \draw (0, 2) -- (4, 2); \draw (0, 3) -- (4, 3);
+    \draw (1, 0) -- (1, 4); \draw (2, 0) -- (2, 4); \draw (3, 0) -- (3, 4);
+    \node at (0.5, 3.5) (03) {$c+2$}; \node at (1.5, 3.5) (13) {$c+1$}; \node at (2.5, 3.5) (23) {$c$}; \node at (3.5, 3.5) (33) {$c-1$};
+    \node at (0.5, 2.5) (02) {$c+1$}; \node at (1.5, 2.5) (12) {$c+1$}; \node at (2.5, 2.5) (22) {$c$}; \node at (3.5, 2.5) (32) {$c-1$};
+    \node at (0.5, 1.5) (01) {$c$}; \node at (1.5, 1.5) (11) {$c+2$}; \node at (2.5, 1.5) (21) {$c+3$}; \node at (3.5, 1.5) (31) {$c+4$};
+    \node at (0.5, 0.5) (00) {$c$}; \node at (1.5, 0.5) (10) {$c+1$}; \node at (2.5, 0.5) (20) {$c$}; \node at (3.5, 0.5) (30) {$c$};
+    % violation
+    \draw[blue] (3.05, 1.05) rectangle (3.95, 2.95);
+    \node[blue, align=center] at (6.05, 2) (vl) {Violation of\\the Lemma};
+    \draw[blue, ->] (vl) -- (4.15, 2);
+    % left offset vector
+    \node at (-0.5, 0.5) (o0) {$0$};
+    \node at (-0.5, 1.5) (o1) {$0$};
+    \node at (-0.5, 2.5) (o2) {$1$};
+    \node at (-0.5, 3.5) (o3) {$1$};
+    % bottom offset vector
+    \node at (0.5, -0.5) (0o) {$0$};
+    \node at (1.5, -0.5) (1o) {$1$};
+    \node at (2.5, -0.5) (2o) {$-1$};
+    \node at (3.5, -0.5) (3o) {$0$};
+    \draw[purple] (0.1, -0.1) rectangle (3.9, -0.9);
+    \node[purple, align=center] at (6.05, -0.2) (bl) {Input offset \\ Vector};
+    \draw[purple, ->] (bl) -- (4.0, -0.5);
+    % top offset vector
+    \node at (0.5, 4.5) (0a) {$0$};
+    \node at (1.5, 4.5) (1a) {$-1$};
+    \node at (2.5, 4.5) (2a) {$-1$};
+    \node at (3.5, 4.5) (3a) {$-1$};
+    \draw[green] (0.1, 4.1) rectangle (3.9, 4.9);
+    \node[green, align=center] at (6.05, 4.5) (ol) {Output offset \\ Vector};
+    \draw[green, ->] (ol) -- (4.0, 4.5);
+
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Idea 3:}
+Represent the \texttt{red shaded edges} and \texttt{green shaded edges} as offset vectors.
+\begin{itemize}
+	\item In the example above, we define the bottom offset vector at $(0, 1, -1, 0)$, since those are the differences between each of the values in the cells along the bottom rows
+	\item Since every tile represents matching a substring between $x$ and $y$ and the bottom row and left columns represent the previous alignment, the best alignment (the output) always remains the same if the input offset vectors and the characters in the string are the same.
+	\item This means we can precompute every $f$ value and do lookups to fill in the edges of tiles on the DP table.
+\end{itemize}
+\subsection*{Idea 4:}
+Precompute every possible $f$ value.
+\begin{enumerate}[label=(\arabic*)]
+	\item There are $3^{2(t - 1)} \cdot |\Sigma|^{2t}$ possible inputs to $f$.
+	\begin{itemize}
+	    \item $3^{2(t - 1)}$ comes from the fact that offset vectors must contain either $\{-1, 0, 1\}$ in each position, and there are a total of $2(t - 1)$ positions along the left and bottom sides of a tile.
+	    \item The $|\Sigma|^{2t}$ comes from the number of possible substrings that could be in $x$ and $y$, for $2t$ characters total, and each character has $|\Sigma|$ choices.
+    \end{itemize}
+	\item Computing all possible values takes $O((3|\Sigma|)^{2t} \cdot t^2)$.  (The $t^2$ is from the DP algorithm to fill in the cells of a tile once.)
+\end{enumerate}
+However, the trick here is that $t$ is an arbitrary tile size value, which we are able to set.  We pick $t = \frac{1}{2}\left(\log_{3|\Sigma|}n\right)$.
+\begin{itemize}
+	\item Now, if we plug in for $t$, our time complexity becomes $O(n (\log n)^2)$.
+\end{itemize}
+This pre-computation now takes less time than the rest of the problem because we only do it once.
+
+\subsubsection*{Storing $f_s$}
+We make a tree that encodes the input and stores the output at the leaves.
+\begin{itemize}
+	\item Start at the root
+	\item The first $2(t - 1)$ layers are all the possible offset vector combinations
+	\item The next $2t$ layers are possible substrings.
+	\item The output offset vectors (i.e., the top and right sides of each tile) are the data stored at the leaf nodes.
+\end{itemize}
+With this, searching up an $f$ value is linear time, since our tree is $O(t)$ layers deep.
+\begin{itemize}
+	\item In this case, the tree acts similarly to a hash map except without the $O(1)$ lookup.  It maps an input key (input offset vectors and substrings) to an output value (output offset vectors).
+	\item We don't use a hash map because the number of keys we have is exponential - a hash map would run into bucketing problems and become linear time (relative to the number of total possible inputs, i.e., exponential) lookup.
+	\item The search time for a tree of $O(t)$ height would be $O(t)$, which is faster than all the other parts of the algorithm anyways.
+\end{itemize}
+
+
+\subsection*{Total Running Time}
+\begin{itemize}
+	\item We have $n^2 / t^2$ tiles.
+	\item It takes $O(t)$ to solve each tile by using lookups in the tree.
+	\item The preprocessing takes $O(n \log^2 n)$ time.
+\end{itemize}
+In total, we have $O(\frac{n^2}{t^2} \cdot t + n \log^2 n)$, which simplifies to $O(\frac{n^2}{t} + n\log^2 n)$.  Since the size of $t$ we determined is equal to $\log n$, we can substitute that in, and drop the second term.  (The $\frac{n^2}{\log(n)}$ term dominates.)
+\[\boxed{O\left(\frac{n^2}{\log n}\right)}\]
+
+\end{document}
