@@ -181,8 +181,50 @@ Nuclei are then purified using a density gradient.
 \begin{itemize}
 	\item Use solutions of 40\% iodixanol, 30\% iodixanol, and 25\% iodixanol.  Higher percentages are denser than lower percentages, and will therefore sink.
 	\item Nuclei, being more dense, will sink to between the 30\% and 40\% layers.  Meanwhile, all the junk will float at the 25\% layer.
-	\item A needle can be used to extract the nuclei.
+	\item A needle can be used to extract the nuclei from the middle layers.
+\end{itemize}
+Afterwards, the nuclei can be stained and counted using a machine.
+
+\subsection*{Cell Counting with Microfluidics}
+\begin{enumerate}
+	\item Enzymes and nuclei are first loaded into microfluidics chip
+	\item Nuclei and barcode beads are partitioned with 10x controller (run through machine) 
+	\item Droplets are suspended in oil.
+	\item DNA in droplets are amplified then sequenced.
+\end{enumerate}
+
+\subsubsection*{What is Happening in the Microfluidics Black Box}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W4_5.png} 
+\end{center}
+\begin{itemize}
+	\item Essentially, each gel bead comes with a barcode attached to it.  A barcode is usually around 10 nucleotides long. 
+	\item Each gel bead is placed with a cell and enzymes, in a droplet.  (Droplet is water floating in oil.)
+	\item The enzyme will slowly integrate the barcode DNA into the DNA of the cell.
+	\item Therefore, when sequencing, it becomes possible to count DNA.
 \end{itemize}
 
+\subsubsection*{Issues}
+\begin{itemize}
+	\item Depending on the quality of the sample, the cell in the droplet might be lysed.  As a result, there could be stray RNA floating around in the droplet but not in the nuclei.  The oil needs to be separated out before sequencing for this reason.
+	\item Some gel beads might have two nuclei (by accident).  Due to the nature of the process and how small individual droplets are, there isn't a way to detect this.  When analyzing the data it needs to be taken into account.
+	\item Barcodes attached to two nuclei means that some ``cells'' that are detected might have more genes than normal.
+\end{itemize}
+
+\subsubsection*{Tracking the RNA Molecule}
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W4_6.png} \\
+    \includegraphics*[width=0.9\textwidth]{W4_7.png} 
+\end{center}
+
+\subsection*{Conclusions}
+\begin{itemize}
+	\item sc/snRNA-seq require many experimental considerations
+	\begin{itemize}
+	    \item Tissue, dissociation, etc.
+    \end{itemize}
+	\item Different methods of labeling cells, RNA molecules
+	\item Set up of barcode/UMI/cDNA fragment determine downstream post-sequencing analysis pipeline
+\end{itemize}
 
 \end{document}

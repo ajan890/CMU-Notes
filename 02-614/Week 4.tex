@@ -179,6 +179,14 @@ With this, searching up an $f$ value is linear time, since our tree is $O(t)$ la
 	\item The search time for a tree of $O(t)$ height would be $O(t)$, which is faster than all the other parts of the algorithm anyways.
 \end{itemize}
 
+\subsubsection*{Storing the Tree}
+When we store using the tree, traversing the tree takes $O(t) = O(\log n)$ time.
+\begin{itemize}
+    \item However, instead if we create a table (a direct map from the input to the output), we can do constant time lookup.
+    \item It turns out that $O(\log(n))$ bitstrings can be manipulated in $O(1)$ time.  
+    \item Every possible bitstring $O(2^{\log(n)}) = O(n)$ is stored in the table, with an $n$-sized table.
+\end{itemize}
+
 
 \subsection*{Total Running Time}
 \begin{itemize}
@@ -188,5 +196,133 @@ With this, searching up an $f$ value is linear time, since our tree is $O(t)$ la
 \end{itemize}
 In total, we have $O(\frac{n^2}{t^2} \cdot t + n \log^2 n)$, which simplifies to $O(\frac{n^2}{t} + n\log^2 n)$.  Since the size of $t$ we determined is equal to $\log n$, we can substitute that in, and drop the second term.  (The $\frac{n^2}{\log(n)}$ term dominates.)
 \[\boxed{O\left(\frac{n^2}{\log n}\right)}\]
+
+\subsection*{Traceback Path}
+\begin{itemize}
+    \item We traceback similarly to the na\"ive DP algorithm
+    \item When calculating each of the tiles, we use the na\"ive algorithm, which means we also have the traceback arrows.
+    \item Therefore, we can map each output position of a tile to an input position.  This adds a constant amount of storage and can be stored in the same table.
+    \item In the worst case, the traceback passes through $\frac{2n}{t} = O\left(\frac{2n}{\log n}\right)$ tiles, which involves going straight left then straight down.
+    \item To find the exact traceback pack, we then run the na\"ive DP algorithm only on the tiles that we pass through.  The result is $O(\frac{2n}{t} \cdot t^2) = O(n \log n)$ time.  (This term is dropped because the rest of the algorithm is slower.)
+\end{itemize}
+
+\section*{Multiple Sequence Alignment}
+Suppose we multiple sequences we want to align with each other.  We can place these sequences into a matrix where each row is one string.  This matrix is referred to as the \textbf{alignment matrix}.
+\begin{itemize}
+	\item The goal of this alignment matrix is to add gaps to each string (so they all become the same length), and maximum \texttt{score}
+	\item \texttt{colcost()} is a function that takes in a \textit{column} of the alignment matrix and returns a number, the \texttt{score}, where in general, better aligned columns score higher than misaligned columns.  Depending on the purposes of doing the alignment, this scoring function may differ.
+\end{itemize}
+
+\subsection*{\texttt{OPT} Matrix Calculation}
+\[\texttt{OPT}[i_1, i_2, \dots, i_p] = \min \begin{cases}
+\texttt{colcost}(\_, c, c, \dots, c) + \texttt{OPT}[i_1, i_2 - 1, i_3 - 1, \dots, i_p - 1] \\
+\texttt{colcost}(c, \_, c, \dots, c) + \texttt{OPT}[i_1 - 1, i_2, i_3 - 1, \dots, i_p - 1] \\
+\vdots \\
+\texttt{colcost}(\_, \dots, \_, c) + \texttt{OPT}[i_1, i_2, \dots, i_{p - 1}, i_p - 1]
+\end{cases}\]
+
+\begin{itemize}
+	\item Essentially, the optimal for a given cell is equal to the minumum on the $p$-dimensional DP table of (score of column from inserting gaps at certain positions) plus the optimal based on the neighboring positions.
+	\item If we inserted a gap at the given row in the alignment matrix, we use the \texttt{OPT} cell at the current row.  If we don't insert a gap (represented by $c$ in the \texttt{colcost} function above), we use the previous row.
+	\item In total, the \texttt{OPT} recursive function would contain $O(2^p)$ rows, since we have that many possible ways to add gaps on a given column.
+	\item It is similar to running single sequence alignment on every string, except we now need to consider every string at the same time.
+    \item Note that this means this problem is NP-Hard in most formulations, because computing the DP matrix would take $\Omega(n^p 2^p)$ time.  This number is hard to reduce.  However, we may use approximation algorithms for a polynomial time solution, even though they cannot offer us the optimal score.
+\end{itemize}
+
+\subsection*{Heuristic: Progressive Alignment}
+Instead of aligning all the strings at the same time, we can instead align each string separately.
+\begin{itemize}
+	\item Call the first string $s_c$.
+	\item We first run edit distance between $s_c$ and $s_2$, which may introduce gaps in either string.  Importantly, this maps every character in $s_2$ to a character in $s_c$.
+	\item Then, we run edit distance between $s_c$ and $s_3$, which may introduce gaps in either string.  This provides a mapping between $s_3$ and $s_c$.  However, transitively, we also get a mapping from $s_3$ to $s_2$.
+	\item We keep repeating this process with each string.  By the end, we have a mapping between every string, which can be used to rebuild an alignment matrix.
+	\item Note that $s_c$ does not have to be $s_1$.  In fact, we want to choose the best $s_c$, since a different ``center'' string would change the mappings.  Most approximation algorithms using this heuristic focus on finding the best $s_c$.
+\end{itemize}
+
+\section*{Star MSA Approximation Algorithm}
+\subsubsection*{Definitions}
+\begin{itemize}
+	\item Let $d_M(s_i, s_j)$ represent the cost of the alignment between sequences $s_i$ and $s_j$ \textbf{implied by $M$}.
+	\item Let $a(s_i, s_j)$ represent the cost of the optimal pairwise alignment between $s_i$ and $s_j$.  (This is just edit distance between the two strings.)
+\end{itemize}
+These are not the same.  Consider the example $S = \{AT, A, T, AT, AT\}$.
+\begin{verbatim}
+Opt (a) between A and T:   | d_M between A and T:
+                           |   
+   A                       |    A-
+   |  (mismatch)           |    ||   (double gap insertion)
+   T                       |    -T
+\end{verbatim}
+We do the double gap insertion with $d_M$ because the rest of the strings would pull the $A$ to the left and $T$ to the right.
+
+\subsubsection*{Assumptions}
+\begin{enumerate}
+	\item $d_M(s_i, s_j)$ has the form
+	\[d_M(s_i, s_j) = \sum_{(u_i, v_j) \in M} \text{cost}(u_i, v_j)\]
+    \item $\text{cost}(u, v) < \text{cost}(u, w) + \text{cost}(w, v)$
+    \item $\texttt{SP-score}(M) := \sum_{i < j} d_M(s_i, s_j)$.  In other words, the score of the entire matrix is the sum of all $d_M$ pairings.
+\end{enumerate}
+
+\subsubsection*{STAR algorithm}
+\begin{enumerate}
+	\item Build all $O(p^2)$ \texttt{OPT} pairwise alignments
+	\item Choose $s_c$ to be the input string that minimizes
+	\[\sum_{i \neq c} a(s_c, s_i)\]
+    \item Do progressive $d$ with $s_c$ as anchor
+\end{enumerate}
+We call this the STAR algorithm because by picking an $s_c$ and aligning all the other strings to it, it looks like a star if each string is a node on the graph.
+\begin{itemize}
+	\item An edge on the STAR graph between nodes representing $s_i$ and $s_c$ would be $a(s_c, s_i)$.
+\end{itemize}
+Note that with this formulation, \texttt{SP-score} is like the sum of every possible stars (divided by 2 since all edges are double-counted).
+\begin{itemize}
+    \item \texttt{SP-score} is a clique containing all the nodes (or all strings)
+	\item ``like'' the sum because \texttt{SP-score} edges represent $d_M(s_i, s_j)$, not $a(s_i, s_j)$.
+\end{itemize}
+
+\subsubsection*{Theorem:}
+\begin{itemize}
+	\item \texttt{STAR} represents the \texttt{SP-score} of $M$ returned by the STAR algorithm
+	\item \texttt{OPT} represents the \texttt{SP-score} of $M^*$ optimal.
+	\item $\frac{\texttt{STAR}}{\texttt{OPT}} \leq 2$
+\end{itemize}
+\textbf{Proof:}
+We want to prove that
+\begin{itemize}
+	\item $\texttt{STAR} \leq 2B$
+	\item $\texttt{OPT} \geq B$
+\end{itemize}
+We know by definition that
+\[2 \cdot \texttt{STAR} = \sum_{i, j} d_{\texttt{STAR}}(S_i, S_j)\]
+The sum part is the pairwise alignment implied by \texttt{STAR}.  From here we can simplify:
+\begin{align*}
+    &\leq \sum_{i \neq j} \left[d_{\texttt{STAR}}(S_i, S_c) + d_{\texttt{STAR}}(S_c, S_j)\right] & \text{(by triangle inequality)} \\
+    &= \sum_{i \neq j} a(S_i, S_c) + a(S_c, S_j) & \text{(alg. did progressive alignment anchored at $S_c$)} \\
+    &= 2\sum_{i \neq j} a(S_i, S_c) \\
+    &= 2\sum_i \sum_j a(S_i, S_c) \\
+    &= 2 \sum_i a(S_i, S_c) \sum_j 1 \\
+    &\leq 2p \sum a(S_i, S_c) & \text{($p$ is the number of sequences)}
+\end{align*}
+The above inequality is greater than $2 \cdot \texttt{STAR}$, so the $2$ at the beginning cancel out.
+\[\texttt{STAR}\leq p\sum a(S_i, S_c)\] 
+This is saying that the STAR algorithm can't give you worse than $p$ copies of the alignment.\\\\
+Now, define 
+\[B = \frac{1}{2} p \sum_i (S_i, S_c)\]
+therefore,
+\[\Rightarrow \texttt{STAR} \leq 2B\]
+Now, we consider the optimal alignments.
+\begin{align*}
+    2 \cdot \texttt{OPT} &= \sum_{i, j} d_{\texttt{OPT}} (S_i, S_j) \\
+    &\geq \sum_{i, j} a(S_i, S_j)
+    \intertext{The above is true because the optimal pairwise alignment, \texttt{OPT}, cannot be better than the optimal overall alignment, $a$.}
+    &= \sum_i \sum_j a(S_i, S_j) \\
+    &\geq \sum_i \sum_j a(S_i, S_c) & \text{The star centered at $c$ is the optimal star} \\
+    &= p \sum_i a(S_i, S_c)
+\end{align*}
+Now, recall that this above expression is equal to $2 \cdot \texttt{OPT}$, so we can again, divide both sides by 2.
+\[\frac{1}{2} p \sum_i a(S_i, S_c)\]
+This is equal to $B$, as defined before.  Therefore, both $\texttt{STAR} \leq 2B$ and $\texttt{OPT} \geq B$, and $\frac{\texttt{STAR}}{\texttt{OPT}} \leq 2$.
+
+
 
 \end{document}
