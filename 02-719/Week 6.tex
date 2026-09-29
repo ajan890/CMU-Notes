@@ -1,0 +1,126 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+\usepackage[colorlinks=true, urlcolor=blue]{hyperref}
+
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 4}}
+
+\title{02-719 Week 4 \\ \large{Genomics and Epigenetics of the Brain}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Review: Single Cell Sequencing}
+\begin{itemize}
+	\item Each cell is flowed through a tube with a barcoded bead and put into a droplet in oil.  
+	\item Enzymes in the droplet with the cell integrate the barcode DNA into the DNA of the cell.
+	\item The DNA can then be sequenced.  (And, ideally, we know which cell the DNA is from).
+\end{itemize}
+We end up with a digital gene expression matrix:
+\begin{itemize}
+	\item Each cell gets a row
+	\item Each gene of interest gets a column
+	\item Cells are numbers representing gene expression in each cell
+\end{itemize}
+
+\subsection*{Sequencing Process}
+\begin{itemize}
+	\item After isolating RNA, preparing the cDNA library, and sequencing the cell, we have thousands to millions of reads.
+	\item A read is a section of the genome that is read.
+	\item Using software, reads can be mapped to locations on the genome.  Areas with a lot of reads imply the gene is expressed, while areas with few reads imply the gene is not expressed.
+\end{itemize}
+
+\subsection*{Building the Matrix}
+Recall the barcoded bead used in sequencing contains four parts: TruSeq Read 1, Barcode, UMI, and Poly(dT)VN.  
+\begin{itemize}
+	\item The TruSeq Read 1 gives the gene columns in the matrix
+	\item The barcode give the rows of the matrix.
+	\item UMI (Unique Molecular Identifier) is used to guarantee that each molecule is only read once.  (After PCR, one cell might be sequenced multiple times, but we only want one.)
+\end{itemize}
+Afterwards, we need to remove empty droplets (i.e., beads in a droplet with no cell), and \textit{doublets}, droplets containing more than one cell.
+
+\subsubsection*{Resulting Matrix}
+The resulting matrix, called the \textbf{DGE}, is the Cell $\times$ Genes matrix we want.  In summary, the steps were
+\begin{enumerate}
+	\item Alignment
+	\item Demultiplexing (Making the rows and columns from the barcode)
+	\item UMI Collapse (Removing duplicate UMIs)
+	\item Empty Droplet Removal
+	\item Ambient RNA Removal (optional)
+	\item Doublet Removal (optional)
+\end{enumerate}
+
+\subsection*{Properties of the DGE}
+\begin{itemize}
+	\item It is sparse: most counts are zero
+	\begin{itemize}
+	    \item Why?  We are sampling very few RNA's per cell compared to the total
+    \end{itemize}
+	\item It has uneven sampling
+	\begin{itemize}
+	    \item We are pooling all our cDNA's together when we sequence them so we can't really control the amount that comes from each droplet
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Correcting for Uneven Sampling: Normalization}
+Why normalize:
+\begin{itemize}
+	\item Allows the expression between cells and genes to be comparable
+	\item Makes downstream tasks (i.e., dimensionality reduction, clustering, marker gene finding) a lot simpler
+\end{itemize}
+\[CPM = \left(\frac{\text{Raw read count for a gene}}{\text{Total mapped reads in the sample}}\right) \times 1000000\]
+(CPM = Counts per million)\\\\
+For a given cell $i$ and gene $j$, an entry on the matrix is
+\[CPM_{i, j} = \frac{\text{Number of UMIs of gene $j$ in cell $i$}}{\text{Number of UMIs in cell $i$}} \times 1000000\]
+
+\subsection*{Normalization for Gene Length}
+Longer genes will generate more cDNA reads per molecule of RNA
+\begin{itemize}
+	\item When comparing genes to each other within a cell, we want to estimate the number of molecules of RNA instead of number of cDNA reads.
+\end{itemize}
+To normalize, we use TPM (Transcripts per million)
+\[TPM_{i, j} = \frac{\text{Number of UMIs of gene $j$ in cell $i$}}{\text{Length of gene $j$}} \times \frac{1000000}{\sum_{\text{All genes $k$}} (\text{Number of UMIs of gene $k$} / \text{Length of gene $k$})}\]
+
+\subsection*{Size Factor Normalization}
+\begin{itemize}
+	\item Both CPM and TPM make a fairly flawed assumption: The number of molecules of RNA in each cell is equal
+	\item This isn't true, for example neurons will express more genes than oligodendrocytes
+	\item Size factor normalization makes another assumption: most genes are not significantly differential expressed.
+\end{itemize}
+For a cell $i$ and gene $j$
+\[S_{i, j} = \frac{\text{Number of UMIs of gene $j$ in cell $i$}}{\text{Number of UMIs in gene $j$} / \text{Number of cells}}\]
+Line up cell, gene size factors from smallest to largest.  For example,
+\[S_{i, 256}, S_{i, 1000}, S_{i, 22}, \dots, S_{i, 252}\]
+Genes with the smallest and largest gene size factors are probably differentially expressed.  Those in the middle are probably not differentially expressed.
+\begin{itemize}
+	\item For a given gene, we define $S_i$ to be the median of size factor$_{i, j}$ for gene $j$.  We use median because large values can skew the mean.
+\end{itemize}
+
+\section*{Dimensionality Reduction}
+We do this to visualize the dataset.
+
+\end{document}
