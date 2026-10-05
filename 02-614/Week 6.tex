@@ -216,8 +216,85 @@ If $\Phi :=$ the current \textit{node} depth, then
     \Rightarrow 5|T| &\geq \text{\#hops}
 \end{align*}
 
+\section*{Suffix Arrays}
+Suffix trees have a storage issue, which is they take $O(|\text{string}|)$ space.  Normally this is fine, but not in the case of a 100-million base pair genome.  A DNA sequence with an alphabet of 4 letters might take around 20 bytes per character.  A \textbf{suffix array} attempts to solve this problem, by reducing the constant in the front.
 
+\subsection*{Structure of Suffix Array}
+Let \texttt{T = banana\$}.  First, we list, then sort all the suffixes.
+\begin{verbatim}
+LCP | start index | string
+-   | 6           | $
+0   | 5           | a$
+1   | 3           | ana$
+3   | 1           | anana$
+0   | 0           | banana$
+0   | 4           | na$
+2   | 2           | nana$
+\end{verbatim}
+In addition to storing the starting indexes, we also store LCP (longest common prefix) between consecutive suffixes in the sorted order.
+\begin{itemize}
+	\item In the context of the suffix tree, the LCP is depth of their deepest shared node between two suffixes.
+	\item Numbers in the suffix array are also the order suffixes are traversed in the suffix tree, if DFS'ed in alphabetical order. (assuming \$ comes before any other character)
+\end{itemize}
 
+\subsection*{Search in Suffix Array}
+Given a suffix array of $T$, does pattern $P$ appear in $T$?
+\begin{itemize}
+	\item Note that with a suffix \textit{tree}, it takes $O(|P|)$.  We just follow the pattern down the string.
+	\item With a suffix array, it is slightly slower: $O(|P| + \log |T|)$ time.  However, a lot of times, it is good enough and better than allocating a massive space for the tree.
+	\begin{itemize}
+	    \item We will cover two algorithms for searching a suffix array of $T$.  One is slightly slower at $O(|P| \log |T|)$, then we will improve it to get to the faster version.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Algorithm 1: Slow(er) Search Algorithm}
+We will basically run binary search on the suffix array.
+\begin{itemize}
+	\item Let $U$ be a pointer to the beginning of the suffix array, and let $D$ be a pointer to the end of the suffix array.  Let $M$ be a pointer to the middle.
+	\item Calculate $M$ from $U$ and $D$.
+	\item Determine if the string we desire is alphabetically before or after $M$, and replace $M$ with $U$ or $D$, respectively.
+	\item Repeat the process on one half until only one entry (or none!) are left.
+	\item There are a total of $O(\log |T|)$ steps
+\end{itemize}
+The tricky part is comparing whether the string is before or after the middle, which we must do an $O(|P|)$-time comparison.
+\begin{itemize}
+	\item This gives $O(\log |T|)$ steps that take $O(|P|)$ each, making the total runtime $O(|P| \log |T|)$.
+\end{itemize}
+Additionally, once we narrow down to one entry, we can find all the occurrences of $P$ in $T$ by reading up or down the LCP array.  Any string with a LCP greater than the pattern (assuming they match in the first place) would contain the entire pattern.
+
+\subsubsection*{Algorithm 2: Fast(er) Search Algorithm}
+Similar to Algortihm 1, we also maintain $U$ and $D$, pointers to the two ends of our current boundary.  However, we will also add two more indices, $u$ and $d$, which record the length of the longest prefix of $P$ that match a prefix of $U$ and $D$, respectively.
+\begin{itemize}
+	\item Assume we can compute $lcp(i, j)$ for any suffixes $i$ and $j$.
+\end{itemize}
+Suppose $u > d$.
+\begin{itemize}
+	\item \textbf{Case 1:} $lcp(U, M) > u = lcp(U, P)$.  If this is true, we know that $P$ must go below $M$.  This is because the suffix array is in sorted order, and if the first $x$ characters of $U$ and $M$ match, and do not match in $P$, then $P$ cannot be in the range.
+	\item \textbf{Case 2:} $lcp(U, M) < u = lcp(U, P)$.  If this is true, we know that $P$ must go above $M$.  This is for the opposite reason compared to case 1.
+	\item \textbf{Case 3:} $lcp(U, M) = u = lcp(U, P)$.  This case is the problem, because we cannot deduce which half $P$ belongs in.  There is a bit more logic that has to be done.
+	\begin{itemize}
+	    \item What we \textit{can} do is that we no longer have to compare the like characters.  If the first $x$ characters match in $U$, $P$, and $M$, then we can check starting the $(x+1)$-th character and compare letter-by-letter.  Once we find a mismatch, we can assign $M$ to be the next $U$ or $D$.
+    \end{itemize}
+\end{itemize}
+Other cases:
+\begin{itemize}
+	\item If $u < d$ instead, we have the same three cases as above, but reversed.
+	\item If $u = d$, then we compare $P$ to $M$ starting at $u = d$.  This is because if this is the case, we know that all the suffixes in the $U$ to $D$ range have the same prefix.\\\\
+\end{itemize}
+\textbf{Runtime:}
+\begin{itemize}
+	\item We are still running binary search ($\log(|T|)$ steps).
+	\item The number of matches with lcp is $O(|P|)$ because each letter can be checked at most one time.  (Once matched, lcp would cover it the next time.)
+\end{itemize}
+
+\subsubsection*{Finding lcp}
+For Algorithm 2 to work, we need to be able to find lcp between any two suffixes in constant time.  
+\begin{itemize}
+	\item Note that each lcp represents a section of the suffix tree used to construct the suffix array.  Specifically, a set of leaf nodes.
+	\item A lcp between two nodes could be a label on their lowest common ancestor.  (Because sorted order.) 
+	\item As a result, they can be generated by propagating up the tree during the construction of the suffix array, and just stored in another array similar to lcp.
+	\item Generating is linear time because the suffix tree has linear number of nodes.  (Which is faster than the algorithm itself).
+\end{itemize}
 
 
 \end{document}
