@@ -23,9 +23,9 @@
 % verbatim greek
 \usepackage{alphabeta}
 
-\graphicspath{{./assets/images/Week 4}}
+\graphicspath{{./assets/images/Week 6}}
 
-\title{02-719 Week 4 \\ \large{Genomics and Epigenetics of the Brain}}
+\title{02-719 Week 6 \\ \large{Genomics and Epigenetics of the Brain}}
  
 \author{Aidan Jan}
 
@@ -121,6 +121,35 @@ Genes with the smallest and largest gene size factors are probably differentiall
 \end{itemize}
 
 \section*{Dimensionality Reduction}
-We do this to visualize the dataset.
+We do this to visualize the dataset.   Clustering and other machine learning is very difficult in high dimensions. (Curse of dimensionality.)  Additionally, we can possibly find features that are more robust than individual genes.
+
+\subsection*{The Metagene Matrix}
+\begin{itemize}
+	\item Each row is a cell, each column is a metagene.
+	\item There are much fewer metagenes than genes.   (This makes the matrix not sparse).
+\end{itemize}
+When we want to do dimensionality reduction, we do matrix factorization to achieve it.
+\begin{center} 
+	\includegraphics*[width=0.9\textwidth]{W6_1.png} 
+\end{center}
+The loadings matrix is the metagene matrix we want.  The components matrix explains how each gene contributes to each metagene.
+
+\subsection*{Principal Component Analysis (PCA)}
+PCA exploits the correlation structure in the DGE.
+\begin{center} 
+	\includegraphics*[width=0.5\textwidth]{W6_2.png} 
+\end{center}
+\begin{itemize}
+	\item Correlated genes will combine to form a single principal component / metagene
+	\item These represent molecular pathways (somewhat)
+\end{itemize}
+PCA is optimized to \textbf{explain the variance} in the matrix.  Principal components are ordered by the amount of variance explained.
+\begin{itemize}
+	\item If we rotate the graph so that the first $n$ PCs (usually $n = 2$ for visualization) are the graph axes, then all the points have a coordinate based on the two PCs.
+	\item The PCs can compress a high dimensional space into much lower (i.e., 2).
+\end{itemize}
+
+
+
 
 \end{document}

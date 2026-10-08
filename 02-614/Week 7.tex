@@ -1,0 +1,146 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{enumitem}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 7}}
+
+\title{02-614 Week 7 \\ \large{String Algorithms}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Suffix Arrays (continued)}
+\subsection*{Suffix Array Construction}
+We will cover three algorithms with the following runtimes:
+\begin{itemize}
+	\item $O(|T| \log^2 |T|)$: original
+	\item $O(|T| \log |T|)$: original with a trick to reduce runtime
+	\item $O(|T|)$: Skew Algorithm
+\end{itemize}
+
+\subsection*{Original Construction Algorithm}
+Suppose we have string $T = a_1 a_2 a_3 a_4 \dots$.  For example, let $T = cattcat\$\$$.  (Note the double termius character)  \\\\
+\subsubsection*{Step 1}
+First, we will sort the suffixes by \textbf{their first two characters}, and assign each one a code number based on their ordering.
+\begin{verbatim}
+0 | $$
+1 | attcat$
+1 | at$
+2 | cattcat$
+2 | cat$
+3 | t$
+4 | tcat$
+5 | ttcat$
+\end{verbatim}
+\begin{itemize}
+	\item We only sort by the first two letters because if we sorted the entire suffix list normally it would take $O(|T|^2 \log |T|)$.  Each string comparison takes worse case $O(|T|)$ time.  However, if we only sort by the first two letters, then the string comparison is $O(1)$ because we always look at 2 characters.  Therefore, the sorting time becomes $O(|T| \log |T|)$.
+\end{itemize}
+
+\subsubsection*{Step 2}
+Now, we will encode $T$ using our new code.   For our example,
+\[T' = 21542130\]
+Each number here is essentially a ``supercharacter'' of length 2.  Note that from this, we are able to reconstruct the string since each number represents two characters (which then overlap).
+
+\subsubsection*{Step 3}
+Sort the suffixes of $T'$ by $(T'[i], T'[i + 2])$.  This is essentially sorting suffixes by the first 4 characters.
+
+\subsubsection*{Step 4}
+Repeat.  Assign a new code number to each of the suffixes of $T'$, and repeat the process.  This would then sort suffixes by 8 characters, then 16, etc.  Once all the code numbers are different, we stop. \\\\
+In total, we repeat $O(\log |T|)$ times.  Therefore, our total time is $O(|T| \log^2 |T|)$ instead of $O(|T|^2 \log |T|)$.
+
+\subsection*{Aside: Radix Sort}
+Forget strings for now.  Let $A = [100, 123, 042, 333, 847, 892, 236]$.  Radix sort places the numbers into buckets by their last digits.
+\begin{verbatim}
+0: 100 
+1: 
+2: 042, 892
+3: 123, 333
+4: 
+5: 
+6: 236
+7: 847
+8: 
+9: 
+\end{verbatim}
+Each bucket is a linked list.  The order of the numbers in the bucket do not matter.  Therefore, adding all the numbers into their buckets takes $O(n)$ time.\\\\
+Now, we repeat this traversing the buckets in order, and sorting by the second-last digit into new buckets:
+\begin{verbatim}
+0: 100 
+1: 
+2: 123
+3: 333, 236
+4: 042, 847 
+5: 
+6:
+7:
+8: 
+9: 892
+\end{verbatim}
+Observe that because we traversed the buckets from the first round in order, now the last two digits are in sorted order in this new set of buckets.  Now, we just repeat this process with the third digit, etc. \\\\
+The number of times we repeat is the length of the string.  In the context of numbers, this would repeat $O(\log n)$ times, each time with $n$ numbers.  The total runtime for this sorting algorithm would be $O(n \log n)$.
+
+\rule{\textwidth}{2pt}
+Now, back to the suffix array construction algorithm, consider using Radix Sort with the codes for the numbers.  This reduces the runtime to $O(|T| \log |T|)$ instead of $O(|T| \log^2 |T|)$.
+
+\subsection*{Skew Algorithm}
+\subsubsection*{Step 0}
+First, we pad the string so the length $\equiv 1 \mod 3$.  Suppose $T = mississippi\$$.  We add a \$ to make it mod 3.
+\begin{verbatim}
+mis sis sip pi$ $
+\end{verbatim}
+Now, we conceptually divide suffixes into three groups.  $0 \mod 3, 1 \mod 3, 2 \mod 3$. 
+
+\subsubsection*{Step 1}
+We create \texttt{T' = concat(T[1:], T[2:])}
+\begin{verbatim}
+T' = iss iss ipp i$$ ssi ssi ppi
+t =   C   C   B   A   E   E   D
+\end{verbatim}
+Ignore the spaces, they are only there for clarity.  The section before the \$\$ (each group of 3, that is) are group 1 suffixes.  Meanwhile, each block afterwards are the group 2 suffixes.
+
+\subsubsection*{Step 2}
+Encode $T'$.
+\begin{itemize}
+	\item Use radix sort to sort the ``codons''
+	\item Recode $T'$ using that code
+\end{itemize}
+Now, we have $t = CCBAEED$, where instead of using numbers for the code before, we use letters.  (What we use really does not matter.)
+
+\subsubsection*{Step 3}
+Repeat.  If we recursively compute the suffix array for $t$, ignoring group 0 suffixes, then we slowly sort the array.  Note that $t$ is $\frac{2}{3}$ the length of $T$
+
+\subsubsection*{Step 4}
+Compute the inverse suffix array of the array from step 3.
+\begin{itemize}
+	\item An suffix array does the following: $A[i] = i$-th sorted suffix.  Basically, given a number, return the suffix at that position.
+	\item An inverse suffix array does the following: $S[i] = $ position in $A$ of $i$.  Basically, given a suffix, return when it appears.
+\end{itemize}
+
+\subsubsection*{Step 5}
+Sort group 0 suffixes using the key $(T[i], S_{i + 1})$
+
+\end{document}
