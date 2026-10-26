@@ -1,0 +1,98 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz} 
+
+% code blocks
+% \usepackage{minted, listings} 
+\usepackage[colorlinks=true, urlcolor=blue]{hyperref}
+
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 8}}
+
+\title{02-719 Week 8 \\ \large{Genomics and Epigenetics of the Brain}}
+  
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+\subsection*{Recap: Convergent Evolution}
+\begin{itemize}
+    \item The same phenotype evolves \textbf{independently} in separate lineages
+    \item Each origin is a natural replicate of the same experiment
+    \begin{itemize}
+        \item If a gene matters for the trait, it may respond the same way each time
+    \end{itemize}
+    \item The question: Does a gene's \textbf{rate of evolution} shift on the branches where are trait evolved?
+\end{itemize}
+
+\subsection*{Species are not independent data points}
+Naive approach:
+\begin{itemize}
+    \item Correlate a gene's sequence with the trait across species
+    \item Closely related species share both, so one origin can look like many
+    \item $\rightarrow$ inflated significance
+\end{itemize}
+Phylogenetic approach:
+\begin{itemize}
+    \item Work on branches of the tree, not species
+    \item Count each independent origin once
+    \item $\rightarrow$ signal must repeat across lineages
+\end{itemize}
+
+\section*{RER Coverage}
+RER = Relative evolutionary rates.  \textbf{RERcoverage} is an R workflow that does the following analysis:
+\begin{itemize}
+    \item Inputs: gene trees with a fixed topology
+    \item Relative evolutionary rates (RERs)
+    \item Encoding the phenotype (binary vs continuous traits)
+    \item Testing for association
+    \item From gene lists to biology
+\end{itemize}
+
+\subsection*{RERcoverage Workflow}
+\begin{enumerate}
+    \item Alignments: one per gene
+    \item Gene trees: fixed topology, gene-specific branch lengths
+    \item RERs: relative rate on every branch
+    \item Phenotype paths: trait mapped onto branches
+    \item Correlation: RER vs. trait, per gene
+    \item Enrichment: Pathways / gene ontology
+\end{enumerate}
+Each gene gets one test.  The output is a ranked list of genes whose rates shift with the trait across the tree.
+
+\subsection*{Step 1: Inputs, one tree per gene}
+\begin{itemize}
+    \item Start from a multiple alignment of orthologs for each gene
+    \item Fix the \textbf{species tree topology}; estimate only the branch lengths
+    \begin{itemize}
+        \item Branch length = substitutions per site on that branch
+        \item Species missing the gene are pruned for that gene
+    \end{itemize}
+    \item readTrees() combines all genes
+    \begin{itemize}
+        \item Builds a \textbf{master tree}: average branch lengths across genes
+    \end{itemize}
+\end{itemize}
+
+
+
+
+\end{document}

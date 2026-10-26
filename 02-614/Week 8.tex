@@ -1,0 +1,262 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{enumitem}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+\graphicspath{{./assets/images/Week 8}}
+
+\title{02-614 Week 8 \\ \large{String Algorithms}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Burrows-Wheeler Transform}
+Consider the string $S = banana\$$.  We define burrows-wheeler transform (BWT) by first writing down every cyclic shifts of the string.
+\begin{verbatim}
+banana$
+anana$b
+nana$ba
+ana$ban
+na$bana
+a$banan
+$banana
+\end{verbatim}
+Then, we arrange them in alphabetical order.  Note that if arranged in alphabetic order, the \$ comes first.
+\begin{verbatim}
+$banana
+a$banan
+ana$ban
+anana$b
+banana$
+na$bana
+nana$ba
+\end{verbatim}
+The \textbf{last column} of the sorted list is the BWT.  In this case, it will be $annb\$aa$.
+\begin{itemize}
+    \item Note that even though $banana$ does not have any repeating characters next to each other, there are repeating characters next to each other in the BWT.
+    \item In fact, usually the BWT is more compressible than the original string.
+    \begin{itemize}
+        \item This is because BWT can be thought of as a dictionary, where the last character in the string is the \textit{value} and everything preceding it is the \textit{key}.
+        \item This means that the order of values are sorted by the part that occurs directly after it (because cyclic shifts).  If we have a substring that appears multiple times, it becomes highly compressible.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Inverting BWT}
+Miraculously, BWT is invertible, meaning that given just the BWT of the string, we can reconstruct the original string.  Consider $banana\$$ again. We start with the last column.
+\begin{verbatim}
+------a
+------n
+------n
+------b
+------$
+------a
+------a
+\end{verbatim}
+We know that the first column of the BWT matrix is all the characters in sorted order.  So, we can just fill that in.
+\begin{verbatim}
+$-----a
+a-----n
+a-----n
+a-----b
+b-----$
+n-----a
+n-----a
+\end{verbatim}
+Now, observe that if we imagine a cyclic shift, the first string tells us that $a\$$ is a substring.  The following rows tell us that $na$ is a substring (that appears twice), $ba$ is a substring, etc.  We now have all the substrings of length 2.  Now, we repeat the same logical step as before; the first two columns of BWT must be the all the length 2 substrings in sorted order.  
+\begin{verbatim}
+$b----a
+a$----n
+an----n
+an----b
+ba----$
+na----a
+na----a
+\end{verbatim}
+We can repeat this process until we have the entire original string.
+
+\subsection*{Constructing BWT in Linear Time}
+Note that the first step of BWT is to sort all the cyclic shifts.  However, we don't actually have to sort all the cyclic shifts.\\\\
+Due to the nature of cyclic shifts always containing exactly one terminus character, sorting the shifts will yield the same ordering as sorted suffixes.
+\begin{itemize}
+    \item We already have the suffixes in sorted order, in linear time.  That's a suffix array!
+\end{itemize}
+Now, getting the BWT column (the last column) are just the cahracter preceeding each of the suffixes.  We can find that in constant time if given the ordering.
+
+\subsection*{Inverting BWT in Linear Time}
+Earlier we discussed an algorithm to invert BWT, but it takes quadratic time.  This is because the matrix of letters we fill out is the length of the string squared.  Here, we will get the original string from the BWT in linear time.\\\\
+Consider the string $S = dogwood\$$.  Below is the BWT matrix for the string, already in sorted order.
+\begin{verbatim}
+$dogwood
+d$dogwoo
+dogwood$
+gwood$do
+od$dogwo
+ogwood$d
+ood$dogw
+wood$dog
+\end{verbatim}
+
+\subsubsection*{LF Mapping}
+\textbf{Theorem:} For any $c$ the $i$-th occurrance of $c$ in $F$ is the same as the $i$-th occurrence of $c$ in BWT($S$).
+\begin{itemize}
+    \item $F$ refers to the first column of the matrix, and $L$ refers to the last column of the matrix.  $L$ in this case is another name for BWT($S$).
+    \item Proof: For any $c$, sorting in $L$ and $F$ use the same set of keys.
+\end{itemize}
+We can now add numbers to each row of the matrix:
+\begin{verbatim}
+1 $dogwood 1
+1 d$dogwoo 1
+2 dogwood$ 1
+1 gwood$do 2
+1 od$dogwo 3
+2 ogwood$d 2
+3 ood$dogw 1 
+1 wood$dog 1
+\end{verbatim}
+The numbers on the left represent the number of times the first character has appeared as the first character.  (i.e., in the second row, \texttt{d} is labeled as 1 because it is the first time \texttt{d} appears in the first column.  In row three, it is labeled as 2 because it is the second time $d$ appears in the first column.) The numbers on the right are the same but instead for the last character of the string.\\\\
+What the LF mapping theorem is saying is that the first occurrence of a given character in the $F$ column is the same character's first occurrence in the $L$ column.
+\begin{itemize}
+    \item For example, the first $o$ in $F$ is the same character in the string as the first $o$ in $L$.
+\end{itemize}
+
+\noindent \rule{\textwidth}{1px}
+To invert faster, we first generate the first column using the BWT, along with their numberings.\\\\
+Additionally, create an array the size of our alphabet, and let each array index correspond to the number of times a given character (in alphabetical order) appears.
+\begin{itemize}
+    \item This takes $O(n)$ time to iterate through the BWT column and count the number of appearances of each character
+    \item This array can then be used to generate the first column in linear time instead of sorting the last column.
+\end{itemize}
+\begin{verbatim}
+1 $------d 1
+1 d------o 1 
+2 o------$ 1
+1 g------o 2
+1 o------o 3
+2 o------d 2
+3 o------w 1
+1 w------g 1
+\end{verbatim}
+Recall that the first column is the characters of the last column in alphabetical order.  Now, to invert, start with the first character in $L$.  That must be the last character since it preceeds \$ in $F$.
+\begin{verbatim}
+------d$
+\end{verbatim}
+Now, use the LF mapping property.  The last character we added was the first \texttt{d}, so we go to its row in $F$.  Using the predecessor property (same as the one for the naive inversion method), we know the first \texttt{o} precedes the first \texttt{d}.  Therefore, we can fill it in:
+\begin{verbatim}
+-----od$
+\end{verbatim}
+We can repeat this process, alternating the LF mapping property and predecessor property to derive the original string.
+
+\subsection*{BWT Search}
+Consider $S = abbbaba$, and $P = abb$.  We want to determine whether $P$ exists in $S$, and how many times it occurs.  (We can't find the locations)
+\begin{verbatim}
+row | L          R
+ 0  | 1 $------a 1
+ 1  | 1 a------b 1
+ 2  | 2 a------b 2
+ 3  | 3 a------$ 1
+ 4  | 1 b------a 2
+ 5  | 2 b------b 3
+ 6  | 3 b------b 4
+ 7  | 4 b------a 3
+\end{verbatim}
+
+
+
+
+
+\subsection*{Compression}
+Suppose we want to compress our string.  Let $S = abbaaaa$.  To demonstrate the compression method, we first imagine a compressor and decompressor, $C$ and $D$.  The two arrays are first initialized to empty arrays.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Character & $\Sigma_C$ & Packet & $\Sigma_D$ \\ \hline
+    (Init) & $[~]$ & & $[~]$ \\ \hline
+\end{tabular}
+\end{center}
+The goal of the compressor is to send the string to the decompressor, one character at a time.  First, we consider the first $a$.  $C$ it in its array, sends over the character to $D$, along with an index which represents the character's position in $\Sigma_C$.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Character & $\Sigma_C$ & Packet & $\Sigma_D$ \\ \hline
+    (Init) & $[~]$ & & $[~]$ \\ \hline
+    $a$ & $[a]$ & (a, 0) & $[a]$ \\ \hline
+\end{tabular}
+\end{center}
+Now, we consider the second character in our string, $b$.  Because it does not exist yet in $\Sigma_C$, we append it in the beginning and send the character and index to $D$.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Character & $\Sigma_C$ & Packet & $\Sigma_D$ \\ \hline
+    (Init) & $[~]$ & & $[~]$ \\ \hline
+    $a$ & $[a]$ & (a, 0) & $[a]$ \\ \hline
+    $b$ & $[b, a]$ & (b, 0) & $[b, a]$ \\ \hline
+\end{tabular}
+\end{center}
+No space for compression yet, but here, things get interesting.  The next character is the second occurrence of $b$.  Because it is already present in the array, we don't have to send the character again.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Character & $\Sigma_C$ & Packet & $\Sigma_D$ \\ \hline
+    (Init) & $[~]$ & & $[~]$ \\ \hline
+    $a$ & $[a]$ & (a, 0) & $[a]$ \\ \hline
+    $b$ & $[b, a]$ & (b, 0) & $[b, a]$ \\ \hline
+    $b$ & $[b, a]$ & 0 & $[b, a]$ \\ \hline
+\end{tabular}
+\end{center}
+Now, we have the second $a$.  In this case, it is the first index of the array.  However, whenever we get a character that is not already at the front, we move it to the front in the array.  Therefore, sending $a$ again would place it at the front of the array.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    Character & $\Sigma_C$ & Packet & $\Sigma_D$ \\ \hline
+    (Init) & $[~]$ & & $[~]$ \\ \hline
+    $a$ & $[a]$ & (a, 0) & $[a]$ \\ \hline
+    $b$ & $[b, a]$ & (b, 0) & $[b, a]$ \\ \hline
+    $b$ & $[b, a]$ & 0 & $[b, a]$ \\ \hline
+    $a$ & $[a, b]$ & 1 & $[a, b]$ \\ \hline
+\end{tabular}
+\end{center}
+For the rest of the $a$, each row we only send a zero since it is the first character of the list already.
+\begin{itemize}
+    \item The idea with the swapping characters is that (recently) common characters will be at the beginning of the array, and uncommon characters will slowly be pushed into the back.
+    \item Smaller numbers take less bits to send than big numbers.
+\end{itemize}
+
+\subsubsection*{Prefix Encoding}
+Suppose we want to encode character $i$ with $0000001\dots$, where we have $\log(i)$ number of 0's at the beginning.
+[FILL]
+
+\subsubsection*{Run-Length Encoding}
+Suppose we need to send a series of one million zeros.  $00000\dots$.  Instead of sending one million zeros, we just send $(1000000, 0)$.
+
+\subsection*{Rank / Select}
+Earlier, we introduced the concept of rank implicitly.  
+\[\text{Rank}_1(i) = \text{Number of 1's before position }i\]
+
+
+
+
+
+\end{document}

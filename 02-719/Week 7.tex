@@ -13,7 +13,7 @@
 
 % images
 \usepackage{graphicx} % for images
-\usepackage{tikz}
+\usepackage{tikz} 
 
 % code blocks
 % \usepackage{minted, listings} 
@@ -26,7 +26,7 @@
 \graphicspath{{./assets/images/Week 7}}
 
 \title{02-719 Week 7 \\ \large{Genomics and Epigenetics of the Brain}}
- 
+  
 \author{Aidan Jan}
 
 \date{\today}
@@ -76,7 +76,7 @@ The similarity matrix can be viewed as a graph
 	\includegraphics*[width=0.6\textwidth]{W7_3.png} 
 \end{center}
 
-\subsection*{TNSE-T distributed stochastic neighbor embedding}
+\subsection*{TSNE-T distributed stochastic neighbor embedding}
 \begin{itemize}
 	\item Tries to replicate the similarity found in the similarity matrix in two dimensions
 	\item Actually a probabilistic approach
@@ -86,13 +86,13 @@ The similarity matrix can be viewed as a graph
     \item This probability is based on the t-distribution with defined parameter perplexity
 \end{itemize}
 
-\subsection*{TNSE - How perplexity can change the visualization}
+\subsection*{TSNE - How perplexity can change the visualization}
 \begin{center} 
 	\includegraphics*[width=0.8\textwidth]{W7_4.png} 
 \end{center}
 
 \section*{UMAP}
-UMAP is an alternative to TNSE.
+UMAP is an alternative to TSNE.
 \begin{itemize}
 	\item Instead of the probabilistic distance between cells this focuses on the topology or graph structure of that similarity matrix and tries to maintain it in the 2d projection
 	\item Two parameters:
@@ -107,7 +107,7 @@ UMAP is an alternative to TNSE.
 \end{center}
 
 \subsection*{Comparison of Dimensionality Reduction Methods}
-\begin{center}
+\begin{center} 
 \begin{tabular}{c|c}
 {\underline{\textbf{PCA}}}                                                                         & {\underline{\textbf{UMAP / TSNE}}}                                                                                              \\ \hline
 Linear                                                                                             & Non-linear                                                                                                              \\ \hline
@@ -226,6 +226,4 @@ Linear models allow you to take into account multiple factors when calculating d
 	\item Rbfox3 expression $= \beta_0 + \beta_1 + \beta_2 + \beta_3$, where $\beta_1 :=$ batch, $\beta_2 :=$ sex, $\beta_3 :=$ is neuron.
 \end{itemize}
 In this case our statistic will be $\beta_3$ and our $p$-value will be calculated based off of it.  There are many packages to use linear models for RNA-seq data, for single cell recommend limma-trend.
-
-
 \end{document}

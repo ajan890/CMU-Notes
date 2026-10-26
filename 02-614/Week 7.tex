@@ -143,4 +143,19 @@ Compute the inverse suffix array of the array from step 3.
 \subsubsection*{Step 5}
 Sort group 0 suffixes using the key $(T[i], S_{i + 1})$
 
+\subsection*{Runtime}
+Skew algorithm runs in $O(|T|)$ time.  In general, we can write the recursive relation:
+\begin{align*}
+	&T(n) \leq O(n) + T\left(\frac{2n}{3}\right) \\
+	&\equiv T(n) \leq cn + T\left(\frac{2n}{3}\right) \\
+	\intertext{Guess that $T(b) \leq 3cn$}
+	&\Rightarrow T(n) \leq cn + 3c \left(\frac{2n}{3} \right) \\
+	&= cn + 2cn \\
+	&= 3cn
+\end{align*}
+In fact, we know that the algorithm runtime (and space complexity) scales linearly with 3x the length of the string.
+
+
+
+
 \end{document}
