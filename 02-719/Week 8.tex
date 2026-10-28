@@ -91,6 +91,91 @@ Each gene gets one test.  The output is a ranked list of genes whose rates shift
         \item Builds a \textbf{master tree}: average branch lengths across genes
     \end{itemize}
 \end{itemize}
+[insert image]
+
+\subsubsection*{Why not compare raw branch lengths?}
+\[\text{branch length} = \text{time} \times \text{lineage rate} \times \text{gene-specific rate}\]
+\begin{itemize}
+    \item Time and lineage rate are shared for all genes
+    \item We only want the gene-specific rate
+    \item Therefore, comparing raw branch lengths might not give us what we are looking for.
+\end{itemize}
+
+\subsection*{Step 2: Fit the Expected rate}
+\begin{itemize}
+    \item Graph branches for the gene of interest on the y-axis, and master tree branch length on the x-axis.
+    \item Run regression on the data.  The line is the \textbf{expected} length for the given gene.  Points above the line are faster than expected, while points below the line are slower than expected.
+    \item The residuals (distance from point to line) are the RERs.  (RER = observed - expected)
+    \item RERconverge asks whether the residuals are statistically significant?
+\end{itemize}
+
+\subsubsection*{Making RERs Robust}
+\begin{itemize}
+    \item Problem: long branches are noisier (and will dominate a plain regression)
+    \item Fixes:
+    \begin{itemize}
+        \item Square root transform the branch lengths
+        \item Weighted regression
+        \item Scale RERs across genes
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Step 3: Encoding a Binary Trait}
+\begin{itemize}
+    \item Foreground = branches where the trait is present
+    \item Background = all other pranches
+    \item Input: a list of foreground species
+\end{itemize}
+
+\subsection*{Step 3: Encoding a Continuous Trait}
+\begin{itemize}
+    \item Every species has a value (e.g., maximum lifespan)
+    \item \textbf{Ancestral state reconstruction} estimates values at internal nodes
+    \item By default, each branch gets the \textbf{change} in trait along it.
+    \item Correlate trait change wiht RER across branches.
+\end{itemize}
+
+\subsection*{Step 4: Testing each gene for association}
+\begin{itemize}
+    \item For binary: \texttt{correlateWithBinaryPhenotype()}.  Uses Kendall's Tau correlation between RER, 0/1 by default.
+    \item For continuous: \texttt{correlateWithContinuousPhenotype()}.  Uses Pearson correlation by default.
+    \item Genes need enough species and foreground branches.
+\end{itemize}
+Rho ($\rho$) represents the correlation coefficient between the RER of a genetic region and a specific phenotypic trait.
+\begin{itemize}
+    \item $\rho > 0$, gene is faster in foreground.  (function may be no longer needed, or positive selection.  Example: eye genes in blind mammals)
+    \item $\rho < 0$, gene is slower in foreground.  (increased constraint: the function matters more.)
+\end{itemize}
+
+\subsection*{Step 5: Do we Trust p-values?}
+\begin{enumerate}
+    \item Simulate: a null trait on the same tree
+    \item Match: same number and structure of foreground species
+    \item Re-test: every gene against the null trait
+    \item Repeat: build an empirical p-value per gene.
+\end{enumerate}
+\begin{itemize}
+    \item Parametric p-values assume branches are independent; they aren't
+    \item \textbf{Permutations} = permutation + simulation that keeps the phylogeny
+    \item Expensive: many reruns of the whole analysis.
+\end{itemize}
+p-values can be off in either direction: too many hits or too few hits.
+
+\subsection*{Step 6: From Gene lists to Biology}
+\begin{itemize}
+    \item Rank-based (whole list)
+    \begin{itemize}
+        \item Score every gene: $\text{sign}(\rho) \times -\log_{10}(p)$
+        \item Do gene sets sit at the top or bottom of the ranking?
+    \end{itemize}
+    \item Over-representation (top hits)
+    \begin{itemize}
+        \item Take genes passing a cutoff, split by sign
+        \item Test GO terms against a background
+    \end{itemize}
+\end{itemize}
+Note that background includes all genes that were tested, not the whole genome.
+
 
 
 

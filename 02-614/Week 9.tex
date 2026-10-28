@@ -1,0 +1,160 @@
+% document formatting
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+
+% math symbols, etc.
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+
+% lists
+\usepackage{enumerate}
+\usepackage{enumitem}
+
+% images
+\usepackage{graphicx} % for images
+\usepackage{tikz}
+
+% code blocks
+% \usepackage{minted, listings} 
+
+% verbatim greek
+\usepackage{alphabeta}
+
+% custom commands
+\newcommand{\rank}{\text{Rank}}
+\newcommand{\select}{\text{Select}}
+
+\graphicspath{{./assets/images/Week 9}}
+
+\title{02-614 Week 9 \\ \large{String Algorithms}}
+ 
+\author{Aidan Jan}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{RRR Vectors}
+An RRR vector is a data structure which stores bit vectors.
+\begin{itemize}
+    \item The bit vector can be arbitrary, and store any type of data.  (i.e., large numbers, sets, boolean array, etc.)
+\end{itemize}
+We will define the following:
+\begin{itemize}
+    \item $\rank_1 (i)$ = the number of 1's at or before position $i$ in the bit vector.
+    \item $\select_1(j)$ = the position of the $j$-th 1.
+\end{itemize}
+
+\subsection*{Access}
+Suppose we have the Rank function; how do we do access?
+\begin{itemize}
+    \item Very easily.  $S[i] = \rank_1(i) - \rank_1(i - 1)$.
+    \item This is because at a given position, the bit can either be a 0 or a 1.  The rank changes if and only if it is a 1.
+\end{itemize}
+
+\subsection*{Goal}
+We want an efficient rank function since access needs to be fast.  The naive method to making this work would be just preprocess the bit vector and store the rank indices.  However, there is a second, much harder goal, which is to make it take less than $n$ bits of storage.
+
+\subsection*{The RRR Data Structure}
+Instead of storing the bit vector directly, we can divide the bit vector $S$ into multiple blocks.
+\begin{itemize}
+    \item Each blonk has a length of $u = O(\log n)$
+    \item Let the index $i$ refer to a block.  Then,
+    \begin{itemize}
+        \item $w_i$ = the number of 1's in this block
+        \item $P_i$ = a ``pointer'' to the block table
+        \item $s_i$ = number of bits used to represent $P_i$
+    \end{itemize}
+    \item Currently we don't understand the purpose of $P_i$ and $s_i$, but they will be explained later.
+\end{itemize}
+
+\subsubsection*{Block Table}
+So what is a block table?  It is similar to a hashmap, but for every possible block of size $u$.  Each ``bucket'' in the block table represents a weight, or the number of 1's in the entire block.  Each bucket contains two arrays, one storing the bit pattern, and the other storing the rank at every position.\\\\
+For example, consider the block table for $u = 3$.  A bit vector of length 3 has four buckets, one for each weight 0, 1, 2, 3.
+\begin{verbatim}
+w | (data, ranks)
+0 | (000, 000)
+--+---------------
+1 | (001, 001)
+  | (010, 010)
+  | (100, 100)
+--+---------------
+2 | (011, 012)
+  | (101, 112)
+  | (110, 122)
+--+---------------
+3 | (111, 123)
+\end{verbatim}
+A given block in $s$ contains a $P_i$, which points to the corresponding pattern in the block table.  This way, the actual bits of $S$ don't have to be stored.  Instead, we just store the pointer to the block table.
+\begin{itemize}
+    \item The size of the pointer depends on how complex a given block is.  Suppose our block of interest has a weight zero.  In this case, our pointer doesn't need any bits if we know $w_i$, because if $w_i = 0$, then there is only one possible block.
+    \item If instead in this case, $w_i = 1$, then we know it is in the $w = 1$ bucket.  However, the pointer would have to be two bits in order to discern which pattern it is.  Storing the size of the pointer is $s_i$, which is also stored in the block.
+\end{itemize}
+With this setup, we can now get the rank for any position in the \textit{first} block.  We can do this by looking up the pointer in the first block on the block table, and just use the rank.  However, if we want to do this for other blocks, we need to know the number of 1's occurring before the block.  In this case, we need to store a little bit more information in the blocks:
+\begin{itemize}
+    \item $f_i$ = sum of $w_j \:\forall j < i$.  In other words, the number of 1's before block $i$.
+    \item $q_i$ = sum of $s_j \:\forall j < i$.  This is the total length of pointers for all the blocks before the $i$-th block.
+\end{itemize}
+Now, we can define the $\rank_1$ function for all blocks:
+\[\rank_1(i) = f_x + T[w_x][p_x][i - xu]\]
+where $x = \lfloor \frac{i}{u} \rfloor$.
+\begin{itemize}
+    \item $f_x$ is the number of 1's before our block 
+    \item $T$ is the block table
+    \item $[w_x]$ is the weight bucket of the block table
+    \item $[p_x]$ is the pattern in the weight bucket
+    \item $[i - xu]$ is the local position in our current block
+\end{itemize}
+$T$ can be built as a 3D matrix.  The running time of rank is now constant time, since we only have to do array indexing.
+
+\subsection*{Precompute}
+We have $O(1)$ rank, but how do we precompute everything?  Additionally, how does this take less bits than $n$ overall?\\\\
+First, to precompute, we can just calculate all of the arrays of running totals and pointers, calculate the block table, then we are done.  However, how do we compress it so it takes less than $n$ bits?
+\begin{itemize}
+    \item We can utilize a trick and delete the $w_i$ array.  It turns out that while it is needed for calculation, it does not need to be stored in the final structure.  This is because the number of 1's present in block $i$ can be found by subtracting $f_{i + 1} - f_i$.
+    \item It turns out we also don't need the $s_i$ array, because that can be calculated in constant time by $q_{i + 1} - q_i$.
+    \item Deleting these two arrays already saves a lot of space, but does not get us all the way there.
+\end{itemize}
+
+\subsubsection*{Theorem: Tarjan + Yao, Pajh}
+Let $z_i, \dots, z_k$ be integers, where
+\begin{itemize}
+    \item $|z_i| = n^{O(1)}$ for some $n$.  (i.e., integers aren't exponentially large)
+    \item $|z_i - z_{i - 1}| = O(\log n)$.  (i.e., integers can't change too much between entries)
+\end{itemize}
+Then, the ordered list $z_1, \dots, z_k$ can be represented with $O(K \log \log n)$ bits, with constant time access to any $z_i$.\\\\
+\textbf{Proof:}
+Consider the array of length $n$ integers.  Let the array be divided into $O(\log n)$ blocks.
+\begin{itemize}
+    \item Store the first integer, ``keyframes'' of each block as itself.
+    \item Store all the other integers in the frame as deltas between the keyframe integer.
+\end{itemize}
+If we use this method for storage, then
+\begin{itemize}
+    \item Keyframe integers take $O \left(\frac{k}{\log n} \cdot \log n\right) = O(k)$ bits.
+    \item For the deltas, the integers for the deltas must be smaller than $\log(n)$, as that is a requirement for our list.  However, that is a difference between two consecutive numbers, not the number and the keyframe.  The maximum a number in a frame can deviate from its keyframe would be $O(\log n \cdot \log n) = O(\log^2 n)$.  However, the number of bits we use to store that number is log of that.  Therefore, we get $O(\log (\log^2 n)) = O(2 \log \log n)$ bits.
+\end{itemize}
+This form of compression gives us $O(k \log \log n)$ bits for all integers.\\
+\rule{\textwidth}{1pt}
+This theorem allows us to store the arrays of integers (namely, $p_i, f_i, and q_i$) in a $O(\log \log n)$ space.  We just have to show that the numbers for each aren't too big and don't differ too much.\\\\
+For $\hat{f}$ (or the vector containing all $f_i$):
+\begin{itemize}
+    \item $f_i \leq n$ because at most we have $n$ 1's in the entire array
+    \item $|f_{i + 1} - f_i$ because $u = O(\log n)$
+    \item $k = \frac{n}{u} = \frac{n}{\log n}$.  Therefore, we can store all $f_i$'s in $O(\frac{n}{\log n} \log \log n)$.
+\end{itemize}
+This is impressive, since $O(\frac{n}{\log n} \log \log n)$ is much smaller than $O(n)$.  In fact, as $n \rightarrow \infty$, this expression tends towards zero.\\\\
+The same logic can hold for all of the $q_i$'s.\\\\
+Unfortunately, the same cannot be said for the $p_i$'s.  $p_i$ points to a table with ${u \choose w_i}$ rows.  (This number contains factorials.)
+\begin{itemize}
+    \item Let $\mathcal{B}(w_i, u) \::= \lceil \log_2 {u \choose w_i}\rceil$.  $\mathcal{B}$ is the amount of space to store all the $p_i$'s.
+\end{itemize}
+
+\textbf{Lemma:} RRR data struct uses
+\[O \left(\frac{n}{\log n} \log \log n + \sum_i \mathcal{B} (w, \log n) + \text{tables}\right)\]
+
+
+\end{document}
