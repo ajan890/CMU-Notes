@@ -139,7 +139,7 @@ If we use this method for storage, then
 \end{itemize}
 This form of compression gives us $O(k \log \log n)$ bits for all integers.\\
 \rule{\textwidth}{1pt}
-This theorem allows us to store the arrays of integers (namely, $p_i, f_i, and q_i$) in a $O(\log \log n)$ space.  We just have to show that the numbers for each aren't too big and don't differ too much.\\\\
+This theorem allows us to store the arrays of integers (namely, $p_i, f_i$, and $q_i$) in a $O(\log \log n)$ space.  We just have to show that the numbers for each aren't too big and don't differ too much.\\\\
 For $\hat{f}$ (or the vector containing all $f_i$):
 \begin{itemize}
     \item $f_i \leq n$ because at most we have $n$ 1's in the entire array
@@ -155,6 +155,84 @@ Unfortunately, the same cannot be said for the $p_i$'s.  $p_i$ points to a table
 
 \textbf{Lemma:} RRR data struct uses
 \[O \left(\frac{n}{\log n} \log \log n + \sum_i \mathcal{B} (w, \log n) + \text{tables}\right)\]
+How big are the tables?
+
+\subsubsection*{Size of Tables}
+Tables have $2^u$ total cells, where $u$ is the maximum number stored in a cell is $u$.  This implies that a cell takes $\log u$ bits.  Therefore, the total number of bits in the entire table is $u (\log u) 2^u$ bits.
+\begin{itemize}
+    \item Now, we use the fact that $u = O(\log n)$.  In fact, we define it as $u = \epsilon \log n$, where $\epsilon < 1$.
+\end{itemize}
+Writing out the space complexity, we now have $(\epsilon \log n) \log (\epsilon \log n) 2^{\epsilon \log n}$.  This can simplify to $(\epsilon \log n) \log (\epsilon \log n) n^\epsilon \cdot 2^\epsilon$.  Now, if we pick a small $\epsilon$, say $\epsilon = \frac{1}{2}$, then
+\begin{itemize}
+    \item The $2^\epsilon$ term disappears because it is now a constant
+    \item The overall space coplexity is now $O(\log n \log \log n\sqrt{n})$.
+    \item The tables are now smaller than the $f_i$ and $q_i$ arrays, so they are no longer a significant part of the space complexity.  They are included into the $O(\frac{n \log \log n}{\log n})$ term.
+\end{itemize}
+
+\subsubsection*{More Space Reductions}
+Now, we investigate the term
+\[\sum_{i}^{m} \mathcal{B} \left(w_i, u\right)\]
+First, we substitute the definition of $\mathcal{B}$.
+\begin{align*}
+    &\sum_{i = 1}^m \left\lceil \log_2 {u \choose w_i} \right\rceil
+    \intertext{Ceilings are annoying because they are discontinuous, but over the entire sum, they add 1.  Therefore,}
+    &\leq m + \sum \log_2 {u \choose w_i} \\
+    &= m + \log_2 \prod_{i = 1}^m {u \choose w_i}
+\end{align*}
+\rule{\textwidth}{1pt}
+\textbf{Lemma.} We know that:
+\[\prod_{i = 1}^n {u \choose w_i} \leq {\sum_{i = 1}^m u \choose \sum_{i = 1}^m w_i}\]
+This is true because imagine a dartboard with $i$ sections, each section containing $u$ possible locations where darts could land.  The original summation is like throwing $w_i$ darts for each section $i$, the $nCr$ function representing the number of combinations where the darts could land.  The right side represents taking all the darts at the same time and throwing them into all buckets.  It turns out the first is more constrained than the second, and therefore the second is greater.\\
+\rule{\textwidth}{1pt}
+The part that is interesting with this lemma is that the sum of all $u_i$'s is just $n$, and the sum of all $w_i$'s is the total count of 1's in the bit vector.  We define that as $w$.  Therefore,
+\[\prod_{i = 1}^n {u \choose w_i} \leq {n \choose w}\]
+Therefore, we can substitute back:
+\begin{align*}
+    &m + \log_2 \prod_{i = 1}^m {u \choose w_i} \\
+    &\leq m + \log_2 {n \choose w} 
+    \intertext{We then notice the sum expression is very similar to the original definition of $\mathcal{B}$.}
+    &\leq m + \mathcal{B}(n, w)
+\end{align*}
+The final space complexity we have is then
+\[O \left(n \frac{\log \log n}{\log n} + \mathcal{B}(n, w)\right)\]
+
+\section*{Wavelet Trees}
+Suppose $B = ACCGTTAG$.
+\begin{itemize}
+    \item $\text{rank}_c(i)$ = number of $c$'s at or before position $i$
+    \item $\text{select}_c(j)$ = position of the $j$-th $c$ bit
+\end{itemize}
+What a wavelet tree does is split the alphabet used in the string into bit codes, and the represent the string using bit vectors.
+\begin{itemize}
+    \item In our case here, the alphabet has four characters, so we can assign $A = 00, C = 01, G = 10, T = 11$
+\end{itemize}
+For representing the string $B$, the root of the tree is the first bit for each character.  ($ACCGTTAG = 00011101$)  The two branches represents the characters beginning with a zero, and characters beginning with a one, respectively.  So in this case, the left case would contain $ACCA = 0110$, and the right case would contain $GTTG = 0110$.  The bits used in layer 1 use the 1-st (0-indexed) bits.
+\begin{itemize}
+    \item We essentially represented our string as a bit vector\dots, but vertically.
+    \item The bit vectors are actually stored as RRR vectors, which saves a lot of space.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw, rectangle, align=center] at (0, 0) (r) {\texttt{ACCGTTAG} \\ \texttt{00011101}};
+    \node[draw, rectangle, align=center] at (-2, -2) (1a) {\texttt{ACCA} \\ \texttt{0110}};
+    \node[draw, rectangle, align=center] at (2, -2) (1b) {\texttt{GTTG} \\ \texttt{0110}};
+    \node[draw, rectangle, align=center] at (-3, -4) (2a) {\texttt{AA} \\ \texttt{00}};
+    \node[draw, rectangle, align=center] at (-1, -4) (2b) {\texttt{CC} \\ \texttt{00}};
+    \node[draw, rectangle, align=center] at (1, -4) (2c) {\texttt{GG} \\ \texttt{00}};
+    \node[draw, rectangle, align=center] at (3, -4) (2d) {\texttt{TT} \\ \texttt{00}};
+
+    \draw[->] (r) -- (1a);
+    \draw[->] (r) -- (1b);
+    \draw[->] (1a) -- (2a);
+    \draw[->] (1a) -- (2b);
+    \draw[->] (1b) -- (2c);
+    \draw[->] (1b) -- (2d);
+\end{tikzpicture}
+\end{center}
+Of course, we wouldn't store the characters at each layer, just the bits.
+
+
+
 
 
 \end{document}
