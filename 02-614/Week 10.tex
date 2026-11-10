@@ -160,8 +160,32 @@ How big is this data structure?
 	\item Now for superblocks, we have a total of $(\frac{n}{u}) / u$ total superblocks.  Size of each super block array is $|\Sigma| \log n$.  Calculating the bits required for the superblock, we get $n / \log n$.  This is even smaller than the block arrays.
 \end{itemize}
 
+\subsection*{Computing Rank}
+Note that $\text{Rank}_c(i)$ is the sum of the following:
+\begin{itemize}
+	\item Count $c$ up through previous super blocks
+	\item Count of $c$ since end of that super block
+	\item Count of $c$ from block start to $i$
+\end{itemize}
+For the last point (count of $c$ from block start to $i$), we can use the same trick as Four Russian's speedup.  We build a table with all the counts precomputed.  Since block sizes are $u = O(\log |T|)$, they really are not that big.  Let
+\[M[BZ_j, MTF_j, c, \hat{i}]\]
+represent the count of $c$ from block start to $i$.
+\begin{itemize}
+	\item $BZ_j$ is the super block index
+	\item $MTF_j$ is the move-to-front list (i.e., the current state of the move to front vector) at the start of $BZ_j$.  This is necessary since MTF distorts the ordering of the numbers, but we can reconstruct the original ordering if given the state.
+	\item $c$ is character of interest
+	\item $\hat{i}$ is the index in the local block
+\end{itemize}
 
-
+\subsection*{What is the size of the entire table?}
+\[\text{Size} = O(|\Sigma|^u \times |\Sigma|! \times |\Sigma| \times u \times \log u)\]
+bits.   The first four terms are the sizes of each dimension, and the actual value can be stored in $\log u$ bits.  This is possible because the maximum count of a given character in a block of size $u$, is $u$ instances.  Therefore, it can be stored in $\log u$ bits.\\\\
+This expression can be simplified.  First, the $|\Sigma|! \times |\Sigma|$ terms can be removed since they are smaller than $|\Sigma|^u$, and $u = \log |T|$.  This leaves
+\[ = O(|\Sigma|^u \log |T| \log \log |T|)\]
+Now, we can use another trick to improve our choice of $u$.  Rather than just define $u = \log |T|$, we can be more specific and make it $u = \epsilon \log_{|\Sigma|}|T|$.  This is still of logarithm order, so it does not break previous assumptions.  However, it allows the first term $|\Sigma|^u$ to be simplified to $|T|^\epsilon$.
+\[ = O(|T|^\epsilon \log |T| \log \log |T|)\]
+We can pick the $\epsilon$ to be whatever we want.  If we make it $\epsilon = \frac{1}{2}$, then we now have a square root space complexity table.\\\\
+From this, we have proven the table can be small if the block size is chosen wisely.
 
 
 \end{document}
